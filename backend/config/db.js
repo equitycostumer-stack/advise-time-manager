@@ -1,32 +1,47 @@
 const mysql = require("mysql2");
 
-// Verificar qué variables está recibiendo Railway
+// =====================================
+// DIAGNÓSTICO DE VARIABLES DE ENTORNO
+// =====================================
+
 console.log("====================================");
 console.log(" VARIABLES DE ENTORNO MYSQL");
 console.log("====================================");
-console.log("MYSQLHOST:", process.env.MYSQLHOST);
-console.log("MYSQLUSER:", process.env.MYSQLUSER);
-console.log("MYSQLPASSWORD:", process.env.MYSQLPASSWORD ? "********" : "NO DEFINIDA");
-console.log("MYSQLDATABASE:", process.env.MYSQLDATABASE);
-console.log("MYSQLPORT:", process.env.MYSQLPORT);
+console.log("MYSQLHOST:", process.env.MYSQLHOST || "NO DEFINIDA");
+console.log("MYSQLPORT:", process.env.MYSQLPORT || "NO DEFINIDA");
+console.log("MYSQLDATABASE:", process.env.MYSQLDATABASE || "NO DEFINIDA");
+console.log("MYSQLUSER:", process.env.MYSQLUSER || "NO DEFINIDA");
+console.log(
+    "MYSQLPASSWORD:",
+    process.env.MYSQLPASSWORD ? "********" : "NO DEFINIDA"
+);
 console.log("====================================");
+
+// =====================================
+// CONEXIÓN MYSQL
+// =====================================
 
 const connection = mysql.createConnection({
     host: process.env.MYSQLHOST,
+    port: Number(process.env.MYSQLPORT || 3306),
     user: process.env.MYSQLUSER,
     password: process.env.MYSQLPASSWORD,
     database: process.env.MYSQLDATABASE,
-    port: Number(process.env.MYSQLPORT) || 3306
+    connectTimeout: 10000
 });
+
+// =====================================
+// CONECTAR
+// =====================================
 
 connection.connect((err) => {
     if (err) {
         console.error("❌ Error conectando a MySQL");
         console.error(err);
-        return;
+        process.exit(1);
     }
 
-    console.log("✅ Conectado a MySQL");
+    console.log("✅ Conectado correctamente a MySQL");
 });
 
 module.exports = connection;

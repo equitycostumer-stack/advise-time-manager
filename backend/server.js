@@ -32,7 +32,17 @@ app.use("/incidencias", require("./routes/incidencias"));
 // =====================================
 
 app.get("/", (req, res) => {
-    res.send("EQUITY LINE API funcionando");
+    res.status(200).send("EQUITY LINE API funcionando");
+});
+
+// =====================================
+// HEALTH CHECK
+// =====================================
+
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok"
+    });
 });
 
 // =====================================
@@ -41,14 +51,12 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-
-    console.clear();
+app.listen(PORT, "0.0.0.0", () => {
 
     console.log("====================================");
     console.log(" EQUITY LINE API");
     console.log("====================================");
-    console.log(`Servidor: http://localhost:${PORT}`);
+    console.log(`Servidor iniciado en puerto ${PORT}`);
     console.log("");
 
 });

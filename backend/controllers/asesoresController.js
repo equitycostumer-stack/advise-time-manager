@@ -20,10 +20,17 @@ exports.obtenerAsesores = (req, res) => {
 
         if (err) {
 
+            console.error("====================================");
+            console.error("ERROR MYSQL - OBTENER ASESORES");
             console.error(err);
+            console.error("====================================");
 
             return res.status(500).json({
-                mensaje: "Error obteniendo asesores."
+                ok: false,
+                mensaje: "Error obteniendo asesores.",
+                error: err.message,
+                code: err.code,
+                sqlMessage: err.sqlMessage
             });
 
         }
@@ -43,26 +50,28 @@ exports.obtenerEstado = (req, res) => {
     const asesor = req.params.id;
 
     const sql = `
-
         SELECT
-
             estado,
             inicio_estado
-
         FROM estados_actuales
-
         WHERE asesor_id = ?
-
     `;
 
     db.query(sql, [asesor], (err, datos) => {
 
         if (err) {
 
+            console.error("====================================");
+            console.error("ERROR MYSQL - OBTENER ESTADO");
             console.error(err);
+            console.error("====================================");
 
             return res.status(500).json({
-                mensaje: "Error obteniendo estado."
+                ok: false,
+                mensaje: "Error obteniendo estado.",
+                error: err.message,
+                code: err.code,
+                sqlMessage: err.sqlMessage
             });
 
         }
@@ -88,71 +97,63 @@ exports.obtenerEstado = (req, res) => {
 exports.registrarMovimiento = (req, res) => {
 
     const {
-
         asesor_id,
         tipo
-
     } = req.body;
 
     if (!asesor_id || !tipo) {
 
         return res.status(400).json({
+            ok: false,
             mensaje: "Datos incompletos."
         });
 
     }
 
     const sql = `
-
         INSERT INTO movimientos
         (
             asesor_id,
             tipo,
             fecha_hora
         )
-
         VALUES
         (
             ?,
             ?,
             NOW()
         )
-
     `;
 
     db.query(
-
         sql,
-
         [
-
             asesor_id,
             tipo
-
         ],
-
         (err) => {
 
             if (err) {
 
+                console.error("====================================");
+                console.error("ERROR MYSQL - REGISTRAR MOVIMIENTO");
                 console.error(err);
+                console.error("====================================");
 
                 return res.status(500).json({
-
-                    mensaje: "No fue posible registrar."
-
+                    ok: false,
+                    mensaje: "No fue posible registrar.",
+                    error: err.message,
+                    code: err.code,
+                    sqlMessage: err.sqlMessage
                 });
 
             }
 
             actualizarEstado(
-
                 asesor_id,
-
                 tipo,
-
                 res
-
             );
 
         }
@@ -166,68 +167,56 @@ exports.registrarMovimiento = (req, res) => {
 // =========================================
 
 function actualizarEstado(
-
     asesor,
-
     estado,
-
     res
-
 ) {
 
     const sql = `
-
         INSERT INTO estados_actuales
         (
             asesor_id,
             estado,
             inicio_estado
         )
-
         VALUES
         (
             ?,
             ?,
             NOW()
         )
-
         ON DUPLICATE KEY UPDATE
-
-        estado = VALUES(estado),
-
-        inicio_estado = NOW()
-
+            estado = VALUES(estado),
+            inicio_estado = NOW()
     `;
 
     db.query(
-
         sql,
-
         [
-
             asesor,
             estado
-
         ],
-
         (err) => {
 
             if (err) {
 
+                console.error("====================================");
+                console.error("ERROR MYSQL - ACTUALIZAR ESTADO");
                 console.error(err);
+                console.error("====================================");
 
                 return res.status(500).json({
-
-                    mensaje: "Error actualizando estado."
-
+                    ok: false,
+                    mensaje: "Error actualizando estado.",
+                    error: err.message,
+                    code: err.code,
+                    sqlMessage: err.sqlMessage
                 });
 
             }
 
             res.json({
-
                 ok: true
-
             });
 
         }

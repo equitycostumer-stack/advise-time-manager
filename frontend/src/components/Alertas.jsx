@@ -1,50 +1,9 @@
 export default function Alertas({ asesores }) {
 
     const alertas = [];
-const ahora = new Date();
 
-const dia = ahora.getDay(); // 0=Domingo, 1=Lunes...
-
-const horaActual =
-    ahora.getHours() * 60 + ahora.getMinutes();
-
-// Hora límite según el día
-let horaEntrada = null;
-
-// Lunes a Jueves
-if (dia >= 1 && dia <= 4) {
-
-    horaEntrada = 10 * 60;
-
-}
-
-// Viernes
-if (dia === 5) {
-
-    horaEntrada = 11 * 60;
-
-}
-
-// Sábado
-if (dia === 6) {
-
-    // Por ahora asumimos que este sábado no se trabaja.
-    // Luego lo conectaremos con un calendario.
-    horaEntrada = 9 * 60;
-
-}
     asesores.forEach((a) => {
-// Llegó tarde (calculado por el backend)
 
-if (a.llego_tarde) {
-
-    alertas.push(
-
-        `🔴 ${a.nombre} llegó ${a.minutos_retraso} minuto${a.minutos_retraso === 1 ? "" : "s"} tarde.`
-
-    );
-
-}
         if (!a.inicio_estado) return;
 
         const minutos = Math.floor(
@@ -78,6 +37,24 @@ if (a.llego_tarde) {
 
         }
 
+        // CAPACITACIÓN
+        if (a.estado === "CAPACITACION" && minutos > 90) {
+
+            alertas.push(
+                `🔴 ${a.nombre} lleva ${minutos} minutos en Capacitación`
+            );
+
+        }
+
+        // REUNIÓN
+        if (a.estado === "REUNION" && minutos > 90) {
+
+            alertas.push(
+                `🔴 ${a.nombre} lleva ${minutos} minutos en Reunión`
+            );
+
+        }
+
     });
 
     return (
@@ -96,17 +73,15 @@ if (a.llego_tarde) {
 
             {
 
-                alertas.length === 0 ?
+                alertas.length === 0
 
-                    (
+                    ? (
 
                         <p>🟢 No hay alertas por el momento.</p>
 
                     )
 
-                    :
-
-                    (
+                    : (
 
                         alertas.map((a, i) => (
 

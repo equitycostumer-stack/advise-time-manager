@@ -1,10 +1,5 @@
 const db = require("../config/db");
-
 const { calcularRetraso } = require("../utils/horarios");
-
-const {registrarIncidencia} = require("./incidenciasController");
-
-const {evaluarIncidencia} = require("../utils/incidencias");
 
 // ============================================
 // DASHBOARD EN TIEMPO REAL
@@ -42,60 +37,29 @@ const obtenerDashboard = (req, res) => {
 
         const asesores = rows.map((asesor) => {
 
-    const retraso = calcularRetraso(
-        asesor.inicio_jornada
-    );
-if (retraso.llego_tarde) {
+            const retraso = calcularRetraso(
+                asesor.inicio_jornada
+            );
 
-    registrarIncidencia(
+            return {
 
-        asesor.id,
+                ...asesor,
 
-        "LLEGADA TARDE",
+                llego_tarde: retraso.llego_tarde,
 
-        "ALTA",
+                minutos_retraso: retraso.minutos_retraso
 
-        `${retraso.minutos_retraso} minutos de retraso`
+            };
 
-    );
+        });
 
-}
-const incidencia = evaluarIncidencia(asesor);
+        res.json({
 
-if (incidencia) {
+            ok: true,
 
-    registrarIncidencia(
+            asesores
 
-        asesor.id,
-
-        incidencia.tipo,
-
-        incidencia.nivel,
-
-        incidencia.detalle
-
-    );
-
-}
-    return {
-
-        ...asesor,
-
-        llego_tarde: retraso.llego_tarde,
-
-        minutos_retraso: retraso.minutos_retraso
-
-    };
-
-});
-
-res.json({
-
-    ok: true,
-
-    asesores
-
-});
+        });
 
     });
 

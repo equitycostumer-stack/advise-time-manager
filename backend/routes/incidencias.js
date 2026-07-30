@@ -4,11 +4,8 @@ const router = express.Router();
 const db = require("../config/db");
 
 const {
-
     revisarIncidencia
-
 } = require("../controllers/incidenciasController");
-
 
 // ======================================================
 // OBTENER INCIDENCIAS
@@ -23,8 +20,10 @@ router.get("/", (req, res) => {
         FROM incidencias i
         INNER JOIN asesores a
             ON a.id = i.asesor_id
+        WHERE
+            i.revisada = 0
+            AND DATE(i.fecha_hora) = CURDATE()
         ORDER BY
-            i.revisada ASC,
             i.fecha_hora DESC
     `;
 
@@ -50,18 +49,13 @@ router.get("/", (req, res) => {
 
 });
 
-
 // ======================================================
 // REVISAR INCIDENCIA
 // ======================================================
 
 router.put(
-
     "/:id/revisar",
-
     revisarIncidencia
-
 );
-
 
 module.exports = router;

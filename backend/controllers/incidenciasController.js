@@ -1,100 +1,88 @@
 const db = require("../config/db");
 
-// Se activará nuevamente cuando terminemos el módulo de notificaciones.
-// const { enviarNotificacion } = require("../utils/notificaciones");
+// ==============================================
+// REGISTRAR INCIDENCIA
+// ==============================================
 
 const registrarIncidencia = (
-
     asesorId,
-
     tipo,
-
     nivel,
-
     detalle
-
 ) => {
 
-    const sql = `
+    // Primero revisar si ya existe una incidencia igual SIN revisar
 
-        INSERT INTO incidencias
-
-        (
-
-            asesor_id,
-
-            tipo,
-
-            nivel,
-
-            detalle
-
-        )
-
-        VALUES (?, ?, ?, ?)
-
+    const verificar = `
+        SELECT id
+        FROM incidencias
+        WHERE asesor_id = ?
+        AND tipo = ?
+        AND revisada = 0
+        LIMIT 1
     `;
 
-    db.query(
+    db.query(verificar, [asesorId, tipo], (err, rows) => {
 
-        sql,
+        if (err) {
 
-        [
+            console.error(err);
 
-            asesorId,
-
-            tipo,
-
-            nivel,
-
-            detalle
-
-        ],
-
-        (err) => {
-
-            if (err) {
-
-                if (err.code === "ER_DUP_ENTRY") {
-
-                    return;
-
-                }
-
-                console.error(
-
-                    "Error registrando incidencia:",
-
-                    err
-
-                );
-
-                return;
-
-            }
-
-            // Aquí volveremos a activar las notificaciones.
-            /*
-            enviarNotificacion({
-
-                asesor_id: asesorId,
-
-                nombre: `Asesor #${asesorId}`,
-
-                tipo,
-
-                nivel,
-
-                detalle
-
-            });
-            */
+            return;
 
         }
 
-    );
+        // Ya existe
+
+        if (rows.length > 0) {
+
+            return;
+
+        }
+
+        // Registrar
+
+        const sql = `
+            INSERT INTO incidencias
+            (
+                asesor_id,
+                tipo,
+                nivel,
+                detalle
+            )
+            VALUES (?, ?, ?, ?)
+        `;
+
+        db.query(
+
+            sql,
+
+            [
+                asesorId,
+                tipo,
+                nivel,
+                detalle
+            ],
+
+            (err) => {
+
+                if (err) {
+
+                    console.error(err);
+
+                }
+
+            }
+
+        );
+
+    });
 
 };
+
+// ==============================================
+// REVISAR INCIDENCIA
+// ==============================================
 
 const revisarIncidencia = (req, res) => {
 
@@ -109,9 +97,7 @@ const revisarIncidencia = (req, res) => {
     } = req.body;
 
     const sql = `
-
         UPDATE incidencias
-
         SET
 
             revisada = 1,
@@ -123,7 +109,6 @@ const revisarIncidencia = (req, res) => {
             fecha_revision = NOW()
 
         WHERE id = ?
-
     `;
 
     db.query(
@@ -156,7 +141,7 @@ const revisarIncidencia = (req, res) => {
 
             }
 
-            return res.json({
+            res.json({
 
                 ok: true,
 

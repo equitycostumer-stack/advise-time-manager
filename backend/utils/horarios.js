@@ -7,7 +7,6 @@ function obtenerHorarioHoy(fecha = new Date()) {
     const dia = fecha.getDay();
 
     // Domingo
-
     if (dia === 0) {
 
         return null;
@@ -15,7 +14,6 @@ function obtenerHorarioHoy(fecha = new Date()) {
     }
 
     // Lunes a Jueves
-
     if (dia >= 1 && dia <= 4) {
 
         return {
@@ -23,11 +21,9 @@ function obtenerHorarioHoy(fecha = new Date()) {
             nombre: "Lunes a Jueves",
 
             entradaHora: 10,
-
             entradaMinuto: 0,
 
             salidaHora: 19,
-
             salidaMinuto: 0
 
         };
@@ -35,7 +31,6 @@ function obtenerHorarioHoy(fecha = new Date()) {
     }
 
     // Viernes
-
     if (dia === 5) {
 
         return {
@@ -43,11 +38,9 @@ function obtenerHorarioHoy(fecha = new Date()) {
             nombre: "Viernes",
 
             entradaHora: 11,
-
             entradaMinuto: 0,
 
             salidaHora: 19,
-
             salidaMinuto: 0
 
         };
@@ -55,26 +48,19 @@ function obtenerHorarioHoy(fecha = new Date()) {
     }
 
     // Sábado
-    // Por ahora asumimos que es laboral.
-    // Luego conectaremos el calendario.
-
     return {
 
         nombre: "Sábado",
 
         entradaHora: 9,
-
         entradaMinuto: 0,
 
         salidaHora: 16,
-
         salidaMinuto: 0
 
     };
 
 }
-
-
 
 // ======================================================
 // CALCULAR RETRASO
@@ -82,12 +68,12 @@ function obtenerHorarioHoy(fecha = new Date()) {
 
 function calcularRetraso(inicioJornada) {
 
+    // No ha iniciado jornada
     if (!inicioJornada) {
 
         return {
 
             llego_tarde: false,
-
             minutos_retraso: 0
 
         };
@@ -95,29 +81,40 @@ function calcularRetraso(inicioJornada) {
     }
 
     const entradaReal = new Date(inicioJornada);
-    // Si la entrada no es de hoy, no calcular retraso
 
-const hoy = new Date();
+    // Fecha inválida
+    if (isNaN(entradaReal.getTime())) {
 
-if (
+        return {
 
-    entradaReal.getFullYear() !== hoy.getFullYear() ||
+            llego_tarde: false,
+            minutos_retraso: 0
 
-    entradaReal.getMonth() !== hoy.getMonth() ||
+        };
 
-    entradaReal.getDate() !== hoy.getDate()
+    }
 
-) {
+    // Fecha actual
+    const ahora = new Date();
 
-    return {
+    // SOLO calcular si la jornada pertenece al día actual
+    if (
 
-        llego_tarde: false,
+        entradaReal.getFullYear() !== ahora.getFullYear() ||
+        entradaReal.getMonth() !== ahora.getMonth() ||
+        entradaReal.getDate() !== ahora.getDate()
 
-        minutos_retraso: 0
+    ) {
 
-    };
+        return {
 
-}
+            llego_tarde: false,
+            minutos_retraso: 0
+
+        };
+
+    }
+
     const horario = obtenerHorarioHoy(entradaReal);
 
     if (!horario) {
@@ -125,46 +122,35 @@ if (
         return {
 
             llego_tarde: false,
-
             minutos_retraso: 0
 
         };
 
     }
 
-    const entradaOficial = new Date(entradaReal);
+    // Hora oficial del mismo día
+    const entradaOficial = new Date(
 
-    entradaOficial.setHours(
-
+        entradaReal.getFullYear(),
+        entradaReal.getMonth(),
+        entradaReal.getDate(),
         horario.entradaHora,
-
         horario.entradaMinuto,
-
         0,
-
         0
 
     );
 
-    const diferencia =
+    const diferenciaMinutos = Math.floor(
 
-        Math.floor(
+        (entradaReal.getTime() - entradaOficial.getTime()) / 60000
 
-            (entradaReal - entradaOficial) / 60000
-
-        );
+    );
 
     return {
 
-        llego_tarde: diferencia > 0,
-
-        minutos_retraso:
-
-            diferencia > 0
-
-                ? diferencia
-
-                : 0
+        llego_tarde: diferenciaMinutos > 0,
+        minutos_retraso: diferenciaMinutos > 0 ? diferenciaMinutos : 0
 
     };
 
@@ -173,7 +159,6 @@ if (
 module.exports = {
 
     obtenerHorarioHoy,
-
     calcularRetraso
 
 };

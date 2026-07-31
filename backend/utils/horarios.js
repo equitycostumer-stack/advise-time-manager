@@ -6,14 +6,12 @@ function obtenerHorarioHoy(fecha = new Date()) {
 
     const dia = fecha.getDay();
 
-    // Domingo
     if (dia === 0) {
 
         return null;
 
     }
 
-    // Lunes a Jueves
     if (dia >= 1 && dia <= 4) {
 
         return {
@@ -30,7 +28,6 @@ function obtenerHorarioHoy(fecha = new Date()) {
 
     }
 
-    // Viernes
     if (dia === 5) {
 
         return {
@@ -47,7 +44,6 @@ function obtenerHorarioHoy(fecha = new Date()) {
 
     }
 
-    // Sábado
     return {
 
         nombre: "Sábado",
@@ -63,12 +59,29 @@ function obtenerHorarioHoy(fecha = new Date()) {
 }
 
 // ======================================================
+// CONVERTIR A HORA DE COLOMBIA
+// ======================================================
+
+function convertirABogota(fecha) {
+
+    return new Date(
+
+        fecha.toLocaleString("en-US", {
+
+            timeZone: "America/Bogota"
+
+        })
+
+    );
+
+}
+
+// ======================================================
 // CALCULAR RETRASO
 // ======================================================
 
 function calcularRetraso(inicioJornada) {
 
-    // No ha iniciado jornada
     if (!inicioJornada) {
 
         return {
@@ -80,9 +93,12 @@ function calcularRetraso(inicioJornada) {
 
     }
 
-    const entradaReal = new Date(inicioJornada);
+    const entradaReal = convertirABogota(
 
-    // Fecha inválida
+        new Date(inicioJornada)
+
+    );
+
     if (isNaN(entradaReal.getTime())) {
 
         return {
@@ -94,10 +110,12 @@ function calcularRetraso(inicioJornada) {
 
     }
 
-    // Fecha actual
-    const ahora = new Date();
+    const ahora = convertirABogota(
 
-    // SOLO calcular si la jornada pertenece al día actual
+        new Date()
+
+    );
+
     if (
 
         entradaReal.getFullYear() !== ahora.getFullYear() ||
@@ -128,7 +146,6 @@ function calcularRetraso(inicioJornada) {
 
     }
 
-    // Hora oficial del mismo día
     const entradaOficial = new Date(
 
         entradaReal.getFullYear(),
@@ -141,7 +158,7 @@ function calcularRetraso(inicioJornada) {
 
     );
 
-    const diferenciaMinutos = Math.floor(
+    const diferencia = Math.floor(
 
         (entradaReal.getTime() - entradaOficial.getTime()) / 60000
 
@@ -149,8 +166,9 @@ function calcularRetraso(inicioJornada) {
 
     return {
 
-        llego_tarde: diferenciaMinutos > 0,
-        minutos_retraso: diferenciaMinutos > 0 ? diferenciaMinutos : 0
+        llego_tarde: diferencia > 0,
+
+        minutos_retraso: diferencia > 0 ? diferencia : 0
 
     };
 
@@ -159,6 +177,7 @@ function calcularRetraso(inicioJornada) {
 module.exports = {
 
     obtenerHorarioHoy,
+
     calcularRetraso
 
 };

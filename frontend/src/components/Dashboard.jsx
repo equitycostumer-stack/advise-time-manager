@@ -9,42 +9,61 @@ import PanelIncidencias from "./PanelIncidencias";
 export default function Dashboard() {
 
     const [asesores, setAsesores] = useState([]);
-const [historial, setHistorial] = useState([]);
-const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
+    const [incidencias, setIncidencias] = useState([]);
+    const [historial, setHistorial] = useState([]);
+    const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
+
     async function cargarDashboard() {
 
         try {
 
-            const res = await api.get("/dashboard");
+            // Dashboard
+            const dashboard = await api.get("/dashboard");
 
-            setAsesores(res.data.asesores);
+            setAsesores(dashboard.data.asesores);
+
+            // Incidencias reales
+            const incidenciasRes = await api.get("/incidencias");
+
+            setIncidencias(incidenciasRes.data);
+
+        } catch (error) {
+
+            console.error("Error cargando dashboard:", error);
+
+        }
+
+    }
+
+    async function verHistorial(asesor) {
+
+        try {
+
+            const res = await api.get(`/movimientos/historial/${asesor.id}`);
+
+            setHistorial(res.data);
+
+            setAsesorSeleccionado(asesor);
 
         } catch (error) {
 
             console.error(error);
 
+            alert("No fue posible cargar el historial.");
+
         }
 
     }
-async function verHistorial(asesor) {
 
-    try {
+    useEffect(() => {
 
-        const res = await api.get(`/movimientos/historial/${asesor.id}`);
+        cargarDashboard();
 
-        setHistorial(res.data);
+        const intervalo = setInterval(cargarDashboard, 5000);
 
-        setAsesorSeleccionado(asesor);
+        return () => clearInterval(intervalo);
 
-    } catch (error) {
-
-        console.error(error);
-
-        alert("No fue posible cargar el historial.");
-
-    }
-
-}
+    }, []);
     useEffect(() => {
 
         cargarDashboard();
@@ -300,6 +319,13 @@ async function verHistorial(asesor) {
         a.inicio_estado
             ? (() => {
 
+                // Si el asesor ya salió, detener el cronómetro
+                if (a.estado === "SALIDA") {
+
+                    return "✅ Finalizado";
+
+                }
+
                 const segundos = Math.floor(
                     (Date.now() - new Date(a.inicio_estado).getTime()) / 1000
                 );
@@ -322,7 +348,8 @@ async function verHistorial(asesor) {
             : "--:--:--"
     }
 </p>
-                <p>
+
+<p>
     <strong>Retraso</strong>
     <br />
     {
@@ -358,8 +385,12 @@ async function verHistorial(asesor) {
 </div>
          <Alertas asesores={asesores} />
 
-<CentroIncidencias asesores={asesores} />
-<PanelIncidencias />
+<CentroIncidencias incidencias={incidencias} />
+
+<PanelIncidencias
+    incidencias={incidencias}
+    onActualizar={cargarDashboard}
+/>
          {
 
     asesorSeleccionado && (

@@ -5,7 +5,20 @@
 // ======================================================
 
 require("dotenv").config();
+process.on("uncaughtException", (err) => {
+    console.error("====================================");
+    console.error("UNCAUGHT EXCEPTION");
+    console.error(err);
+    console.error(err.stack);
+    console.error("====================================");
+});
 
+process.on("unhandledRejection", (reason) => {
+    console.error("====================================");
+    console.error("UNHANDLED REJECTION");
+    console.error(reason);
+    console.error("====================================");
+});
 console.log("====================================");
 console.log(" VARIABLES DE ENTORNO");
 console.log("====================================");
@@ -91,13 +104,14 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, "0.0.0.0", () => {
-
-    console.log("");
+const server = app.listen(PORT, () => {
     console.log("====================================");
-    console.log(" EQUITY LINE API");
-    console.log("====================================");
+    console.log("EQUITY LINE API");
     console.log(`Servidor iniciado en puerto ${PORT}`);
-    console.log("");
+    console.log("====================================");
+});
 
+server.on("error", (err) => {
+    console.error("ERROR DEL SERVIDOR");
+    console.error(err);
 });

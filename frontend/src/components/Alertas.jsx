@@ -1,4 +1,8 @@
-export default function Alertas({ asesores }) {
+// ======================================================
+// COMPONENTE ALERTAS
+// ======================================================
+
+export default function Alertas({ asesores = [] }) {
 
     const alertas = [];
 
@@ -12,47 +16,37 @@ export default function Alertas({ asesores }) {
 
         // BREAK
         if (a.estado === "BREAK" && minutos > 15) {
-
             alertas.push(
                 `🔴 ${a.nombre} lleva ${minutos} minutos en Break`
             );
-
         }
 
         // ALMUERZO
         if (a.estado === "ALMUERZO" && minutos > 60) {
-
             alertas.push(
                 `🔴 ${a.nombre} lleva ${minutos} minutos en Almuerzo`
             );
-
         }
 
         // BAÑO
         if (a.estado === "BANO" && minutos > 10) {
-
             alertas.push(
                 `🔴 ${a.nombre} lleva ${minutos} minutos en Baño`
             );
-
         }
 
         // CAPACITACIÓN
         if (a.estado === "CAPACITACION" && minutos > 90) {
-
             alertas.push(
                 `🔴 ${a.nombre} lleva ${minutos} minutos en Capacitación`
             );
-
         }
 
         // REUNIÓN
         if (a.estado === "REUNION" && minutos > 90) {
-
             alertas.push(
                 `🔴 ${a.nombre} lleva ${minutos} minutos en Reunión`
             );
-
         }
 
     });
@@ -69,36 +63,53 @@ export default function Alertas({ asesores }) {
             }}
         >
 
-            <h2>🚨 Alertas</h2>
+            <h2
+                style={{
+                    color: "#dc3545",
+                    textAlign: "center",
+                    marginBottom: 15
+                }}
+            >
+                🚨 Alertas
+            </h2>
 
             {
+                alertas.length === 0 ? (
 
-                alertas.length === 0
+                    <p
+                        style={{
+                            textAlign: "center",
+                            margin: 0
+                        }}
+                    >
+                        ✅ No hay alertas activas.
+                    </p>
 
-                    ? (
+                ) : (
 
-                        <p>🟢 No hay alertas por el momento.</p>
+                    <ul
+                        style={{
+                            margin: 0,
+                            paddingLeft: 20
+                        }}
+                    >
+                        {
+                            alertas.map((alerta, index) => (
+                                <li
+                                    key={index}
+                                    style={{
+                                        marginBottom: 8,
+                                        color: "#dc3545",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    {alerta}
+                                </li>
+                            ))
+                        }
+                    </ul>
 
-                    )
-
-                    : (
-
-                        alertas.map((a, i) => (
-
-                            <p
-                                key={i}
-                                style={{
-                                    color: "#dc3545",
-                                    fontWeight: "bold"
-                                }}
-                            >
-                                {a}
-                            </p>
-
-                        ))
-
-                    )
-
+                )
             }
 
         </div>

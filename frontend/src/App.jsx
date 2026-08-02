@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import Login from "./pages/Login";
+import { useAuth } from "./context/AuthContext";
 import "./styles/app.css";
 import Dashboard from "./components/Dashboard";
 import api from "./services/api";
@@ -13,7 +15,11 @@ import WorkTimer from "./components/WorkTimer";
 import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
 function App() {
+const { usuario } = useAuth();
 
+if (!localStorage.getItem("token")) {
+    return <Login />;
+}
     const [asesores, setAsesores] = useState([]);
 
     const [asesor, setAsesor] = useState("");

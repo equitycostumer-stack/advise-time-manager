@@ -3,11 +3,15 @@ const db = require("../config/db");
 /*
 =========================================================
 EQUITY LINE PROFESSIONAL SERVICES
-CONTROL DE TIEMPO Y ASISTENCIA
+TIME MANAGER
 
-Controlador principal de movimientos.
+CONTROLADOR PRINCIPAL DE MOVIMIENTOS
 
-Estados:
+Este controlador administra toda la lógica relacionada con
+la jornada laboral de los asesores.
+
+Movimientos soportados:
+
 - ENTRADA
 - BREAK_INICIO
 - BREAK_FIN
@@ -20,57 +24,114 @@ Estados:
 - REUNION_INICIO
 - REUNION_FIN
 - SALIDA
+
+Autor:
+Equity Line Professional Services
+
 =========================================================
 */
 
 
-// =======================================================
-// CONFIGURACIÓN
-// =======================================================
+// ======================================================
+// CONSTANTES
+// ======================================================
 
-const obtenerConfiguracion = (callback) => {
+const ZONA_HORARIA = "America/Bogota";
 
-    const sql = `
-        SELECT
-            break_max,
-            almuerzo_max,
-            bano_max,
-            capacitacion_max,
-            reunion_max
-        FROM configuracion
-        WHERE id = 1
-        LIMIT 1
-    `;
+const TIPOS_MOVIMIENTO = Object.freeze({
 
-    db.query(sql, (err, rows) => {
+    ENTRADA: "ENTRADA",
 
-        if (err) {
-            console.error("Error obteniendo configuración:", err);
-            return callback(err, null);
-        }
+    BREAK_INICIO: "BREAK_INICIO",
+    BREAK_FIN: "BREAK_FIN",
 
-        if (!rows || rows.length === 0) {
-            return callback(
-                new Error("No existe configuración en la tabla configuracion."),
-                null
-            );
-        }
+    ALMUERZO_INICIO: "ALMUERZO_INICIO",
+    ALMUERZO_FIN: "ALMUERZO_FIN",
 
-        callback(null, rows[0]);
+    BANO_INICIO: "BANO_INICIO",
+    BANO_FIN: "BANO_FIN",
+
+    CAPACITACION_INICIO: "CAPACITACION_INICIO",
+    CAPACITACION_FIN: "CAPACITACION_FIN",
+
+    REUNION_INICIO: "REUNION_INICIO",
+    REUNION_FIN: "REUNION_FIN",
+
+    SALIDA: "SALIDA"
+
+});
+
+const ESTADOS = Object.freeze({
+
+    TRABAJANDO: "TRABAJANDO",
+
+    BREAK: "BREAK",
+
+    ALMUERZO: "ALMUERZO",
+
+    BANO: "BANO",
+
+    CAPACITACION: "CAPACITACION",
+
+    REUNION: "REUNION",
+
+    SALIDA: "SALIDA"
+
+});
+
+
+// ======================================================
+// FUNCIONES AUXILIARES
+// ======================================================
+// ======================================================
+// OBTENER CONFIGURACIÓN DEL SISTEMA
+// ======================================================
+
+const obtenerConfiguracion = () => {
+
+    return new Promise((resolve, reject) => {
+
+        const sql = `
+            SELECT
+                break_max,
+                almuerzo_max,
+                bano_max,
+                capacitacion_max,
+                reunion_max
+            FROM configuracion
+            WHERE id = 1
+            LIMIT 1
+        `;
+
+        db.query(sql, (error, rows) => {
+
+            if (error) {
+                return reject(error);
+            }
+
+            if (!rows || rows.length === 0) {
+                return reject(
+                    new Error(
+                        "No existe configuración en la tabla configuracion."
+                    )
+                );
+            }
+
+            resolve(rows[0]);
+
+        });
 
     });
 
 };
-
-
-// =======================================================
+// ======================================================
 // NORMALIZAR TIPO DE MOVIMIENTO
-// =======================================================
+// ======================================================
 
 const normalizarTipo = (tipo) => {
 
     if (!tipo) {
-        return null;
+        return "";
     }
 
     return String(tipo)
@@ -78,63 +139,43 @@ const normalizarTipo = (tipo) => {
         .toUpperCase();
 
 };
+// ======================================================
+// OBTENER ESTADO FINAL DEL ASESOR
+// ======================================================
 
+const obtenerEstadoFinal = (tipoMovimiento) => {
 
-// =======================================================
-// DETERMINAR ESTADO VISUAL
-// =======================================================
+    const tipo = normalizarTipo(tipoMovimiento);
 
-const obtenerEstadoFinal = (tipo) => {
+    const estados = {
 
-    switch (tipo) {
+        ENTRADA: ESTADOS.TRABAJANDO,
 
-        case "ENTRADA":
-            return "TRABAJANDO";
+        BREAK_INICIO: ESTADOS.BREAK,
+        BREAK_FIN: ESTADOS.TRABAJANDO,
 
-        case "BREAK_INICIO":
-            return "BREAK";
+        ALMUERZO_INICIO: ESTADOS.ALMUERZO,
+        ALMUERZO_FIN: ESTADOS.TRABAJANDO,
 
-        case "BREAK_FIN":
-            return "TRABAJANDO";
+        BANO_INICIO: ESTADOS.BANO,
+        BANO_FIN: ESTADOS.TRABAJANDO,
 
-        case "ALMUERZO_INICIO":
-            return "ALMUERZO";
+        CAPACITACION_INICIO: ESTADOS.CAPACITACION,
+        CAPACITACION_FIN: ESTADOS.TRABAJANDO,
 
-        case "ALMUERZO_FIN":
-            return "TRABAJANDO";
+        REUNION_INICIO: ESTADOS.REUNION,
+        REUNION_FIN: ESTADOS.TRABAJANDO,
 
-        case "BANO_INICIO":
-            return "BANO";
+        SALIDA: ESTADOS.SALIDA
 
-        case "BANO_FIN":
-            return "TRABAJANDO";
+    };
 
-        case "CAPACITACION_INICIO":
-            return "CAPACITACION";
-
-        case "CAPACITACION_FIN":
-            return "TRABAJANDO";
-
-        case "REUNION_INICIO":
-            return "REUNION";
-
-        case "REUNION_FIN":
-            return "TRABAJANDO";
-
-        case "SALIDA":
-            return "SALIDA";
-
-        default:
-            return tipo;
-
-    }
+    return estados[tipo] || null;
 
 };
-
-
-// =======================================================
-// HORARIO OFICIAL
-// =======================================================
+// ======================================================
+// OBTENER HORARIO OFICIAL
+// ======================================================
 
 const obtenerHorarioOficial = (fecha = new Date()) => {
 
@@ -142,1320 +183,996 @@ const obtenerHorarioOficial = (fecha = new Date()) => {
 
     switch (dia) {
 
+        // Domingo
         case 0:
+
             return null;
 
+        // Lunes a Jueves
         case 1:
         case 2:
         case 3:
         case 4:
+
             return {
+
                 nombre: "Lunes a Jueves",
+
                 inicio: "10:00",
+
                 fin: "19:00",
-                segundos: 9 * 60 * 60
+
+                jornadaMinutos: 540
+
             };
-
-        case 5:
-            return {
-                nombre: "Viernes",
-                inicio: "11:00",
-                fin: "19:00",
-                segundos: 8 * 60 * 60
-            };
-
-        case 6:
-            return {
-                nombre: "Sábado",
-                inicio: "09:00",
-                fin: "16:00",
-                segundos: 7 * 60 * 60
-            };
-
-        default:
-            return null;
-
-    }
-
-};
-
-
-// =======================================================
-// OBTENER MOVIMIENTO DE INICIO MÁS RECIENTE
-// =======================================================
-
-const obtenerInicioMovimiento = (
-    asesorId,
-    tipoInicio,
-    callback
-) => {
-
-    const sql = `
-        SELECT
-            id,
-            fecha_hora,
-            tipo
-        FROM movimientos
-        WHERE asesor_id = ?
-        AND DATE(fecha_hora) = CURDATE()
-        ORDER BY fecha_hora DESC
-        LIMIT 1
-    `;
-
-    db.query(
-        sql,
-        [asesorId, tipoInicio],
-        (err, rows) => {
-
-            if (err) {
-                return callback(err, null);
-            }
-
-            if (!rows || rows.length === 0) {
-                return callback(null, null);
-            }
-
-            callback(null, rows[0]);
-
-        }
-    );
-
-};
-
-
-// =======================================================
+// ======================================================
 // CALCULAR DURACIÓN ENTRE DOS FECHAS
-// =======================================================
+// ======================================================
 
 const calcularDuracion = (inicio, fin) => {
 
-    const fechaInicio = new Date(inicio);
-    const fechaFin = new Date(fin);
-
-    const diferenciaMs =
-        fechaFin.getTime() - fechaInicio.getTime();
-
-    if (diferenciaMs < 0) {
+    if (!inicio || !fin) {
 
         return {
+
             milisegundos: 0,
             segundos: 0,
             minutos: 0,
             horas: 0,
             texto: "00:00:00"
+
         };
 
     }
 
-    const segundosTotales =
-        Math.floor(diferenciaMs / 1000);
+    const fechaInicio = new Date(inicio);
+    const fechaFin = new Date(fin);
 
-    const horas =
-        Math.floor(segundosTotales / 3600);
+    if (
 
-    const minutos =
-        Math.floor((segundosTotales % 3600) / 60);
+        Number.isNaN(fechaInicio.getTime()) ||
 
-    const segundos =
-        segundosTotales % 60;
+        Number.isNaN(fechaFin.getTime())
+
+    ) {
+
+        return {
+
+            milisegundos: 0,
+            segundos: 0,
+            minutos: 0,
+            horas: 0,
+            texto: "00:00:00"
+
+        };
+
+    }
+
+    const diferencia = fechaFin.getTime() - fechaInicio.getTime();
+
+    if (diferencia <= 0) {
+
+        return {
+
+            milisegundos: 0,
+            segundos: 0,
+            minutos: 0,
+            horas: 0,
+            texto: "00:00:00"
+
+        };
+
+    }
+
+    const segundosTotales = Math.floor(diferencia / 1000);
+
+    const horas = Math.floor(segundosTotales / 3600);
+
+    const minutos = Math.floor(segundosTotales / 60);
+
+    const segundos = segundosTotales % 60;
+
+    const minutosReloj = Math.floor((segundosTotales % 3600) / 60);
 
     const texto =
+
         String(horas).padStart(2, "0") +
+
         ":" +
-        String(minutos).padStart(2, "0") +
+
+        String(minutosReloj).padStart(2, "0") +
+
         ":" +
+
         String(segundos).padStart(2, "0");
 
     return {
 
-        milisegundos: diferenciaMs,
+        milisegundos: diferencia,
+
         segundos: segundosTotales,
-        minutos: Math.floor(segundosTotales / 60),
+
+        minutos,
+
         horas,
+
         texto
 
     };
 
 };
+        // Viernes
+        case 5:
 
+            return {
 
-// =======================================================
-// REGISTRAR MOVIMIENTO
-// =======================================================
+                nombre: "Viernes",
 
-const registrarMovimiento = (req, res) => {
+                inicio: "11:00",
 
-    const {
-        asesor_id,
-        tipo,
-        observacion
-    } = req.body;
+                fin: "19:00",
 
-    // ---------------------------------------------------
-    // VALIDACIÓN
-    // ---------------------------------------------------
+                jornadaMinutos: 480
 
-    if (!asesor_id || !tipo) {
+            };
 
-        return res.status(400).json({
+        // Sábado
+        case 6:
 
-            ok: false,
+            return {
 
-            error:
-                "Faltan datos. Se necesita asesor_id y tipo."
+                nombre: "Sábado",
 
-        });
+                inicio: "09:00",
+
+                fin: "16:00",
+
+                jornadaMinutos: 420
+
+            };
+
+        default:
+
+            return null;
 
     }
 
-    const tipoNormalizado =
-        normalizarTipo(tipo);
+};
+// ======================================================
+// OBTENER MOVIMIENTO DE INICIO
+// ======================================================
+
+const obtenerInicioMovimiento = async (asesorId, tipoInicio) => {
+
+    const tipo = normalizarTipo(tipoInicio);
 
     const tiposPermitidos = [
 
-        "ENTRADA",
+        TIPOS_MOVIMIENTO.BREAK_INICIO,
 
-        "BREAK_INICIO",
-        "BREAK_FIN",
+        TIPOS_MOVIMIENTO.ALMUERZO_INICIO,
 
-        "ALMUERZO_INICIO",
-        "ALMUERZO_FIN",
+        TIPOS_MOVIMIENTO.BANO_INICIO,
 
-        "BANO_INICIO",
-        "BANO_FIN",
+        TIPOS_MOVIMIENTO.CAPACITACION_INICIO,
 
-        "CAPACITACION_INICIO",
-        "CAPACITACION_FIN",
-
-        "REUNION_INICIO",
-        "REUNION_FIN",
-
-        "SALIDA"
+        TIPOS_MOVIMIENTO.REUNION_INICIO
 
     ];
 
-    if (!tiposPermitidos.includes(tipoNormalizado)) {
+    if (!tiposPermitidos.includes(tipo)) {
 
-        return res.status(400).json({
-
-            ok: false,
-
-            error:
-                "Tipo de movimiento no válido: " +
-                tipoNormalizado
-
-        });
+        throw new Error(`Tipo de inicio inválido: ${tipo}`);
 
     }
 
-    // ---------------------------------------------------
-    // COMPROBAR QUE EL ASESOR EXISTE
-    // ---------------------------------------------------
+    const sql = `
 
-    const asesorSql = `
         SELECT
+
             id,
-            nombre,
-            activo
-        FROM asesores
-        WHERE id = ?
+
+            asesor_id,
+
+            tipo,
+
+            fecha_hora,
+
+            observacion
+
+        FROM movimientos
+
+        WHERE asesor_id = ?
+
+        AND tipo = ?
+
+        AND DATE(fecha_hora) = CURDATE()
+
+        ORDER BY
+
+            fecha_hora DESC,
+
+            id DESC
+
         LIMIT 1
+
     `;
 
-    db.query(
-        asesorSql,
-        [asesor_id],
-        (asesorError, asesores) => {
+    return new Promise((resolve, reject) => {
 
-            if (asesorError) {
+        db.query(
 
-                console.error(
-                    "Error buscando asesor:",
-                    asesorError
-                );
+            sql,
 
-                return res.status(500).json({
+            [
 
-                    ok: false,
+                asesorId,
 
-                    error:
-                        "Error consultando el asesor."
+                tipo
 
-                });
+            ],
 
-            }
+            (error, rows) => {
 
-            if (!asesores || asesores.length === 0) {
+                if (error) {
 
-                return res.status(404).json({
+                    return reject(error);
 
-                    ok: false,
+                }
 
-                    error:
-                        "El asesor no existe."
+                if (!rows || rows.length === 0) {
 
-                });
+                    return resolve(null);
+
+                }
+
+                resolve(rows[0]);
 
             }
 
-            const asesor = asesores[0];
-
-            // ---------------------------------------------------
-            // OBTENER ESTADO ACTUAL
-            // ---------------------------------------------------
-
-            const estadoSql = `
-                SELECT
-                    asesor_id,
-                    estado,
-                    inicio_estado,
-                    inicio_jornada,
-                    ultima_actualizacion
-                FROM estados_actuales
-                WHERE asesor_id = ?
-                LIMIT 1
-            `;
-
-            db.query(
-                estadoSql,
-                [asesor_id],
-                (estadoError, estados) => {
-
-                    if (estadoError) {
-
-                        console.error(
-                            "Error consultando estado:",
-                            estadoError
-                        );
-
-                        return res.status(500).json({
-
-                            ok: false,
-
-                            error:
-                                "Error consultando estado actual."
-
-                        });
-
-                    }
-
-                    const estadoActual =
-                        estados && estados.length > 0
-                            ? String(estados[0].estado).toUpperCase()
-                            : null;
-
-                    const estadosDePausa = [
-
-                        "BREAK",
-                        "BREAK_INICIO",
-
-                        "ALMUERZO",
-                        "ALMUERZO_INICIO",
-
-                        "BANO",
-                        "BANO_INICIO",
-
-                        "CAPACITACION",
-                        "CAPACITACION_INICIO",
-
-                        "REUNION",
-                        "REUNION_INICIO"
-
-                    ];
-
-                    // ---------------------------------------------------
-                    // VALIDAR ENTRADA
-                    // ---------------------------------------------------
-
-                    if (tipoNormalizado === "ENTRADA") {
-
-                        if (
-                            estadoActual &&
-                            estadoActual !== "SALIDA" &&
-                            estadoActual !== "DISPONIBLE"
-                        ) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "El asesor ya tiene una jornada activa."
-
-                            });
-
-                        }
-
-                    }
-
-                    // ---------------------------------------------------
-                    // VALIDAR SALIDA
-                    // ---------------------------------------------------
-
-                    if (tipoNormalizado === "SALIDA") {
-
-                        if (
-                            !estadoActual ||
-                            estadoActual === "SALIDA" ||
-                            estadoActual === "DISPONIBLE"
-                        ) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "El asesor no tiene una jornada activa."
-
-                            });
-
-                        }
-
-                        if (
-                            estadosDePausa.includes(estadoActual)
-                        ) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "Debe finalizar la pausa actual antes de marcar la salida."
-
-                            });
-
-                        }
-
-                    }
-
-                    // ---------------------------------------------------
-                    // INICIO DE PAUSAS
-                    // ---------------------------------------------------
-
-                    const esInicioPausa = [
-
-                        "BREAK_INICIO",
-                        "ALMUERZO_INICIO",
-                        "BANO_INICIO",
-                        "CAPACITACION_INICIO",
-                        "REUNION_INICIO"
-
-                    ].includes(tipoNormalizado);
-
-                    if (esInicioPausa) {
-
-                        if (
-                            !estadoActual ||
-                            estadoActual === "SALIDA" ||
-                            estadoActual === "DISPONIBLE"
-                        ) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "El asesor no tiene una jornada activa."
-
-                            });
-
-                        }
-
-                        if (estadosDePausa.includes(estadoActual)) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "El asesor ya tiene una pausa activa."
-
-                            });
-
-                        }
-
-                    }
-
-                    // ---------------------------------------------------
-                    // FIN DE PAUSAS
-                    // ---------------------------------------------------
-
-                    const mapaFinales = {
-
-                        BREAK_FIN: {
-                            inicio: "BREAK_INICIO",
-                            estado: "BREAK"
-                        },
-
-                        ALMUERZO_FIN: {
-                            inicio: "ALMUERZO_INICIO",
-                            estado: "ALMUERZO"
-                        },
-
-                        BANO_FIN: {
-                            inicio: "BANO_INICIO",
-                            estado: "BANO"
-                        },
-
-                        CAPACITACION_FIN: {
-                            inicio: "CAPACITACION_INICIO",
-                            estado: "CAPACITACION"
-                        },
-
-                        REUNION_FIN: {
-                            inicio: "REUNION_INICIO",
-                            estado: "REUNION"
-                        }
-
-                    };
-
-                    const configuracionFinal =
-                        mapaFinales[tipoNormalizado];
-
-                    if (configuracionFinal) {
-
-                        if (
-                            !estadoActual ||
-                            estadoActual !== configuracionFinal.estado
-                        ) {
-
-                            return res.status(400).json({
-
-                                ok: false,
-
-                                error:
-                                    "No existe una pausa activa de este tipo."
-
-                            });
-
-                        }
-
-                    }
-
-                    // ---------------------------------------------------
-                    // OBTENER CONFIGURACIÓN
-                    // ---------------------------------------------------
-
-                    obtenerConfiguracion((configError, config) => {
-
-                        if (configError) {
-
-                            console.error(
-                                "Error configuración:",
-                                configError
-                            );
-
-                            return res.status(500).json({
-
-                                ok: false,
-
-                                error:
-                                    "No se pudo obtener la configuración."
-
-                            });
-
-                        }
-
-                        // ---------------------------------------------------
-                        // INSERTAR MOVIMIENTO
-                        // ---------------------------------------------------
-
-                        const insertSql = `
-                            INSERT INTO movimientos
-                            (
-                                asesor_id,
-                                tipo,
-                                fecha_hora,
-                                observacion
-                            )
-                            VALUES
-                            (?, ?, NOW(), ?)
-                        `;
-
-                        db.query(
-
-                            insertSql,
-
-                            [
-                                asesor_id,
-                                tipoNormalizado,
-                                observacion || null
-                            ],
-
-                            (insertError, insertResult) => {
-
-                                if (insertError) {
-
-                                    console.error(
-                                        "Error insertando movimiento:",
-                                        insertError
-                                    );
-
-                                    return res.status(500).json({
-
-                                        ok: false,
-
-                                        error:
-                                            "No fue posible registrar el movimiento."
-
-                                    });
-
-                                }
-
-                                // ---------------------------------------------------
-                                // ACTUALIZAR ESTADO
-                                // ---------------------------------------------------
-
-                                const nuevoEstado =
-                                    obtenerEstadoFinal(tipoNormalizado);
-
-                                let updateEstadoSql;
-                                let updateParams;
-
-                                if (tipoNormalizado === "ENTRADA") {
-
-                                    updateEstadoSql = `
-                                        INSERT INTO estados_actuales
-                                        (
-                                            asesor_id,
-                                            estado,
-                                            inicio_estado,
-                                            inicio_jornada
-                                        )
-                                        VALUES
-                                        (?, ?, NOW(), NOW())
-                                        ON DUPLICATE KEY UPDATE
-                                            estado = VALUES(estado),
-                                            inicio_estado = NOW(),
-                                            inicio_jornada = NOW(),
-                                            ultima_actualizacion = CURRENT_TIMESTAMP
-                                    `;
-
-                                    updateParams = [
-                                        asesor_id,
-                                        nuevoEstado
-                                    ];
-
-                                } else {
-
-                                    updateEstadoSql = `
-                                        UPDATE estados_actuales
-                                        SET
-                                            estado = ?,
-                                            inicio_estado = NOW(),
-                                            ultima_actualizacion = CURRENT_TIMESTAMP
-                                        WHERE asesor_id = ?
-                                    `;
-
-                                    updateParams = [
-                                        nuevoEstado,
-                                        asesor_id
-                                    ];
-
-                                }
-
-                                db.query(
-
-                                    updateEstadoSql,
-                                    updateParams,
-
-                                    (estadoUpdateError) => {
-
-                                        if (estadoUpdateError) {
-
-                                            console.error(
-                                                "Error actualizando estado:",
-                                                estadoUpdateError
-                                            );
-
-                                            return res.status(500).json({
-
-                                                ok: false,
-
-                                                error:
-                                                    "Movimiento guardado, pero no fue posible actualizar el estado."
-
-                                            });
-
-                                        }
-
-// ---------------------------------------------------
-// RESPUESTA ENTRADA
-// ---------------------------------------------------
-
-if (tipoNormalizado === "ENTRADA") {
-
-    return res.json({
-
-        ok: true,
-
-        mensaje: "Entrada registrada correctamente.",
-
-        asesor: {
-            id: asesor.id,
-            nombre: asesor.nombre
-        },
-
-        movimiento: {
-            id: insertResult.insertId,
-            tipo: tipoNormalizado
-        },
-
-        estado: nuevoEstado
+        );
 
     });
 
-}
-
-// ---------------------------------------------------
-// SI ES SALIDA
-// ---------------------------------------------------
-
-if (tipoNormalizado === "SALIDA") {
-
-    return obtenerResumenJornada(
-
-        asesor_id,
-
-        (resumenError, resumen) => {
-
-            if (resumenError) {
-
-                console.error(
-                    "Error calculando resumen:",
-                    resumenError
-                );
-
-                return res.json({
-
-                    ok: true,
-
-                    mensaje:
-                        "Salida registrada, pero no fue posible calcular el resumen.",
-
-                    estado: nuevoEstado
-
-                });
-
-            }
-
-            return res.json({
-
-                ok: true,
-
-                mensaje:
-                    "Salida registrada correctamente.",
-
-                asesor: {
-
-                    id: asesor.id,
-
-                    nombre: asesor.nombre
-
-                },
-
-                estado: nuevoEstado,
-
-                resumen
-
-            });
-
-        }
-
-    );
-
-}
-
-
-// ---------------------------------------------------
-// SI ES FIN DE PAUSA
-// ---------------------------------------------------
-
-if (configuracionFinal) {
-
-    return obtenerInicioMovimiento(
-
-        asesor_id,
-
-        configuracionFinal.inicio,
-
-        (inicioError, movimientoInicio) => {
-
-            if (inicioError) {
-
-                console.error(
-                    "Error buscando inicio:",
-                    inicioError
-                );
-
-                return res.json({
-
-                    ok: true,
-
-                    mensaje: "Movimiento registrado.",
-
-                    estado: nuevoEstado
-
-                });
-
-            }
-
-            if (!movimientoInicio) {
-
-                return res.json({
-
-                    ok: true,
-
-                    mensaje:
-                        "Movimiento registrado, pero no se encontró el inicio correspondiente.",
-
-                    estado: nuevoEstado
-
-                });
-
-            }
-
-            const ahora = new Date();
-
-            const duracion = calcularDuracion(
-
-                movimientoInicio.fecha_hora,
-
-                ahora
-
-            );
-
-            let limite = 0;
-
-            switch (tipoNormalizado) {
-
-                case "BREAK_FIN":
-                    limite = Number(config.break_max);
-                    break;
-
-                case "ALMUERZO_FIN":
-                    limite = Number(config.almuerzo_max);
-                    break;
-
-                case "BANO_FIN":
-                    limite = Number(config.bano_max);
-                    break;
-
-                case "CAPACITACION_FIN":
-                    limite = Number(config.capacitacion_max);
-                    break;
-
-                case "REUNION_FIN":
-                    limite = Number(config.reunion_max);
-                    break;
-
-            }
-
-            const excedido = duracion.minutos > limite;
-
-            return res.json({
-
-                ok: true,
-
-                mensaje:
-                    "Movimiento registrado correctamente.",
-
-                asesor: {
-
-                    id: asesor.id,
-
-                    nombre: asesor.nombre
-
-                },
-
-                movimiento: {
-
-                    id: insertResult.insertId,
-
-                    tipo: tipoNormalizado
-
-                },
-
-                estado: nuevoEstado,
-
-                duracion: {
-
-                    segundos: duracion.segundos,
-
-                    minutos: duracion.minutos,
-
-                    texto: duracion.texto
-
-                },
-
-                limite_minutos: limite,
-
-                excedido
-
-            });
-
-        }
-
-    );
-
-}
-
-
-// ---------------------------------------------------
-// OTROS MOVIMIENTOS
-// ---------------------------------------------------
-
-return res.json({
-
-    ok: true,
-
-    mensaje: "Movimiento registrado correctamente.",
-
-    asesor: {
-
-        id: asesor.id,
-
-        nombre: asesor.nombre
-
-    },
-
-    movimiento: {
-
-        id: insertResult.insertId,
-
-        tipo: tipoNormalizado
-
-    },
-
-    estado: nuevoEstado
-
-});
-
-                                    }
-
-                                );
-
-                            }
-
-                        );
-
-                    });
-
-                }
-
-            );
-
-        }
-
-    );
-
 };
-    // =======================================================
-    // OBTENER HISTORIAL
-    // =======================================================
+// ======================================================
+// OBTENER ASESOR
+// ======================================================
 
-    const obtenerHistorial = (req, res) => {
+const obtenerAsesor = async (asesorId) => {
 
-        const { asesorId } = req.params;
+    return new Promise((resolve, reject) => {
 
         const sql = `
-        SELECT
-            id,
-            asesor_id,
-            tipo,
-            fecha_hora,
-            observacion
-        FROM movimientos
-        WHERE asesor_id = ?
-AND DATE(fecha_hora) = CURDATE()
-ORDER BY fecha_hora DESC
-    `;
+
+            SELECT
+
+                id,
+
+                nombre,
+
+                activo
+
+            FROM asesores
+
+            WHERE id = ?
+
+            LIMIT 1
+
+        `;
 
         db.query(
+
             sql,
+
             [asesorId],
-            (err, rows) => {
 
-                if (err) {
+            (error, rows) => {
 
-                    console.error(
-                        "Error obteniendo historial:",
-                        err
-                    );
+                if (error) {
 
-                    return res.status(500).json({
-
-                        ok: false,
-
-                        error:
-                            "No fue posible obtener el historial."
-
-                    });
+                    return reject(error);
 
                 }
 
-                return res.json(rows);
+                if (!rows || rows.length === 0) {
+
+                    return resolve(null);
+
+                }
+
+                resolve(rows[0]);
 
             }
+
         );
 
-    };
+    });
 
+};
+// ======================================================
+// OBTENER ESTADO ACTUAL DEL ASESOR
+// ======================================================
 
-    // =======================================================
-    // OBTENER ESTADO ACTUAL
-    // =======================================================
+const obtenerEstadoActualDB = async (asesorId) => {
 
-    const obtenerEstadoActual = (req, res) => {
-
-        const { asesorId } = req.params;
+    return new Promise((resolve, reject) => {
 
         const sql = `
-        SELECT
+
+            SELECT
+
+                asesor_id,
+
+                estado,
+
+                inicio_estado,
+
+                inicio_jornada,
+
+                ultima_actualizacion
+
+            FROM estados_actuales
+
+            WHERE asesor_id = ?
+
+            LIMIT 1
+
+        `;
+
+        db.query(
+
+            sql,
+
+            [asesorId],
+
+            (error, rows) => {
+
+                if (error) {
+
+                    return reject(error);
+
+                }
+
+                if (!rows || rows.length === 0) {
+
+                    return resolve(null);
+
+                }
+
+                resolve(rows[0]);
+
+            }
+
+        );
+
+    });
+
+};
+// ======================================================
+// INSERTAR MOVIMIENTO
+// ======================================================
+
+const insertarMovimiento = async ({
+    asesor_id,
+    tipo,
+    observacion = ""
+}) => {
+
+    const sql = `
+        INSERT INTO movimientos
+        (
+            asesor_id,
+            tipo,
+            observacion
+        )
+        VALUES
+        (
+            ?,
+            ?,
+            ?
+        )
+    `;
+
+    return new Promise((resolve, reject) => {
+
+        db.query(
+
+            sql,
+
+            [
+                asesor_id,
+                tipo,
+                observacion
+            ],
+
+            (error, resultado) => {
+
+                if (error) {
+                    return reject(error);
+                }
+
+                resolve({
+                    id: resultado.insertId
+                });
+
+            }
+
+        );
+
+    });
+
+};
+// ======================================================
+// ACTUALIZAR ESTADO ACTUAL
+// ======================================================
+
+const actualizarEstadoActual = async ({
+    asesor_id,
+    estado,
+    inicio_estado,
+    inicio_jornada = null
+}) => {
+
+    const sql = `
+        INSERT INTO estados_actuales
+        (
             asesor_id,
             estado,
             inicio_estado,
             inicio_jornada,
             ultima_actualizacion
-        FROM estados_actuales
-        WHERE asesor_id = ?
-        LIMIT 1
+        )
+        VALUES
+        (
+            ?,
+            ?,
+            ?,
+            ?,
+            NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+
+            estado = VALUES(estado),
+
+            inicio_estado = VALUES(inicio_estado),
+
+            inicio_jornada = COALESCE(
+                VALUES(inicio_jornada),
+                inicio_jornada
+            ),
+
+            ultima_actualizacion = NOW()
     `;
 
-        db.query(sql, [asesorId], (err, rows) => {
+    return new Promise((resolve, reject) => {
 
-            if (err) {
+        db.query(
 
-                console.error(
-                    "Error obteniendo estado actual:",
-                    err
-                );
+            sql,
 
-                return res.status(500).json({
+            [
 
-                    ok: false,
+                asesor_id,
 
-                    error:
-                        "No fue posible obtener el estado actual."
+                estado,
 
-                });
+                inicio_estado,
+
+                inicio_jornada
+
+            ],
+
+            (error) => {
+
+                if (error) {
+
+                    return reject(error);
+
+                }
+
+                resolve();
 
             }
 
-            if (!rows || rows.length === 0) {
-                return res.json(null);
-            }
+        );
 
-            const estado = rows[0];
+    });
 
-            return res.json({
+};
+// ======================================================
+// VALIDAR MOVIMIENTO
+// ======================================================
 
-                asesor_id: estado.asesor_id,
+const validarMovimiento = ({
+    tipoMovimiento,
+    estadoActual
+}) => {
 
-                estado: estado.estado,
+    // ==========================================
+    // ENTRADA
+    // ==========================================
 
-                inicio_estado: estado.inicio_estado,
+    if (tipoMovimiento === TIPOS_MOVIMIENTO.ENTRADA) {
 
-                inicio_jornada: estado.inicio_jornada,
+        if (
+            estadoActual &&
+            estadoActual.estado !== "SALIDA"
+        ) {
 
-                ultima_actualizacion: estado.ultima_actualizacion
+            return {
+
+                ok: false,
+
+                mensaje:
+                    `El asesor ya se encuentra en estado ${estadoActual.estado}.`
+
+            };
+
+        }
+
+    }
+
+    // ==========================================
+    // BREAK INICIO
+    // ==========================================
+
+    if (tipoMovimiento === TIPOS_MOVIMIENTO.BREAK_INICIO) {
+
+        if (!estadoActual) {
+
+            return {
+
+                ok: false,
+
+                mensaje: "Debe registrar primero la entrada."
+
+            };
+
+        }
+
+        if (estadoActual.estado !== "TRABAJANDO") {
+
+            return {
+
+                ok: false,
+
+                mensaje:
+                    "Solo puede iniciar Break mientras está trabajando."
+
+            };
+
+        }
+
+    }
+
+    // ==========================================
+    // TODO CORRECTO
+    // ==========================================
+
+    return {
+
+        ok: true
+
+    };
+
+};
+// ======================================================
+// REGISTRAR MOVIMIENTO
+// ======================================================
+
+// ======================================================
+// REGISTRAR MOVIMIENTO
+// ======================================================
+
+const registrarMovimiento = async (req, res) => {
+
+    try {
+
+        // ==================================================
+        // 1. OBTENER DATOS DEL REQUEST
+        // ==================================================
+
+        const {
+
+            asesor_id,
+
+            tipo,
+
+            observacion = ""
+
+        } = req.body;
+
+        // ==================================================
+        // 2. NORMALIZAR TIPO
+        // ==================================================
+
+        const tipoMovimiento = normalizarTipo(tipo);
+
+        // ==================================================
+// 3. VALIDACIONES
+// ==================================================
+
+// Validar asesor_id
+if (!asesor_id) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "Debe enviar el asesor_id."
+
+    });
+
+}
+
+if (!Number.isInteger(Number(asesor_id))) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "El asesor_id debe ser un número válido."
+
+    });
+
+}
+
+// Validar tipo
+if (!tipoMovimiento) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "Debe enviar el tipo de movimiento."
+
+    });
+
+}
+
+// Verificar que el tipo exista
+if (!Object.values(TIPOS_MOVIMIENTO).includes(tipoMovimiento)) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: `Movimiento no permitido: ${tipoMovimiento}`
+
+    });
+
+}
+
+// Validar observación
+if (typeof observacion !== "string") {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "La observación debe ser un texto."
+
+    });
+
+}
+
+if (observacion.length > 255) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "La observación no puede superar los 255 caracteres."
+
+    });
+
+}
+
+        // (Aquí irán todas las validaciones)
+
+        // ==================================================
+        // 4. OBTENER CONFIGURACIÓN
+        // ==================================================
+
+        // (Aquí consultaremos la tabla configuracion)
+
+        // ==================================================
+// 5. BUSCAR ASESOR
+// ==================================================
+
+const asesor = await obtenerAsesor(asesor_id);
+
+if (!asesor) {
+
+    return res.status(404).json({
+
+        ok: false,
+
+        mensaje: "El asesor no existe."
+
+    });
+
+}
+
+if (!asesor.activo) {
+
+    return res.status(400).json({
+
+        ok: false,
+
+        mensaje: "El asesor está inactivo."
+
+    });
+
+}
+
+// ==================================================
+// 6. OBTENER ESTADO ACTUAL
+// ==================================================
+
+const estadoActual = await obtenerEstadoActualDB(asesor_id);
+
+        // ==================================================
+// 7. VALIDAR MOVIMIENTO
+// ==================================================
+
+const validacion = validarMovimiento({
+
+    tipoMovimiento,
+
+    estadoActual
+
+});
+
+if (!validacion.ok) {
+
+    return res.status(400).json(validacion);
+
+}
+// ======================================================
+// PROCESAR MOVIMIENTO
+// ======================================================
+
+const procesarMovimiento = async ({
+    asesor,
+    estadoActual,
+    configuracion,
+    tipoMovimiento,
+    observacion
+}) => {
+
+    switch (tipoMovimiento) {
+
+        case TIPOS_MOVIMIENTO.ENTRADA:
+
+            return await procesarEntrada({
+
+                asesor,
+                configuracion,
+                observacion
 
             });
 
+        case TIPOS_MOVIMIENTO.BREAK_INICIO:
+
+            return await procesarBreakInicio({
+
+                asesor,
+                estadoActual,
+                configuracion,
+                observacion
+
+            });
+
+        case TIPOS_MOVIMIENTO.BREAK_FIN:
+
+            return await procesarBreakFin({
+
+                asesor,
+                estadoActual,
+                configuracion,
+                observacion
+
+            });
+
+        default:
+
+            throw new Error(
+
+                `Movimiento no implementado: ${tipoMovimiento}`
+
+            );
+
+    }
+
+};
+// ======================================================
+// PROCESAR ENTRADA
+// ======================================================
+
+const procesarEntrada = async () => {
+
+    return {
+
+        estado: "TRABAJANDO"
+
+    };
+
+};
+
+// ======================================================
+// PROCESAR BREAK INICIO
+// ======================================================
+
+const procesarBreakInicio = async () => {
+
+    return {
+
+        estado: "BREAK"
+
+    };
+
+};
+
+// ======================================================
+// PROCESAR BREAK FIN
+// ======================================================
+
+const procesarBreakFin = async () => {
+
+    return {
+
+        estado: "TRABAJANDO"
+
+    };
+
+};
+        // ==================================================
+        // 8. REGISTRAR MOVIMIENTO
+       // ==================================================
+// ==================================================
+// 8. PROCESAR MOVIMIENTO
+// ==================================================
+
+const resultado = await procesarMovimiento({
+
+    asesor,
+
+    estadoActual,
+
+    configuracion,
+
+    tipoMovimiento,
+
+    observacion
+
+});
+const movimiento = await insertarMovimiento({
+
+    asesor_id,
+
+    tipo: tipoMovimiento,
+
+    observacion
+
+});
+
+        // ==================================================
+// 9. ACTUALIZAR ESTADO
+// ==================================================
+
+await actualizarEstadoActual({
+
+    asesor_id,
+
+    estado: resultado.estado,
+
+    inicio_estado: new Date(),
+
+    inicio_jornada:
+
+        tipoMovimiento === TIPOS_MOVIMIENTO.ENTRADA
+
+            ? new Date()
+
+            : null
+
+});
+
+        // ==================================================
+        // 10. RESPUESTA
+        // ==================================================
+
+        return res.status(200).json({
+
+            ok: true,
+
+            mensaje: "Estructura creada correctamente."
+
         });
 
-    };
-    // =======================================================
-    // RESUMEN DE JORNADA
-    // =======================================================
-
-    const obtenerResumenJornada = (
-        asesorId,
-        callback
-    ) => {
-
-        const sql = `
-        SELECT
-            tipo,
-            fecha_hora
-        FROM movimientos
-        WHERE asesor_id = ?
-          AND DATE(fecha_hora) = CURDATE()
-        ORDER BY fecha_hora ASC
-    `;
-
-        db.query(
-            sql,
-            [asesorId],
-            (err, movimientos) => {
-
-                if (err) {
-                    return callback(err, null);
-                }
-
-                if (!movimientos || movimientos.length === 0) {
-
-                    return callback(null, {
-
-                        jornada_total: "00:00:00",
-                        break_total: "00:00:00",
-                        almuerzo_total: "00:00:00",
-                        bano_total: "00:00:00",
-                        capacitacion_total: "00:00:00",
-                        reunion_total: "00:00:00",
-                        tiempo_productivo: "00:00:00",
-
-                        horario_oficial: null,
-                        tiempo_esperado: "00:00:00",
-                        diferencia: "00:00:00",
-                        cumplio_jornada: false
-
-                    });
-
-                }
-
-                let entrada = null;
-                let salida = null;
-
-                let breakSegundos = 0;
-                let almuerzoSegundos = 0;
-                let banoSegundos = 0;
-                let capacitacionSegundos = 0;
-                let reunionSegundos = 0;
-
-                let breakInicio = null;
-                let almuerzoInicio = null;
-                let banoInicio = null;
-                let capacitacionInicio = null;
-                let reunionInicio = null;
-
-                const horarioOficial =
-                    obtenerHorarioOficial(new Date());
-                movimientos.forEach((movimiento) => {
-
-                    const tipo = String(movimiento.tipo).toUpperCase();
-                    const fecha = new Date(movimiento.fecha_hora);
-
-                    switch (tipo) {
-
-                        case "ENTRADA":
-                            if (!entrada) entrada = fecha;
-                            break;
-
-                        case "SALIDA":
-                            salida = fecha;
-                            break;
-
-                        case "BREAK_INICIO":
-                            breakInicio = fecha;
-                            break;
-
-                        case "BREAK_FIN":
-                            if (breakInicio) {
-                                breakSegundos += Math.max(
-                                    0,
-                                    (fecha - breakInicio) / 1000
-                                );
-                                breakInicio = null;
-                            }
-                            break;
-
-                        case "ALMUERZO_INICIO":
-                            almuerzoInicio = fecha;
-                            break;
-
-                        case "ALMUERZO_FIN":
-                            if (almuerzoInicio) {
-                                almuerzoSegundos += Math.max(
-                                    0,
-                                    (fecha - almuerzoInicio) / 1000
-                                );
-                                almuerzoInicio = null;
-                            }
-                            break;
-
-                        case "BANO_INICIO":
-                            banoInicio = fecha;
-                            break;
-
-                        case "BANO_FIN":
-                            if (banoInicio) {
-                                banoSegundos += Math.max(
-                                    0,
-                                    (fecha - banoInicio) / 1000
-                                );
-                                banoInicio = null;
-                            }
-                            break;
-
-                        case "CAPACITACION_INICIO":
-                            capacitacionInicio = fecha;
-                            break;
-
-                        case "CAPACITACION_FIN":
-                            if (capacitacionInicio) {
-                                capacitacionSegundos += Math.max(
-                                    0,
-                                    (fecha - capacitacionInicio) / 1000
-                                );
-                                capacitacionInicio = null;
-                            }
-                            break;
-
-                        case "REUNION_INICIO":
-                            reunionInicio = fecha;
-                            break;
-
-                        case "REUNION_FIN":
-                            if (reunionInicio) {
-                                reunionSegundos += Math.max(
-                                    0,
-                                    (fecha - reunionInicio) / 1000
-                                );
-                                reunionInicio = null;
-                            }
-                            break;
-
-                    }
-
-                });
-
-                if (entrada && !salida) {
-                    salida = new Date();
-                }
-
-                let jornadaSegundos = 0;
-
-                if (entrada && salida) {
-
-                    jornadaSegundos = Math.max(
-                        0,
-                        (salida - entrada) / 1000
-                    );
-
-                }
-
-                // El almuerzo NO hace parte de la jornada laboral
-                const jornadaLaboralSegundos = Math.max(
-                    0,
-                    jornadaSegundos - almuerzoSegundos
-                );
-
-                // El tiempo productivo descuenta únicamente el break
-                const productivoSegundos = Math.max(
-                    0,
-                    jornadaLaboralSegundos - breakSegundos
-                );
-
-                let diferenciaSegundos = 0;
-
-                if (horarioOficial) {
-                    diferenciaSegundos =
-                        jornadaLaboralSegundos -
-                        horarioOficial.segundos;
-                }
-                callback(null, {
-
-                    jornada_total: segundosATiempo(
-                        jornadaLaboralSegundos
-                    ),
+    } catch (error) {
 
-                    break_total: segundosATiempo(
-                        breakSegundos
-                    ),
+        console.error(error);
 
-                    almuerzo_total: segundosATiempo(
-                        almuerzoSegundos
-                    ),
+        return res.status(500).json({
 
-                    bano_total: segundosATiempo(
-                        banoSegundos
-                    ),
+            ok: false,
 
-                    capacitacion_total: segundosATiempo(
-                        capacitacionSegundos
-                    ),
+            mensaje: "Error interno del servidor.",
 
-                    reunion_total: segundosATiempo(
-                        reunionSegundos
-                    ),
+            error: error.message
 
-                    tiempo_productivo: segundosATiempo(
-                        productivoSegundos
-                    ),
+        });
 
-                    horario_oficial: horarioOficial,
+    }
 
-                    tiempo_esperado: horarioOficial
-                        ? segundosATiempo(
-                            horarioOficial.segundos
-                        )
-                        : "00:00:00",
+};
 
-                    diferencia: segundosATiempo(
-                        Math.abs(diferenciaSegundos)
-                    ),
+// ======================================================
+// OBTENER ESTADO ACTUAL
+// ======================================================
 
-                    cumplio_jornada:
-                        diferenciaSegundos >= 0
+const obtenerEstadoActual = (req, res) => {
 
-                });
+    return res.status(501).json({
 
-            }
+        ok: false,
 
-        );
+        mensaje: "Función en construcción."
 
-    };
-    // =======================================================
-    // CONVERTIR SEGUNDOS A HH:MM:SS
-    // =======================================================
+    });
 
-    const segundosATiempo = (segundos) => {
+};
 
-        segundos =
-            Math.max(
-                0,
-                Math.floor(
-                    Number(segundos) || 0
-                )
-            );
 
-        const horas =
-            Math.floor(segundos / 3600);
+// ======================================================
+// OBTENER HISTORIAL
+// ======================================================
 
-        const minutos =
-            Math.floor(
-                (segundos % 3600) / 60
-            );
+const obtenerHistorial = (req, res) => {
 
-        const segundosRestantes =
-            segundos % 60;
+    return res.status(501).json({
 
-        return (
+        ok: false,
 
-            String(horas).padStart(2, "0") +
-            ":" +
-            String(minutos).padStart(2, "0") +
-            ":" +
-            String(segundosRestantes).padStart(2, "0")
+        mensaje: "Función en construcción."
 
-        );
+    });
 
-    };
+};
 
 
-    // =======================================================
-    // EXPORTAR
-    // =======================================================
+// ======================================================
+// OBTENER RESUMEN
+// ======================================================
 
-    module.exports = {
+const obtenerResumen = (req, res) => {
 
-        registrarMovimiento,
+    return res.status(501).json({
 
-        obtenerHistorial,
+        ok: false,
 
-        obtenerEstadoActual,
+        mensaje: "Función en construcción."
 
-        obtenerResumenJornada
+    });
 
-    };
+};
+
+
+// ======================================================
+// EXPORTACIONES
+// ======================================================
+
+module.exports = {
+
+    registrarMovimiento,
+
+    obtenerEstadoActual,
+
+    obtenerHistorial,
+
+    obtenerResumen
+
+};

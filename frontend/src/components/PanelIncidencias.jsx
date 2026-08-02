@@ -1,37 +1,15 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
+import { useState } from "react";
 import RevisionIncidencia from "./RevisionIncidencia";
 
-export default function PanelIncidencias() {
+export default function PanelIncidencias({
 
-    const [incidencias, setIncidencias] = useState([]);
+    incidencias,
+
+    onActualizar
+
+}) {
+
     const [incidenciaSeleccionada, setIncidenciaSeleccionada] = useState(null);
-
-    async function cargarIncidencias() {
-
-        try {
-
-            const res = await api.get("/incidencias");
-
-            setIncidencias(res.data);
-
-        } catch (err) {
-
-            console.error(err);
-
-        }
-
-    }
-
-    useEffect(() => {
-
-        cargarIncidencias();
-
-        const intervalo = setInterval(cargarIncidencias, 5000);
-
-        return () => clearInterval(intervalo);
-
-    }, []);
 
     return (
 
@@ -48,101 +26,101 @@ export default function PanelIncidencias() {
 
             {
 
-                incidencias.length === 0
+                !incidencias || incidencias.length === 0
 
-                    ? (
+                    ?
+
+                    (
 
                         <p>🟢 No existen incidencias.</p>
 
                     )
 
-                    : (
+                    :
 
-                        incidencias.map((i) => (
+                    incidencias.map((i) => (
 
-                            <div
+                        <div
 
-                                key={i.id}
+                            key={i.id}
+
+                            style={{
+
+                                border: "1px solid #ddd",
+
+                                borderRadius: 8,
+
+                                padding: 15,
+
+                                marginBottom: 12,
+
+                                background:
+
+                                    i.revisada
+
+                                        ? "#e8f5e9"
+
+                                        : "#fff3cd"
+
+                            }}
+
+                        >
+
+                            <h3>{i.nombre}</h3>
+
+                            <p>
+
+                                <strong>Tipo:</strong> {i.tipo}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Nivel:</strong> {i.nivel}
+
+                            </p>
+
+                            <p>
+
+                                <strong>Detalle:</strong> {i.detalle}
+
+                            </p>
+
+                            <button
+
+                                onClick={() => setIncidenciaSeleccionada(i)}
 
                                 style={{
 
-                                    border: "1px solid #ddd",
+                                    marginTop: 10,
 
-                                    borderRadius: 8,
+                                    width: "100%",
 
-                                    padding: 15,
+                                    padding: 10,
 
-                                    marginBottom: 12,
+                                    border: "none",
 
-                                    background:
+                                    borderRadius: 6,
 
-                                        i.revisada
+                                    background: "#198754",
 
-                                            ? "#e8f5e9"
+                                    color: "white",
 
-                                            : "#fff3cd"
+                                    cursor: "pointer",
+
+                                    fontWeight: "bold"
 
                                 }}
 
                             >
 
-                                <h3>{i.nombre}</h3>
+                                ✅ Revisar incidencia
 
-                                <p>
+                            </button>
 
-                                    <strong>Tipo:</strong> {i.tipo}
+                        </div>
 
-                                </p>
-
-                                <p>
-
-                                    <strong>Nivel:</strong> {i.nivel}
-
-                                </p>
-
-                                <p>
-
-                                    <strong>Detalle:</strong> {i.detalle}
-
-                                </p>
-
-                                <button
-
-                                    onClick={() => setIncidenciaSeleccionada(i)}
-
-                                    style={{
-
-                                        marginTop: "10px",
-
-                                        width: "100%",
-
-                                        padding: "10px",
-
-                                        border: "none",
-
-                                        borderRadius: "6px",
-
-                                        background: "#198754",
-
-                                        color: "white",
-
-                                        cursor: "pointer",
-
-                                        fontWeight: "bold"
-
-                                    }}
-
-                                >
-
-                                    ✅ Revisar incidencia
-
-                                </button>
-
-                            </div>
-
-                        ))
-
-                    )
+                    ))
 
             }
 
@@ -154,11 +132,15 @@ export default function PanelIncidencias() {
 
                 onGuardar={() => {
 
-    setIncidenciaSeleccionada(null);
+                    setIncidenciaSeleccionada(null);
 
-    cargarIncidencias();
+                    if (onActualizar) {
 
-}}
+                        onActualizar();
+
+                    }
+
+                }}
 
             />
 

@@ -6,7 +6,10 @@ export default function Dashboard() {
     const [asesores, setAsesores] = useState([]);
     const [, setAhora] = useState(Date.now());
 
-    // Actualiza el reloj cada segundo
+    // ==========================================
+    // ACTUALIZA EL RELOJ CADA SEGUNDO
+    // ==========================================
+
     useEffect(() => {
 
         const reloj = setInterval(() => {
@@ -19,7 +22,10 @@ export default function Dashboard() {
 
     }, []);
 
-    // Cargar dashboard
+    // ==========================================
+    // CARGAR DASHBOARD
+    // ==========================================
+
     async function cargarDashboard() {
 
         try {
@@ -36,7 +42,10 @@ export default function Dashboard() {
 
     }
 
-    // Actualiza datos cada 5 segundos
+    // ==========================================
+    // ACTUALIZA DATOS CADA 5 SEGUNDOS
+    // ==========================================
+
     useEffect(() => {
 
         cargarDashboard();
@@ -47,10 +56,24 @@ export default function Dashboard() {
 
     }, []);
 
-    // Calcula el tiempo transcurrido
-    const calcularTiempo = (inicio) => {
+    // ==========================================
+    // CALCULAR TIEMPO EN ESTADO
+    // ==========================================
 
-        if (!inicio) return "--:--:--";
+    const calcularTiempo = (inicio, estado) => {
+
+        if (!inicio) {
+
+            return "--:--:--";
+
+        }
+
+        // Si ya salió, no seguir contando
+        if (estado === "SALIDA") {
+
+            return "✅ Finalizado";
+
+        }
 
         const segundos = Math.floor(
             (Date.now() - new Date(inicio).getTime()) / 1000
@@ -70,7 +93,10 @@ export default function Dashboard() {
 
     };
 
-    // Color según estado
+    // ==========================================
+    // COLOR SEGÚN ESTADO
+    // ==========================================
+
     const obtenerColor = (estado) => {
 
         switch (estado) {
@@ -104,7 +130,10 @@ export default function Dashboard() {
 
     };
 
-    // Emoji según estado
+    // ==========================================
+    // EMOJI SEGÚN ESTADO
+    // ==========================================
+
     const obtenerEmoji = (estado) => {
 
         switch (estado) {
@@ -143,13 +172,13 @@ export default function Dashboard() {
         <div style={{ marginTop: 40 }}>
 
             <h2
-    style={{
-        textAlign: "center",
-        marginBottom: 20
-    }}
->
-    🏢 EQUITY LINE - Centro de Monitoreo
-</h2>
+                style={{
+                    textAlign: "center",
+                    marginBottom: 20
+                }}
+            >
+                🏢 EQUITY LINE - Centro de Monitoreo
+            </h2>
 
             {/* RESUMEN */}
 
@@ -162,154 +191,170 @@ export default function Dashboard() {
                 }}
             >
 
-                <div style={{
-                    background: "#198754",
-                    color: "#fff",
-                    padding: 15,
-                    borderRadius: 10,
-                    textAlign: "center"
-                }}>
-                    <h3>{asesores.length}</h3>
-                    <small>👥 Asesores</small>
-                </div>
+                <div
+    style={{
+        background: "#198754",
+        color: "#fff",
+        padding: 15,
+        borderRadius: 10,
+        textAlign: "center"
+    }}
+>
+    <h3>{asesores.length}</h3>
+    <small>👥 Asesores</small>
+</div>
 
-                <div style={{
-                    background: "#28a745",
-                    color: "#fff",
-                    padding: 15,
-                    borderRadius: 10,
-                    textAlign: "center"
-                }}>
-                    <h3>
-                        {
-                            asesores.filter(a =>
-                                a.estado === "TRABAJANDO" ||
-                                a.estado === "ENTRADA"
-                            ).length
-                        }
-                    </h3>
-                    <small>🟢 Trabajando</small>
-                </div>
+<div
+    style={{
+        background: "#28a745",
+        color: "#fff",
+        padding: 15,
+        borderRadius: 10,
+        textAlign: "center"
+    }}
+>
+    <h3>
+        {
+            asesores.filter(
+                (a) =>
+                    a.estado === "TRABAJANDO" ||
+                    a.estado === "ENTRADA"
+            ).length
+        }
+    </h3>
+    <small>🟢 Trabajando</small>
+</div>
 
-                <div style={{
-                    background: "#ffc107",
-                    padding: 15,
-                    borderRadius: 10,
-                    textAlign: "center"
-                }}>
-                    <h3>
-                        {
-                            asesores.filter(a => a.estado === "BREAK").length
-                        }
-                    </h3>
-                    <small>☕ Break</small>
-                </div>
+<div
+    style={{
+        background: "#ffc107",
+        padding: 15,
+        borderRadius: 10,
+        textAlign: "center"
+    }}
+>
+    <h3>
+        {
+            asesores.filter(
+                (a) => a.estado === "BREAK"
+            ).length
+        }
+    </h3>
+    <small>☕ Break</small>
+</div>
 
-                <div style={{
-                    background: "#fd7e14",
-                    color: "#fff",
-                    padding: 15,
-                    borderRadius: 10,
-                    textAlign: "center"
-                }}>
-                    <h3>
-                        {
-                            asesores.filter(a => a.estado === "ALMUERZO").length
-                        }
-                    </h3>
-                    <small>🍽 Almuerzo</small>
-                </div>
+<div
+    style={{
+        background: "#fd7e14",
+        color: "#fff",
+        padding: 15,
+        borderRadius: 10,
+        textAlign: "center"
+    }}
+>
+    <h3>
+        {
+            asesores.filter(
+                (a) => a.estado === "ALMUERZO"
+            ).length
+        }
+    </h3>
+    <small>🍽 Almuerzo</small>
+</div>
 
-                <div style={{
-                    background: "#17a2b8",
-                    color: "#fff",
-                    padding: 15,
-                    borderRadius: 10,
-                    textAlign: "center"
-                }}>
-                    <h3>
-                        {
-                            asesores.filter(a => a.estado === "BANO").length
-                        }
-                    </h3>
-                    <small>🚻 Baño</small>
-                </div>
+<div
+    style={{
+        background: "#17a2b8",
+        color: "#fff",
+        padding: 15,
+        borderRadius: 10,
+        textAlign: "center"
+    }}
+>
+    <h3>
+        {
+            asesores.filter(
+                (a) => a.estado === "BANO"
+            ).length
+        }
+    </h3>
+    <small>🚻 Baño</small>
+</div>
 
-            </div>
+</div>
 
-            {/* TARJETAS */}
+{/* TARJETAS */}
+
+<div
+    style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+        gap: 20
+    }}
+>
+
+    {
+
+        asesores.map((a) => (
 
             <div
+                key={a.id}
                 style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-                    gap: 20
+                    borderLeft: `8px solid ${obtenerColor(a.estado)}`,
+                    background: "#fff",
+                    borderRadius: 12,
+                    padding: 18,
+                    boxShadow: "0 3px 10px rgba(0,0,0,.15)"
                 }}
             >
 
-                {
-                    asesores.map((a) => (
+                <h3 style={{ marginBottom: 15 }}>
+                    {a.nombre}
+                </h3>
 
-                        <div
-                            key={a.id}
-                            style={{
-                                borderLeft: `8px solid ${obtenerColor(a.estado)}`,
-                                background: "#fff",
-                                borderRadius: 12,
-                                padding: 18,
-                                boxShadow: "0 3px 10px rgba(0,0,0,.15)"
-                            }}
-                        >
+                <p>
+                    <strong>Estado</strong>
+                    <br />
+                    {obtenerEmoji(a.estado)} {a.estado}
+                </p>
 
-                            <h3 style={{ marginBottom: 15 }}>
-                                {a.nombre}
-                            </h3>
+                <p>
+                    <strong>Inicio</strong>
+                    <br />
+                    {
+                        a.inicio_estado
+                            ? new Date(a.inicio_estado).toLocaleTimeString(
+                                  [],
+                                  {
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                  }
+                              )
+                            : "--:--"
+                    }
+                </p>
 
-                            <p>
-
-                                <strong>Estado</strong>
-
-                                <br />
-
-                                {obtenerEmoji(a.estado)} {a.estado}
-
-                            </p>
-
-                            <p>
-
-                                <strong>Inicio</strong>
-
-                                <br />
-
-                                {
-                                    a.inicio_estado
-                                        ? new Date(a.inicio_estado).toLocaleTimeString([], {
-                                            hour: "2-digit",
-                                            minute: "2-digit"
-                                        })
-                                        : "--:--"
-                                }
-
-                            </p>
-
-                            <p>
-
-                                <strong>Tiempo en estado</strong>
-
-                                <br />
-
-                                {calcularTiempo(a.inicio_estado)}
-
-                            </p>
-
-                        </div>
-
-                    ))}
+                <p>
+                    <strong>⏱ Tiempo en estado</strong>
+                    <br />
+                    {
+                        calcularTiempo(
+                            a.inicio_estado,
+                            a.estado
+                        )
+                    }
+                </p>
 
             </div>
 
-        </div>
+        ))
 
-    );
+    }
+
+</div>
+
+</div>
+
+);
 
 }

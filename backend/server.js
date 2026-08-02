@@ -26,7 +26,8 @@ app.use("/asesores", require("./routes/asesores"));
 app.use("/movimientos", require("./routes/movimientos"));
 app.use("/dashboard", require("./routes/dashboardRoutes"));
 app.use("/incidencias", require("./routes/incidencias"));
-
+app.use("/auth", require("./routes/authRoutes"));
+app.use("/usuarios", require("./routes/usuariosRoutes"));
 // =====================================
 // RUTA PRINCIPAL
 // =====================================

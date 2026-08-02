@@ -46,16 +46,27 @@ class AuthService {
             throw new Error("Usuario o contraseña incorrectos.");
         }
 
+        // ======================================================
+        // VALIDAR VARIABLES DE ENTORNO
+        // ======================================================
+
+        if (!process.env.JWT_SECRET) {
+
+            console.error("❌ JWT_SECRET no está definida.");
+
+            throw new Error(
+                "JWT_SECRET no está configurada en las variables de entorno."
+            );
+
+        }
+
         const token = jwt.sign(
 
             {
 
                 id: usuarioDB.id,
-
                 asesor_id: usuarioDB.asesor_id,
-
                 usuario: usuarioDB.usuario,
-
                 rol: usuarioDB.rol
 
             },
@@ -64,7 +75,8 @@ class AuthService {
 
             {
 
-                expiresIn: process.env.JWT_EXPIRES_IN
+                expiresIn:
+                    process.env.JWT_EXPIRES_IN || "8h"
 
             }
 
@@ -79,13 +91,9 @@ class AuthService {
             usuario: {
 
                 id: usuarioDB.id,
-
                 asesor_id: usuarioDB.asesor_id,
-
                 usuario: usuarioDB.usuario,
-
                 rol: usuarioDB.rol,
-
                 debe_cambiar_password:
                     usuarioDB.debe_cambiar_password
 

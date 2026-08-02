@@ -1,5 +1,9 @@
 require("dotenv").config();
-
+console.log("====================================");
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+console.log("JWT_EXPIRES_IN:", process.env.JWT_EXPIRES_IN);
+console.log("PORT:", process.env.PORT);
+console.log("====================================");
 const express = require("express");
 const cors = require("cors");
 

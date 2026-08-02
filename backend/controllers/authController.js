@@ -8,29 +8,25 @@ const authService = require("../services/authService");
 
 class AuthController {
 
-    // ======================================================
-    // LOGIN
-    // ======================================================
-
     async login(req, res) {
+
+        console.log("====================================");
+        console.log("ENTRÓ AL LOGIN");
+        console.log(req.body);
+        console.log("====================================");
 
         try {
 
-            const {
+            const { usuario, password } = req.body;
 
-                usuario,
-
-                password
-
-            } = req.body;
+            console.log("Llamando AuthService...");
 
             const resultado = await authService.login(
-
                 usuario,
-
                 password
-
             );
+
+            console.log("Login correcto.");
 
             return res.status(200).json(resultado);
 
@@ -39,14 +35,12 @@ class AuthController {
             console.error("====================================");
             console.error("ERROR LOGIN");
             console.error(error);
+            console.error(error.stack);
             console.error("====================================");
 
             return res.status(400).json({
-
                 ok: false,
-
                 mensaje: error.message
-
             });
 
         }

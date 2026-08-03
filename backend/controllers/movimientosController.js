@@ -240,6 +240,75 @@ const obtenerResumenJornada = async (req, res) => {
 
 };
 
+// ======================================================
+// OBTENER RESUMEN DEL DÍA
+// ======================================================
+
+const obtenerResumen = async (req, res) => {
+
+    try {
+
+        const asesor_id = Number(req.params.asesorId);
+
+        if (!asesor_id) {
+
+            return res.status(400).json({
+
+                ok: false,
+
+                mensaje: "Debe indicar el asesor."
+
+            });
+
+        }
+
+        const resumen =
+            await movimientosService.obtenerResumen(
+                asesor_id
+            );
+
+        return res.status(200).json({
+
+            ok: true,
+
+            data: resumen
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            ok: false,
+
+            mensaje: error.message
+
+        });
+
+    }
+
+};
+
+
+// ======================================================
+// EXPORTAR CONTROLADORES
+// ======================================================
+
+module.exports = {
+
+    registrarMovimiento,
+
+    obtenerEstadoActual,
+
+    obtenerHistorial,
+
+    obtenerResumenJornada,
+
+    obtenerResumen
+
+};
 
 // ======================================================
 // EXPORTACIONES

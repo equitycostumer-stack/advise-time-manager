@@ -5,19 +5,38 @@ const {
     registrarMovimiento,
     obtenerHistorial,
     obtenerEstadoActual,
-    obtenerResumenJornada
+    obtenerResumenJornada,
+    obtenerResumen
 } = require("../controllers/movimientosController");
 
-// Registrar un movimiento
+// ======================================================
+// REGISTRAR MOVIMIENTO
+// ======================================================
+
 router.post("/", registrarMovimiento);
 
-// Historial de un asesor
-router.get("/historial/:asesorId", obtenerHistorial);
+// ======================================================
+// ESTADO ACTUAL
+// ======================================================
 
-// Estado actual del asesor
 router.get("/estado/:asesorId", obtenerEstadoActual);
 
-// Resumen de jornada
-router.get("/resumen/:asesorId", obtenerResumenJornada);
+// ======================================================
+// HISTORIAL DEL DÍA
+// ======================================================
+
+router.get("/historial/:asesorId", obtenerHistorial);
+
+// ======================================================
+// RESUMEN DE JORNADA (LEGACY)
+// ======================================================
+
+router.get("/resumen-jornada/:asesorId", obtenerResumenJornada);
+
+// ======================================================
+// RESUMEN AUTOMÁTICO DEL DÍA
+// ======================================================
+
+router.get("/resumen/:asesorId", obtenerResumen);
 
 module.exports = router;

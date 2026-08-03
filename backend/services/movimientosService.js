@@ -20,11 +20,7 @@ class MovimientosService {
     // ======================================================
 
     async registrarMovimiento(datos) {
-console.log("================================");
-console.log("DATOS RECIBIDOS EN EL SERVICE");
-console.log(datos);
-console.log("tipo:", datos.tipo);
-console.log("================================");
+
         const {
             asesor_id,
             tipo,
@@ -147,30 +143,37 @@ console.log("================================");
 
         }
 
-        // ==================================================
+// ==================================================
 // INICIO DE PAUSAS
 // ==================================================
 
 if (TIPOS_INICIO.includes(tipoMovimiento)) {
 
+    const estadoDestino = {
+
+        [TIPOS.BREAK_INICIO]: ESTADOS.BREAK,
+
+        [TIPOS.ALMUERZO_INICIO]: ESTADOS.ALMUERZO,
+
+        [TIPOS.BANO_INICIO]: ESTADOS.BANO,
+
+        [TIPOS.CAPACITACION_INICIO]: ESTADOS.CAPACITACION,
+
+        [TIPOS.REUNION_INICIO]: ESTADOS.REUNION
+
+    };
+
     return await this.registrarInicioPausa({
 
         asesor,
+
         estadoActual,
+
         observacion,
 
         tipo: tipoMovimiento,
 
-        estado:
-            tipoMovimiento === TIPOS.BREAK_INICIO
-                ? ESTADOS.BREAK
-            : tipoMovimiento === TIPOS.ALMUERZO_INICIO
-                ? ESTADOS.ALMUERZO
-            : tipoMovimiento === TIPOS.BANO_INICIO
-                ? ESTADOS.BANO
-            : tipoMovimiento === TIPOS.CAPACITACION_INICIO
-                ? ESTADOS.CAPACITACION
-            : ESTADOS.REUNION
+        estado: estadoDestino[tipoMovimiento]
 
     });
 
@@ -182,352 +185,446 @@ if (TIPOS_INICIO.includes(tipoMovimiento)) {
 
 if (TIPOS_FIN.includes(tipoMovimiento)) {
 
+    const estadoOrigen = {
+
+        [TIPOS.BREAK_FIN]: ESTADOS.BREAK,
+
+        [TIPOS.ALMUERZO_FIN]: ESTADOS.ALMUERZO,
+
+        [TIPOS.BANO_FIN]: ESTADOS.BANO,
+
+        [TIPOS.CAPACITACION_FIN]: ESTADOS.CAPACITACION,
+
+        [TIPOS.REUNION_FIN]: ESTADOS.REUNION
+
+    };
+
     return await this.registrarFinPausa({
 
         asesor,
+
         estadoActual,
+
         observacion,
 
         tipo: tipoMovimiento,
 
-        estado:
-            tipoMovimiento === TIPOS.BREAK_FIN
-                ? ESTADOS.BREAK
-            : tipoMovimiento === TIPOS.ALMUERZO_FIN
-                ? ESTADOS.ALMUERZO
-            : tipoMovimiento === TIPOS.BANO_FIN
-                ? ESTADOS.BANO
-            : tipoMovimiento === TIPOS.CAPACITACION_FIN
-                ? ESTADOS.CAPACITACION
-            : ESTADOS.REUNION
+        estado: estadoOrigen[tipoMovimiento]
 
     });
 
 }
 
-        // ==================================================
-        // MOVIMIENTO NO SOPORTADO
-        // ==================================================
+// ==================================================
+// MOVIMIENTO NO SOPORTADO
+// ==================================================
+
+throw new Error(
+    `Movimiento no soportado: ${tipoMovimiento}`
+);
+    // ======================================================
+// REGISTRAR ENTRADA
+// ======================================================
+
+async registrarEntrada({
+
+    asesor,
+    configuracion,
+    estadoActual,
+    observacion
+
+}) {
+
+    // --------------------------------------------------
+    // VALIDAR JORNADA ACTIVA
+    // --------------------------------------------------
+
+    if (
+
+        estadoActual &&
+        estadoActual.estado !== ESTADOS.SALIDA
+
+    ) {
 
         throw new Error(
-            `Movimiento no soportado: ${tipoMovimiento}`
+            "El asesor ya tiene una jornada iniciada."
         );
 
     }
-// ======================================================
-    // REGISTRAR ENTRADA
-    // ======================================================
 
-    async registrarEntrada({
-        asesor,
-        configuracion,
-        estadoActual,
+    // --------------------------------------------------
+    // FECHA ACTUAL
+    // --------------------------------------------------
+
+    const ahora = new Date();
+
+    // --------------------------------------------------
+    // REGISTRAR MOVIMIENTO
+    // --------------------------------------------------
+
+    await movimientosRepository.insertarMovimiento(
+
+        asesor.id,
+
+        TIPOS.ENTRADA,
+
+        ahora,
+
         observacion
-    }) {
 
-        // --------------------------------------------------
-        // VALIDAR JORNADA ACTIVA
-        // --------------------------------------------------
+    );
 
-        if (
-            estadoActual &&
-            estadoActual.estado !== ESTADOS.SALIDA
-        ) {
+    // --------------------------------------------------
+    // CREAR / ACTUALIZAR ESTADO
+    // --------------------------------------------------
 
-            throw new Error(
-                "El asesor ya tiene una jornada iniciada."
-            );
+    if (!estadoActual) {
 
-        }
+        await movimientosRepository.crearEstadoActual(
 
-        // --------------------------------------------------
-        // REGISTRAR MOVIMIENTO
-        // --------------------------------------------------
-
-        await movimientosRepository.insertarMovimiento(
             asesor.id,
-            TIPOS.ENTRADA,
-            new Date(),
-            observacion
+
+            ESTADOS.TRABAJANDO,
+
+            ahora
+
         );
 
-        // --------------------------------------------------
-        // CREAR / ACTUALIZAR ESTADO
-        // --------------------------------------------------
-
-        if (!estadoActual) {
-
-            await movimientosRepository.crearEstadoActual(
-                asesor.id,
-                ESTADOS.TRABAJANDO,
-                new Date()
-            );
-
-        } else {
-
-            await movimientosRepository.actualizarEstadoActual(
-                asesor.id,
-                ESTADOS.TRABAJANDO,
-                new Date()
-            );
-
-        }
-
-        // --------------------------------------------------
-        // RESPUESTA
-        // --------------------------------------------------
-
-        return {
-
-            ok: true,
-
-            movimiento: TIPOS.ENTRADA,
-
-            estado: ESTADOS.TRABAJANDO,
-
-            asesor: asesor.nombre,
-
-            fecha: new Date(),
-
-            mensaje: "Entrada registrada correctamente."
-
-        };
-
-    }
-
-    // ======================================================
-    // REGISTRAR SALIDA
-    // ======================================================
-
-    async registrarSalida({
-        asesor,
-        configuracion,
-        estadoActual,
-        observacion
-    }) {
-
-        // --------------------------------------------------
-        // VALIDAR JORNADA ACTIVA
-        // --------------------------------------------------
-
-        if (
-            !estadoActual ||
-            estadoActual.estado === ESTADOS.SALIDA
-        ) {
-
-            throw new Error(
-                "El asesor no tiene una jornada activa."
-            );
-
-        }
-
-        // --------------------------------------------------
-        // NO PERMITIR SALIDA DURANTE UNA PAUSA
-        // --------------------------------------------------
-
-        if (
-
-            estadoActual.estado === ESTADOS.BREAK ||
-
-            estadoActual.estado === ESTADOS.ALMUERZO ||
-
-            estadoActual.estado === ESTADOS.BANO ||
-
-            estadoActual.estado === ESTADOS.CAPACITACION ||
-
-            estadoActual.estado === ESTADOS.REUNION
-
-        ) {
-
-            throw new Error(
-                "Debe finalizar la pausa antes de registrar la salida."
-            );
-
-        }
-
-        // --------------------------------------------------
-        // REGISTRAR MOVIMIENTO
-        // --------------------------------------------------
-
-        await movimientosRepository.insertarMovimiento(
-            asesor.id,
-            TIPOS.SALIDA,
-            new Date(),
-            observacion
-        );
-
-        // --------------------------------------------------
-        // ACTUALIZAR ESTADO
-        // --------------------------------------------------
+    } else {
 
         await movimientosRepository.actualizarEstadoActual(
+
             asesor.id,
-            ESTADOS.SALIDA,
-            new Date()
+
+            ESTADOS.TRABAJANDO,
+
+            ahora
+
         );
 
-        // --------------------------------------------------
-        // RESPUESTA
-        // --------------------------------------------------
-
-        return {
-
-            ok: true,
-
-            movimiento: TIPOS.SALIDA,
-
-            estado: ESTADOS.SALIDA,
-
-            asesor: asesor.nombre,
-
-            fecha: new Date(),
-
-            mensaje: "Salida registrada correctamente."
-
-        };
-
     }
+
+    // --------------------------------------------------
+    // RECALCULAR RESUMEN DE JORNADA
+    // --------------------------------------------------
+
+    await this.actualizarResumenJornada(
+        asesor.id
+    );
+
+    // --------------------------------------------------
+    // RESPUESTA
+    // --------------------------------------------------
+
+    return {
+
+        ok: true,
+
+        movimiento: TIPOS.ENTRADA,
+
+        estado: ESTADOS.TRABAJANDO,
+
+        asesor: asesor.nombre,
+
+        fecha: ahora,
+
+        mensaje: "Entrada registrada correctamente."
+
+    };
+
+}
+
 // ======================================================
-    // INICIO DE BREAK
-    // ======================================================
+// REGISTRAR SALIDA
+// ======================================================
 
-    async registrarInicioBreak(datos) {
+async registrarSalida({
 
-        return this.registrarInicioPausa({
-            ...datos,
-            tipo: TIPOS.BREAK_INICIO,
-            estado: ESTADOS.BREAK
-        });
+    asesor,
+    configuracion,
+    estadoActual,
+    observacion
 
-    }
+}) {
 
-    // ======================================================
-    // FIN DE BREAK
-    // ======================================================
+    // --------------------------------------------------
+    // VALIDAR JORNADA ACTIVA
+    // --------------------------------------------------
 
-    async registrarFinBreak(datos) {
+    if (
 
-        return this.registrarFinPausa({
-            ...datos,
-            tipo: TIPOS.BREAK_FIN,
-            estado: ESTADOS.BREAK
-        });
+        !estadoActual ||
 
-    }
+        estadoActual.estado === ESTADOS.SALIDA
 
-    // ======================================================
-    // INICIO ALMUERZO
-    // ======================================================
+    ) {
 
-    async registrarInicioAlmuerzo(datos) {
-
-        return this.registrarInicioPausa({
-            ...datos,
-            tipo: TIPOS.ALMUERZO_INICIO,
-            estado: ESTADOS.ALMUERZO
-        });
+        throw new Error(
+            "El asesor no tiene una jornada activa."
+        );
 
     }
 
-    // ======================================================
-    // FIN ALMUERZO
-    // ======================================================
+    // --------------------------------------------------
+    // NO PERMITIR SALIDA DURANTE UNA PAUSA
+    // --------------------------------------------------
 
-    async registrarFinAlmuerzo(datos) {
+    if (
 
-        return this.registrarFinPausa({
-            ...datos,
-            tipo: TIPOS.ALMUERZO_FIN,
-            estado: ESTADOS.ALMUERZO
-        });
+        estadoActual.estado === ESTADOS.BREAK ||
 
-    }
+        estadoActual.estado === ESTADOS.ALMUERZO ||
 
-    // ======================================================
-    // INICIO BAÑO
-    // ======================================================
+        estadoActual.estado === ESTADOS.BANO ||
 
-    async registrarInicioBano(datos) {
+        estadoActual.estado === ESTADOS.CAPACITACION ||
 
-        return this.registrarInicioPausa({
-            ...datos,
-            tipo: TIPOS.BANO_INICIO,
-            estado: ESTADOS.BANO
-        });
+        estadoActual.estado === ESTADOS.REUNION
+
+    ) {
+
+        throw new Error(
+            "Debe finalizar la pausa antes de registrar la salida."
+        );
 
     }
 
-    // ======================================================
-    // FIN BAÑO
-    // ======================================================
+    // --------------------------------------------------
+    // FECHA ACTUAL
+    // --------------------------------------------------
 
-    async registrarFinBano(datos) {
+    const ahora = new Date();
 
-        return this.registrarFinPausa({
-            ...datos,
-            tipo: TIPOS.BANO_FIN,
-            estado: ESTADOS.BANO
-        });
+    // --------------------------------------------------
+    // REGISTRAR MOVIMIENTO
+    // --------------------------------------------------
 
-    }
+    await movimientosRepository.insertarMovimiento(
 
-    // ======================================================
-    // INICIO CAPACITACIÓN
-    // ======================================================
+        asesor.id,
 
-    async registrarInicioCapacitacion(datos) {
+        TIPOS.SALIDA,
 
-        return this.registrarInicioPausa({
-            ...datos,
-            tipo: TIPOS.CAPACITACION_INICIO,
-            estado: ESTADOS.CAPACITACION
-        });
+        ahora,
 
-    }
+        observacion
 
-    // ======================================================
-    // FIN CAPACITACIÓN
-    // ======================================================
+    );
 
-    async registrarFinCapacitacion(datos) {
+    // --------------------------------------------------
+    // ACTUALIZAR ESTADO
+    // --------------------------------------------------
 
-        return this.registrarFinPausa({
-            ...datos,
-            tipo: TIPOS.CAPACITACION_FIN,
-            estado: ESTADOS.CAPACITACION
-        });
+    await movimientosRepository.actualizarEstadoActual(
 
-    }
+        asesor.id,
 
-    // ======================================================
-    // INICIO REUNIÓN
-    // ======================================================
+        ESTADOS.SALIDA,
 
-    async registrarInicioReunion(datos) {
+        ahora
 
-        return this.registrarInicioPausa({
-            ...datos,
-            tipo: TIPOS.REUNION_INICIO,
-            estado: ESTADOS.REUNION
-        });
+    );
 
-    }
+    // --------------------------------------------------
+    // RECALCULAR RESUMEN
+    // --------------------------------------------------
 
-    // ======================================================
-    // FIN REUNIÓN
-    // ======================================================
+    await this.actualizarResumenJornada(
+        asesor.id
+    );
 
-    async registrarFinReunion(datos) {
+    // --------------------------------------------------
+    // OBTENER RESUMEN ACTUALIZADO
+    // --------------------------------------------------
 
-        return this.registrarFinPausa({
-            ...datos,
-            tipo: TIPOS.REUNION_FIN,
-            estado: ESTADOS.REUNION
-        });
+    const resumen = await this.obtenerResumen(
+        asesor.id
+    );
 
-    }
+    // --------------------------------------------------
+    // RESPUESTA
+    // --------------------------------------------------
 
-    // ======================================================
+    return {
+
+        ok: true,
+
+        movimiento: TIPOS.SALIDA,
+
+        estado: ESTADOS.SALIDA,
+
+        asesor: asesor.nombre,
+
+        fecha: ahora,
+
+        resumen,
+
+        mensaje: "Salida registrada correctamente."
+
+    };
+
+}
+// ======================================================
+// BREAK
+// ======================================================
+
+async registrarInicioBreak(datos) {
+
+    return this.registrarInicioPausa({
+
+        ...datos,
+
+        tipo: TIPOS.BREAK_INICIO,
+
+        estado: ESTADOS.BREAK
+
+    });
+
+}
+
+async registrarFinBreak(datos) {
+
+    return this.registrarFinPausa({
+
+        ...datos,
+
+        tipo: TIPOS.BREAK_FIN,
+
+        estado: ESTADOS.BREAK
+
+    });
+
+}
+
+// ======================================================
+// ALMUERZO
+// ======================================================
+
+async registrarInicioAlmuerzo(datos) {
+
+    return this.registrarInicioPausa({
+
+        ...datos,
+
+        tipo: TIPOS.ALMUERZO_INICIO,
+
+        estado: ESTADOS.ALMUERZO
+
+    });
+
+}
+
+async registrarFinAlmuerzo(datos) {
+
+    return this.registrarFinPausa({
+
+        ...datos,
+
+        tipo: TIPOS.ALMUERZO_FIN,
+
+        estado: ESTADOS.ALMUERZO
+
+    });
+
+}
+
+// ======================================================
+// BAÑO
+// ======================================================
+
+async registrarInicioBano(datos) {
+
+    return this.registrarInicioPausa({
+
+        ...datos,
+
+        tipo: TIPOS.BANO_INICIO,
+
+        estado: ESTADOS.BANO
+
+    });
+
+}
+
+async registrarFinBano(datos) {
+
+    return this.registrarFinPausa({
+
+        ...datos,
+
+        tipo: TIPOS.BANO_FIN,
+
+        estado: ESTADOS.BANO
+
+    });
+
+}
+
+// ======================================================
+// CAPACITACIÓN
+// ======================================================
+
+async registrarInicioCapacitacion(datos) {
+
+    return this.registrarInicioPausa({
+
+        ...datos,
+
+        tipo: TIPOS.CAPACITACION_INICIO,
+
+        estado: ESTADOS.CAPACITACION
+
+    });
+
+}
+
+async registrarFinCapacitacion(datos) {
+
+    return this.registrarFinPausa({
+
+        ...datos,
+
+        tipo: TIPOS.CAPACITACION_FIN,
+
+        estado: ESTADOS.CAPACITACION
+
+    });
+
+}
+
+// ======================================================
+// REUNIÓN
+// ======================================================
+
+async registrarInicioReunion(datos) {
+
+    return this.registrarInicioPausa({
+
+        ...datos,
+
+        tipo: TIPOS.REUNION_INICIO,
+
+        estado: ESTADOS.REUNION
+
+    });
+
+}
+
+async registrarFinReunion(datos) {
+
+    return this.registrarFinPausa({
+
+        ...datos,
+
+        tipo: TIPOS.REUNION_FIN,
+
+        estado: ESTADOS.REUNION
+
+    });
+
+}
+
+// ======================================================
 // MÉTODOS GENÉRICOS
 // ======================================================
 
@@ -588,41 +685,45 @@ async registrarInicioPausa({
 
     );
 
-    // --------------------------------------------
-    // Actualizar estado actual
-    // --------------------------------------------
+// --------------------------------------------
+// Actualizar estado actual
+// --------------------------------------------
 
-    await movimientosRepository.actualizarEstadoActual(
+await movimientosRepository.actualizarEstadoActual(
 
-        asesor.id,
+    asesor.id,
 
-        estado,
+    ESTADOS.TRABAJANDO,
 
-        new Date()
+    new Date()
 
-    );
+);
 
-    // --------------------------------------------
-    // Respuesta
-    // --------------------------------------------
+// --------------------------------------------
+// ACTUALIZAR RESUMEN
+// --------------------------------------------
 
-    return {
+await this.actualizarResumenJornada(asesor.id);
 
-        ok: true,
+// --------------------------------------------
+// Respuesta
+// --------------------------------------------
 
-        movimiento: tipo,
+return {
 
-        estado,
+    ok: true,
 
-        asesor: asesor.nombre,
+    movimiento: tipo,
 
-        fecha: new Date(),
+    estado: ESTADOS.TRABAJANDO,
 
-        mensaje: `${estado} iniciado correctamente.`
+    asesor: asesor.nombre,
 
-    };
+    fecha: new Date(),
 
-}
+    mensaje: `${estado} finalizado correctamente.`
+
+};
 
     async registrarFinPausa({
 
@@ -840,5 +941,167 @@ async registrarInicioPausa({
     }
 
 }
+// ======================================================
+// RECALCULAR RESUMEN DEL DÍA
+// ======================================================
 
-module.exports = new MovimientosService();
+async actualizarResumenJornada(asesorId) {
+
+    const movimientos =
+        await movimientosRepository.obtenerMovimientosDelDia(asesorId);
+
+    if (!movimientos.length) return;
+
+    let entrada = null;
+    let salida = null;
+
+    let tiempoBreak = 0;
+    let tiempoAlmuerzo = 0;
+    let tiempoBano = 0;
+    let tiempoCapacitacion = 0;
+    let tiempoReunion = 0;
+
+    let inicioBreak = null;
+    let inicioAlmuerzo = null;
+    let inicioBano = null;
+    let inicioCapacitacion = null;
+    let inicioReunion = null;
+
+    for (const mov of movimientos) {
+
+        switch (mov.tipo) {
+
+            case TIPOS.ENTRADA:
+                if (!entrada) entrada = mov.fecha_hora;
+                break;
+
+            case TIPOS.SALIDA:
+                salida = mov.fecha_hora;
+                break;
+
+            case TIPOS.BREAK_INICIO:
+                inicioBreak = mov.fecha_hora;
+                break;
+
+            case TIPOS.BREAK_FIN:
+                if (inicioBreak) {
+                    tiempoBreak +=
+                        (new Date(mov.fecha_hora) - new Date(inicioBreak)) / 1000;
+                    inicioBreak = null;
+                }
+                break;
+
+            case TIPOS.ALMUERZO_INICIO:
+                inicioAlmuerzo = mov.fecha_hora;
+                break;
+
+            case TIPOS.ALMUERZO_FIN:
+                if (inicioAlmuerzo) {
+                    tiempoAlmuerzo +=
+                        (new Date(mov.fecha_hora) - new Date(inicioAlmuerzo)) / 1000;
+                    inicioAlmuerzo = null;
+                }
+                break;
+
+            case TIPOS.BANO_INICIO:
+                inicioBano = mov.fecha_hora;
+                break;
+
+            case TIPOS.BANO_FIN:
+                if (inicioBano) {
+                    tiempoBano +=
+                        (new Date(mov.fecha_hora) - new Date(inicioBano)) / 1000;
+                    inicioBano = null;
+                }
+                break;
+
+            case TIPOS.CAPACITACION_INICIO:
+                inicioCapacitacion = mov.fecha_hora;
+                break;
+
+            case TIPOS.CAPACITACION_FIN:
+                if (inicioCapacitacion) {
+                    tiempoCapacitacion +=
+                        (new Date(mov.fecha_hora) - new Date(inicioCapacitacion)) / 1000;
+                    inicioCapacitacion = null;
+                }
+                break;
+
+            case TIPOS.REUNION_INICIO:
+                inicioReunion = mov.fecha_hora;
+                break;
+
+            case TIPOS.REUNION_FIN:
+                if (inicioReunion) {
+                    tiempoReunion +=
+                        (new Date(mov.fecha_hora) - new Date(inicioReunion)) / 1000;
+                    inicioReunion = null;
+                }
+                break;
+
+        }
+
+    }
+
+    let tiempoTrabajado = 0;
+
+    if (entrada) {
+
+        const fin = salida
+            ? new Date(salida)
+            : new Date();
+
+        tiempoTrabajado =
+            (fin - new Date(entrada)) / 1000;
+
+    }
+
+    const tiempoProductivo =
+        tiempoTrabajado
+        - tiempoBreak
+        - tiempoAlmuerzo
+        - tiempoBano
+        - tiempoCapacitacion
+        - tiempoReunion;
+
+    let resumen =
+        await movimientosRepository.obtenerResumenDia(asesorId);
+
+    const datos = {
+
+        asesor_id: asesorId,
+
+        fecha: new Date(),
+
+        hora_entrada: entrada,
+
+        hora_salida: salida,
+
+        tiempo_trabajado: Math.max(0, Math.floor(tiempoTrabajado)),
+        tiempo_break: Math.floor(tiempoBreak),
+        tiempo_almuerzo: Math.floor(tiempoAlmuerzo),
+        tiempo_bano: Math.floor(tiempoBano),
+        tiempo_capacitacion: Math.floor(tiempoCapacitacion),
+        tiempo_reunion: Math.floor(tiempoReunion),
+
+        tiempo_productivo: Math.max(0, Math.floor(tiempoProductivo)),
+
+        llego_tarde: 0,
+        minutos_retraso: 0
+
+    };
+
+    if (!resumen) {
+
+        await movimientosRepository.crearResumenDia(datos);
+
+    } else {
+
+        await movimientosRepository.actualizarResumenDia(
+            resumen.id,
+            datos
+        );
+
+    }
+
+}

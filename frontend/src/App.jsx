@@ -74,30 +74,35 @@ if (!localStorage.getItem("token")) {
     }, []);
 
 
-    // ==========================================
-    // CUANDO CAMBIA EL ASESOR
-    // ==========================================
+// ==========================================
+// CUANDO CAMBIA EL ASESOR
+// ==========================================
 
-    useEffect(() => {
+useEffect(() => {
 
-        if (!asesor) {
+    if (!asesor) {
 
-            setEstado("Disponible");
-            setInicioEstado(null);
-            setInicioJornada(null);
+        setEstado("Disponible");
+        setInicioEstado(null);
+        setInicioJornada(null);
+        setResumen(null);
 
-            return;
+        return;
 
-        }
+    }
 
-        cargarEstado();
+    (async () => {
 
-    }, [asesor]);
+        await cargarEstado();
+        await cargarResumen();
 
+    })();
 
-    // ==========================================
-    // OBTENER ASESORES
-    // ==========================================
+}, [asesor]);
+
+// ==========================================
+// OBTENER ASESORES
+// ==========================================
 
     async function cargarAsesores() {
 
@@ -136,155 +141,189 @@ if (!localStorage.getItem("token")) {
 
 
     // ==========================================
-    // OBTENER ESTADO ACTUAL
-    // ==========================================
+// OBTENER ESTADO ACTUAL
+// ==========================================
 
-    async function cargarEstado() {
+async function cargarEstado() {
 
-        try {
+    try {
 
-            const respuesta =
-                await api.get(
-                    `/movimientos/estado/${asesor}`
-                );
-
-            console.log(
-                "ESTADO RECIBIDO:",
-                respuesta.data
+        const respuesta =
+            await api.get(
+                `/movimientos/estado/${asesor}`
             );
 
+        console.log(
+            "ESTADO RECIBIDO:",
+            respuesta.data
+        );
 
-            const datos = respuesta.data?.data?.estado;
+        const datos = respuesta.data?.data?.estado;
 
-if (!datos) {
-
-    setEstado("Disponible");
-    setInicioEstado(null);
-    setInicioJornada(null);
-    return;
-
-}
-
-const estadoBackend = String(datos.estado || "")
-    .trim()
-    .toUpperCase();
-
-setInicioEstado(datos.inicio_estado || null);
-
-setInicioJornada(datos.inicio_jornada || null);
-            // ==========================================
-// TRABAJANDO
-// ==========================================
-
-if (estadoBackend === "TRABAJANDO") {
-
-    setEstado("🟢 Trabajando");
-    return;
-
-}
-
-// ==========================================
-// BREAK
-// ==========================================
-
-if (estadoBackend === "BREAK") {
-
-    setEstado("☕ Break");
-    return;
-
-}
-
-// ==========================================
-// ALMUERZO
-// ==========================================
-
-if (estadoBackend === "ALMUERZO") {
-
-    setEstado("🍽 Almuerzo");
-    return;
-
-}
-
-// ==========================================
-// BAÑO
-// ==========================================
-
-if (estadoBackend === "BANO" || estadoBackend === "BAÑO") {
-
-    setEstado("🚻 Baño");
-    return;
-
-}
-
-// ==========================================
-// CAPACITACIÓN
-// ==========================================
-
-if (
-    estadoBackend === "CAPACITACION" ||
-    estadoBackend === "CAPACITACIÓN"
-) {
-
-    setEstado("📚 Capacitación");
-    return;
-
-}
-
-// ==========================================
-// REUNIÓN
-// ==========================================
-
-if (
-    estadoBackend === "REUNION" ||
-    estadoBackend === "REUNIÓN"
-) {
-
-    setEstado("👥 Reunión");
-    return;
-
-}
-
-// ==========================================
-// SALIDA
-// ==========================================
-
-if (estadoBackend === "SALIDA") {
-
-    setEstado("🔴 Salida");
-    return;
-
-}
-
-// ==========================================
-// DISPONIBLE
-// ==========================================
-
-setEstado("Disponible");
-
-
-            // ==========================================
-            // CUALQUIER OTRO ESTADO
-            // ==========================================
-
-            setEstado("Disponible");
-
-        } catch (error) {
-
-            console.error(
-                "ERROR CARGANDO ESTADO:",
-                error
-            );
+        if (!datos) {
 
             setEstado("Disponible");
             setInicioEstado(null);
             setInicioJornada(null);
 
+            return;
+
         }
+
+        const estadoBackend = String(datos.estado || "")
+            .trim()
+            .toUpperCase();
+
+        setInicioEstado(
+            datos.inicio_estado || null
+        );
+
+        setInicioJornada(
+            datos.inicio_jornada || null
+        );
+
+        // ==========================================
+        // TRABAJANDO
+        // ==========================================
+
+        if (estadoBackend === "TRABAJANDO") {
+
+            setEstado("🟢 Trabajando");
+            return;
+
+        }
+
+        // ==========================================
+        // BREAK
+        // ==========================================
+
+        if (estadoBackend === "BREAK") {
+
+            setEstado("☕ Break");
+            return;
+
+        }
+
+        // ==========================================
+        // ALMUERZO
+        // ==========================================
+
+        if (estadoBackend === "ALMUERZO") {
+
+            setEstado("🍽 Almuerzo");
+            return;
+
+        }
+
+        // ==========================================
+        // BAÑO
+        // ==========================================
+
+        if (
+            estadoBackend === "BANO" ||
+            estadoBackend === "BAÑO"
+        ) {
+
+            setEstado("🚻 Baño");
+            return;
+
+        }
+
+        // ==========================================
+        // CAPACITACIÓN
+        // ==========================================
+
+        if (
+            estadoBackend === "CAPACITACION" ||
+            estadoBackend === "CAPACITACIÓN"
+        ) {
+
+            setEstado("📚 Capacitación");
+            return;
+
+        }
+
+        // ==========================================
+        // REUNIÓN
+        // ==========================================
+
+        if (
+            estadoBackend === "REUNION" ||
+            estadoBackend === "REUNIÓN"
+        ) {
+
+            setEstado("👥 Reunión");
+            return;
+
+        }
+
+        // ==========================================
+        // SALIDA
+        // ==========================================
+
+        if (estadoBackend === "SALIDA") {
+
+            setEstado("🔴 Salida");
+            return;
+
+        }
+
+        // ==========================================
+        // DISPONIBLE
+        // ==========================================
+
+        setEstado("Disponible");
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CARGANDO ESTADO:",
+            error
+        );
+
+        setEstado("Disponible");
+        setInicioEstado(null);
+        setInicioJornada(null);
 
     }
 
+}
 
-    // ==========================================
+// ==========================================
+// OBTENER RESUMEN DEL DÍA
+// ==========================================
+
+async function cargarResumen() {
+
+    try {
+
+        const respuesta =
+            await api.get(
+                `/movimientos/resumen/${asesor}`
+            );
+
+        console.log(
+            "RESUMEN RECIBIDO:",
+            respuesta.data
+        );
+
+        setResumen(
+            respuesta.data.data || null
+        );
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CARGANDO RESUMEN:",
+            error
+        );
+
+        setResumen(null);
+
+    }
+
+}
+// ==========================================
     // CARGANDO
     // ==========================================
 
@@ -298,20 +337,20 @@ setEstado("Disponible");
                     marginTop: "80px"
                 }}
             >
-
                 Cargando asesores...
-
             </h2>
 
         );
 
     }
 
+    console.log("ESTADO:", estado);
+    console.log("RESUMEN EN APP:", resumen);
 
     // ==========================================
     // INTERFAZ
     // ==========================================
-console.log("RESUMEN EN APP:", resumen);
+
     return (
 
         <div className="container">
@@ -320,21 +359,15 @@ console.log("RESUMEN EN APP:", resumen);
 
                 <Header />
 
-
                 {/* ============================== */}
                 {/* SELECTOR DE ASESOR */}
                 {/* ============================== */}
 
                 <AdvisorSelect
-
                     asesores={asesores}
-
                     asesor={asesor}
-
                     setAsesor={setAsesor}
-
                 />
-
 
                 {/* ============================== */}
                 {/* BOTONES */}
@@ -345,7 +378,12 @@ console.log("RESUMEN EN APP:", resumen);
                     estado={estado}
                     setEstado={setEstado}
                     setResumen={setResumen}
-                    onMovimientoRegistrado={cargarEstado}
+                    onMovimientoRegistrado={async () => {
+
+                        await cargarEstado();
+                        await cargarResumen();
+
+                    }}
                 />
 
                 {/* ============================== */}

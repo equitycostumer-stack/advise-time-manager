@@ -9,40 +9,86 @@ const express = require("express");
 const router = express.Router();
 
 const usuariosController =
-require("../controllers/usuariosController");
+    require("../controllers/usuariosController");
 
 const verificarToken =
-require("../middleware/authMiddleware");
+    require("../middleware/authMiddleware");
 
 const verificarRol =
-require("../middleware/rolesMiddleware");
+    require("../middleware/rolesMiddleware");
 
 // ======================================================
-// USUARIOS
+// TODAS LAS RUTAS REQUIEREN AUTENTICACIÓN
 // ======================================================
 
-// Listar usuarios
+router.use(verificarToken);
+
+// ======================================================
+// SOLO ADMINISTRADORES
+// ======================================================
+
+router.use(
+    verificarRol("ADMINISTRADOR")
+);
+
+// ======================================================
+// LISTAR USUARIOS
+// ======================================================
+
 router.get(
+
     "/",
-    verificarToken,
-    verificarRol("ADMINISTRADOR"),
-    usuariosController.listar.bind(usuariosController)
+
+    usuariosController
+        .listar
+        .bind(usuariosController)
+
 );
 
-// Crear usuario
+// ======================================================
+// CREAR USUARIO
+// ======================================================
+
 router.post(
+
     "/",
-    verificarToken,
-    verificarRol("ADMINISTRADOR"),
-    usuariosController.crear.bind(usuariosController)
+
+    usuariosController
+        .crear
+        .bind(usuariosController)
+
 );
 
-// Actualizar usuario
+// ======================================================
+// ACTUALIZAR USUARIO
+// ======================================================
+
 router.put(
+
     "/:id",
-    verificarToken,
-    verificarRol("ADMINISTRADOR"),
-    usuariosController.actualizar.bind(usuariosController)
+
+    usuariosController
+        .actualizar
+        .bind(usuariosController)
+
 );
+
+// ======================================================
+// RESTABLECER CONTRASEÑA
+// ======================================================
+
+router.put(
+
+    "/:id/reset-password",
+
+    usuariosController
+        .resetearPassword
+        .bind(usuariosController)
+
+);
+
+// ======================================================
+// EXPORTAR ROUTER
+// ======================================================
 
 module.exports = router;

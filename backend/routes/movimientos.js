@@ -4,7 +4,8 @@ const router = express.Router();
 const {
     registrarMovimiento,
     obtenerHistorial,
-    obtenerEstadoActual
+    obtenerEstadoActual,
+    obtenerResumenJornada
 } = require("../controllers/movimientosController");
 
 // Registrar un movimiento
@@ -15,5 +16,8 @@ router.get("/historial/:asesorId", obtenerHistorial);
 
 // Estado actual del asesor
 router.get("/estado/:asesorId", obtenerEstadoActual);
+
+// Resumen de jornada
+router.get("/resumen/:asesorId", obtenerResumenJornada);
 
 module.exports = router;

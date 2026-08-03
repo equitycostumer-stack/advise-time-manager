@@ -46,7 +46,9 @@ class UsuariosController {
         try {
 
             const respuesta =
-                await usuariosService.crearUsuario(req.body);
+                await usuariosService.crearUsuario(
+                    req.body
+                );
 
             return res.status(201).json(respuesta);
 
@@ -79,9 +81,44 @@ class UsuariosController {
             const respuesta =
                 await usuariosService.actualizarUsuario(
 
-                    id,
+                    Number(id),
 
                     req.body
+
+                );
+
+            return res.status(200).json(respuesta);
+
+        } catch (error) {
+
+            console.error(error);
+
+            return res.status(400).json({
+
+                ok: false,
+
+                mensaje: error.message
+
+            });
+
+        }
+
+    }
+
+    // ======================================================
+    // RESTABLECER CONTRASEÑA
+    // ======================================================
+
+    async resetearPassword(req, res) {
+
+        try {
+
+            const { id } = req.params;
+
+            const respuesta =
+                await usuariosService.resetearPassword(
+
+                    Number(id)
 
                 );
 

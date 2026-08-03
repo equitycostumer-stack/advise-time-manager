@@ -15,7 +15,8 @@ class UsuariosService {
 
     async listarUsuarios() {
 
-        const usuarios = await usuariosRepository.listar();
+        const usuarios =
+            await usuariosRepository.listar();
 
         return {
 
@@ -36,37 +37,88 @@ class UsuariosService {
     async crearUsuario(datos) {
 
         const {
+
             asesor_id = null,
+
             usuario,
+
             email = null,
+
             telefono = null,
+
             password,
+
             rol
+
         } = datos;
 
+
+        // --------------------------------------------------
+        // VALIDACIONES
+        // --------------------------------------------------
+
         if (!usuario) {
-            throw new Error("Debe ingresar un usuario.");
+
+            throw new Error(
+                "Debe ingresar un usuario."
+            );
+
         }
 
         if (!password) {
-            throw new Error("Debe ingresar una contraseña.");
+
+            throw new Error(
+                "Debe ingresar una contraseña."
+            );
+
         }
 
         if (!rol) {
-            throw new Error("Debe indicar el rol.");
+
+            throw new Error(
+                "Debe indicar el rol."
+            );
+
         }
+
+
+        // --------------------------------------------------
+        // VALIDAR USUARIO EXISTENTE
+        // --------------------------------------------------
 
         const existe =
-            await usuariosRepository.existeUsuario(usuario);
+
+            await usuariosRepository.existeUsuario(
+                usuario
+            );
 
         if (existe) {
-            throw new Error("El usuario ya existe.");
+
+            throw new Error(
+                "El usuario ya existe."
+            );
+
         }
 
+
+        // --------------------------------------------------
+        // ENCRIPTAR PASSWORD
+        // --------------------------------------------------
+
         const passwordHash =
-            await bcrypt.hash(password, 10);
+
+            await bcrypt.hash(
+                password,
+                10
+            );
+
+
+        // --------------------------------------------------
+        // CREAR USUARIO
+        // --------------------------------------------------
 
         const id =
+
             await usuariosRepository.crear({
 
                 asesor_id,
@@ -83,11 +135,13 @@ class UsuariosService {
 
             });
 
+
         return {
 
             ok: true,
 
-            mensaje: "Usuario creado correctamente.",
+            mensaje:
+                "Usuario creado correctamente.",
 
             id
 
@@ -101,28 +155,40 @@ class UsuariosService {
 
     async actualizarUsuario(id, datos) {
 
-        const usuario = await usuariosRepository.obtenerPorId(id);
+        const usuario =
+
+            await usuariosRepository.obtenerPorId(id);
 
         if (!usuario) {
 
-            throw new Error("El usuario no existe.");
+            throw new Error(
+                "El usuario no existe."
+            );
 
         }
 
+
         const informacion = {
 
-            email: datos.email ?? usuario.email,
+            email:
+                datos.email ?? usuario.email,
 
-            telefono: datos.telefono ?? usuario.telefono,
+            telefono:
+                datos.telefono ?? usuario.telefono,
 
-            rol: datos.rol ?? usuario.rol,
+            rol:
+                datos.rol ?? usuario.rol,
 
             activo:
+
                 datos.activo !== undefined
+
                     ? datos.activo
+
                     : usuario.activo
 
         };
+
 
         await usuariosRepository.actualizar(
 
@@ -132,11 +198,84 @@ class UsuariosService {
 
         );
 
+
         return {
 
             ok: true,
 
-            mensaje: "Usuario actualizado correctamente."
+            mensaje:
+                "Usuario actualizado correctamente."
+
+        };
+
+    }
+
+    // ======================================================
+    // RESTABLECER CONTRASEÑA
+    // ======================================================
+
+    async resetearPassword(id) {
+
+        const usuario =
+
+            await usuariosRepository.obtenerPorId(id);
+
+        if (!usuario) {
+
+            throw new Error(
+                "El usuario no existe."
+            );
+
+        }
+
+
+        // --------------------------------------------------
+        // CONTRASEÑA TEMPORAL
+        // --------------------------------------------------
+
+        const passwordTemporal =
+
+            "Admin123*";
+
+
+        // --------------------------------------------------
+        // ENCRIPTAR
+        // --------------------------------------------------
+
+        const passwordHash =
+
+            await bcrypt.hash(
+
+                passwordTemporal,
+
+                10
+
+            );
+
+
+        // --------------------------------------------------
+        // ACTUALIZAR
+        // --------------------------------------------------
+
+        await usuariosRepository.actualizarPassword(
+
+            id,
+
+            passwordHash
+
+        );
+
+
+        return {
+
+            ok: true,
+
+            mensaje:
+                "Contraseña restablecida correctamente.",
+
+            passwordTemporal,
+
+            debe_cambiar_password: true
 
         };
 

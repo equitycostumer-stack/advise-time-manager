@@ -17,24 +17,63 @@ class AuthService {
 
     async login(usuario, password) {
 
-        if (!usuario) {
-            throw new Error("Debe ingresar el usuario.");
+        // ==================================================
+        // VALIDACIONES
+        // ==================================================
+
+        if (!usuario || !usuario.trim()) {
+
+            throw new Error(
+                "Debe ingresar el usuario."
+            );
+
         }
 
-        if (!password) {
-            throw new Error("Debe ingresar la contraseña.");
+        if (!password || !password.trim()) {
+
+            throw new Error(
+                "Debe ingresar la contraseña."
+            );
+
         }
 
-        const usuarioDB =
-            await usuariosRepository.obtenerPorUsuario(usuario);
+        // ==================================================
+// BUSCAR USUARIO
+// ==================================================
 
-        if (!usuarioDB) {
-            throw new Error("Usuario o contraseña incorrectos.");
-        }
+const usuarioDB =
+    await usuariosRepository.obtenerPorUsuario(
+        usuario.trim()
+    );
+
+console.log("====================================");
+console.log("USUARIO ENCONTRADO:");
+console.log(usuarioDB);
+console.log("====================================");
+
+if (!usuarioDB) {
+
+    throw new Error(
+        "Usuario o contraseña incorrectos."
+    );
+
+}
+
+        // ==================================================
+        // USUARIO ACTIVO
+        // ==================================================
 
         if (!usuarioDB.activo) {
-            throw new Error("El usuario está inactivo.");
+
+            throw new Error(
+                "El usuario está inactivo."
+            );
+
         }
+
+        // ==================================================
+        // VALIDAR CONTRASEÑA
+        // ==================================================
 
         const passwordCorrecto =
             await bcrypt.compare(
@@ -43,31 +82,47 @@ class AuthService {
             );
 
         if (!passwordCorrecto) {
-            throw new Error("Usuario o contraseña incorrectos.");
-        }
-
-        // ======================================================
-        // VALIDAR VARIABLES DE ENTORNO
-        // ======================================================
-
-        if (!process.env.JWT_SECRET) {
-
-            console.error("❌ JWT_SECRET no está definida.");
 
             throw new Error(
-                "JWT_SECRET no está configurada en las variables de entorno."
+                "Usuario o contraseña incorrectos."
             );
 
         }
+
+        // ==================================================
+        // VALIDAR JWT
+        // ==================================================
+
+        if (!process.env.JWT_SECRET) {
+
+            console.error(
+                "❌ JWT_SECRET no configurado."
+            );
+
+            throw new Error(
+                "JWT_SECRET no está configurado."
+            );
+
+        }
+
+        // ==================================================
+        // GENERAR TOKEN
+        // ==================================================
 
         const token = jwt.sign(
 
             {
 
                 id: usuarioDB.id,
-                asesor_id: usuarioDB.asesor_id,
-                usuario: usuarioDB.usuario,
-                rol: usuarioDB.rol
+
+                asesor_id:
+                    usuarioDB.asesor_id,
+
+                usuario:
+                    usuarioDB.usuario,
+
+                rol:
+                    usuarioDB.rol
 
             },
 
@@ -82,20 +137,64 @@ class AuthService {
 
         );
 
+        // ==================================================
+        // ACTUALIZAR ÚLTIMO ACCESO
+        // ==================================================
+
+        try {
+
+            await usuariosRepository.actualizarUltimoAcceso(
+                usuarioDB.id
+            );
+
+        } catch (error) {
+
+            console.warn(
+                "No fue posible actualizar ultimo_acceso."
+            );
+
+        }
+
+        // ==================================================
+        // RESPUESTA
+        // ==================================================
+
         return {
 
             ok: true,
+
+            mensaje:
+                "Inicio de sesión correcto.",
 
             token,
 
             usuario: {
 
-                id: usuarioDB.id,
-                asesor_id: usuarioDB.asesor_id,
-                usuario: usuarioDB.usuario,
-                rol: usuarioDB.rol,
+                id:
+                    usuarioDB.id,
+
+                asesor_id:
+                    usuarioDB.asesor_id,
+
+                usuario:
+                    usuarioDB.usuario,
+
+                email:
+                    usuarioDB.email,
+
+                telefono:
+                    usuarioDB.telefono,
+
+                rol:
+                    usuarioDB.rol,
+
+                activo:
+                    usuarioDB.activo,
+
                 debe_cambiar_password:
-                    usuarioDB.debe_cambiar_password
+                    Boolean(
+                        usuarioDB.debe_cambiar_password
+                    )
 
             }
 

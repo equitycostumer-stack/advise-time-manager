@@ -20,7 +20,11 @@ class MovimientosService {
     // ======================================================
 
     async registrarMovimiento(datos) {
-
+console.log("================================");
+console.log("DATOS RECIBIDOS EN EL SERVICE");
+console.log(datos);
+console.log("tipo:", datos.tipo);
+console.log("================================");
         const {
             asesor_id,
             tipo,
@@ -105,7 +109,7 @@ class MovimientosService {
             await movimientosRepository.obtenerEstadoActual(
                 asesor_id
             );
-// ==================================================
+        // ==================================================
         // DIRECCIONAR MOVIMIENTO
         // ==================================================
 
@@ -144,40 +148,62 @@ class MovimientosService {
         }
 
         // ==================================================
-        // INICIO DE PAUSAS
-        // ==================================================
+// INICIO DE PAUSAS
+// ==================================================
 
-        if (TIPOS_INICIO.includes(tipoMovimiento)) {
+if (TIPOS_INICIO.includes(tipoMovimiento)) {
 
-            return await this.registrarInicioPausa({
+    return await this.registrarInicioPausa({
 
-                asesor,
-                configuracion,
-                estadoActual,
-                observacion,
-                tipoMovimiento
+        asesor,
+        estadoActual,
+        observacion,
 
-            });
+        tipo: tipoMovimiento,
 
-        }
+        estado:
+            tipoMovimiento === TIPOS.BREAK_INICIO
+                ? ESTADOS.BREAK
+            : tipoMovimiento === TIPOS.ALMUERZO_INICIO
+                ? ESTADOS.ALMUERZO
+            : tipoMovimiento === TIPOS.BANO_INICIO
+                ? ESTADOS.BANO
+            : tipoMovimiento === TIPOS.CAPACITACION_INICIO
+                ? ESTADOS.CAPACITACION
+            : ESTADOS.REUNION
 
-        // ==================================================
-        // FIN DE PAUSAS
-        // ==================================================
+    });
 
-        if (TIPOS_FIN.includes(tipoMovimiento)) {
+}
 
-            return await this.registrarFinPausa({
+// ==================================================
+// FIN DE PAUSAS
+// ==================================================
 
-                asesor,
-                configuracion,
-                estadoActual,
-                observacion,
-                tipoMovimiento
+if (TIPOS_FIN.includes(tipoMovimiento)) {
 
-            });
+    return await this.registrarFinPausa({
 
-        }
+        asesor,
+        estadoActual,
+        observacion,
+
+        tipo: tipoMovimiento,
+
+        estado:
+            tipoMovimiento === TIPOS.BREAK_FIN
+                ? ESTADOS.BREAK
+            : tipoMovimiento === TIPOS.ALMUERZO_FIN
+                ? ESTADOS.ALMUERZO
+            : tipoMovimiento === TIPOS.BANO_FIN
+                ? ESTADOS.BANO
+            : tipoMovimiento === TIPOS.CAPACITACION_FIN
+                ? ESTADOS.CAPACITACION
+            : ESTADOS.REUNION
+
+    });
+
+}
 
         // ==================================================
         // MOVIMIENTO NO SOPORTADO
@@ -501,92 +527,102 @@ class MovimientosService {
 
     }
 
-// ======================================================
-    // MÉTODOS GENÉRICOS
     // ======================================================
+// MÉTODOS GENÉRICOS
+// ======================================================
 
-    async registrarInicioPausa({
+async registrarInicioPausa({
 
-        asesor,
+    asesor,
 
-        estadoActual,
+    estadoActual,
 
-        observacion,
+    observacion,
+
+    tipo,
+
+    estado
+
+}) {
+
+    // --------------------------------------------
+    // Debe tener jornada iniciada
+    // --------------------------------------------
+
+    if (
+        !estadoActual ||
+        estadoActual.estado === ESTADOS.SALIDA
+    ) {
+
+        throw new Error(
+            "El asesor no tiene una jornada activa."
+        );
+
+    }
+
+    // --------------------------------------------
+    // Solo puede iniciar pausas si está trabajando
+    // --------------------------------------------
+
+    if (estadoActual.estado !== ESTADOS.TRABAJANDO) {
+
+        throw new Error(
+            `No puede iniciar ${estado} porque actualmente está en ${estadoActual.estado}.`
+        );
+
+    }
+
+    // --------------------------------------------
+    // Registrar movimiento
+    // --------------------------------------------
+
+    await movimientosRepository.insertarMovimiento(
+
+        asesor.id,
 
         tipo,
 
-        estado
+        new Date(),
 
-    }) {
+        observacion
 
-        if (
-            !estadoActual ||
-            estadoActual.estado === ESTADOS.SALIDA
-        ) {
+    );
 
-            throw new Error(
-                "El asesor no tiene una jornada activa."
-            );
+    // --------------------------------------------
+    // Actualizar estado actual
+    // --------------------------------------------
 
-        }
+    await movimientosRepository.actualizarEstadoActual(
 
-        const pausas = [
+        asesor.id,
 
-            ESTADOS.BREAK,
-            ESTADOS.ALMUERZO,
-            ESTADOS.BANO,
-            ESTADOS.CAPACITACION,
-            ESTADOS.REUNION
+        estado,
 
-        ];
+        new Date()
 
-        if (pausas.includes(estadoActual.estado)) {
+    );
 
-            throw new Error(
-                "El asesor ya tiene una pausa activa."
-            );
+    // --------------------------------------------
+    // Respuesta
+    // --------------------------------------------
 
-        }
+    return {
 
-        await movimientosRepository.insertarMovimiento(
+        ok: true,
 
-            asesor.id,
+        movimiento: tipo,
 
-            tipo,
+        estado,
 
-            new Date(),
+        asesor: asesor.nombre,
 
-            observacion
+        fecha: new Date(),
 
-        );
+        mensaje: `${estado} iniciado correctamente.`
 
-        await movimientosRepository.actualizarEstadoActual(
+    };
 
-            asesor.id,
-
-            estado,
-
-            new Date()
-
-        );
-
-        return {
-
-            ok: true,
-
-            movimiento: tipo,
-
-            estado,
-
-            asesor: asesor.nombre,
-
-            fecha: new Date(),
-
-            mensaje: `${estado} iniciado correctamente.`
-
-        };
-
-    }
+}
 
     async registrarFinPausa({
 

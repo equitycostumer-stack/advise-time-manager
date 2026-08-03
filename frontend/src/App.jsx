@@ -154,215 +154,112 @@ if (!localStorage.getItem("token")) {
             );
 
 
-            const datos = respuesta.data;
+            const datos = respuesta.data?.data?.estado;
 
+if (!datos) {
 
+    setEstado("Disponible");
+    setInicioEstado(null);
+    setInicioJornada(null);
+    return;
+
+}
+
+const estadoBackend = String(datos.estado || "")
+    .trim()
+    .toUpperCase();
+
+setInicioEstado(datos.inicio_estado || null);
+
+setInicioJornada(datos.inicio_jornada || null);
             // ==========================================
-            // SI NO EXISTE ESTADO
-            // ==========================================
+// TRABAJANDO
+// ==========================================
 
-            if (!datos || !datos.estado) {
+if (estadoBackend === "TRABAJANDO") {
 
-                setEstado("Disponible");
-                setInicioEstado(null);
-                setInicioJornada(null);
+    setEstado("🟢 Trabajando");
+    return;
 
-                return;
+}
 
-            }
+// ==========================================
+// BREAK
+// ==========================================
 
+if (estadoBackend === "BREAK") {
 
-            const estadoBackend =
-                String(datos.estado).toUpperCase();
+    setEstado("☕ Break");
+    return;
 
+}
 
-            // ==========================================
-            // INICIO DEL ESTADO ACTUAL
-            // ==========================================
+// ==========================================
+// ALMUERZO
+// ==========================================
 
-            setInicioEstado(
-                datos.inicio_estado || null
-            );
+if (estadoBackend === "ALMUERZO") {
 
+    setEstado("🍽 Almuerzo");
+    return;
 
-            // ==========================================
-            // INICIO REAL DE LA JORNADA
-            // ==========================================
+}
 
+// ==========================================
+// BAÑO
+// ==========================================
 
-            if (
-                datos.inicio_jornada
-            ) {
+if (estadoBackend === "BANO" || estadoBackend === "BAÑO") {
 
-                setInicioJornada(
-                    datos.inicio_jornada
-                );
+    setEstado("🚻 Baño");
+    return;
 
-            } else {
+}
 
-                setInicioJornada(null);
+// ==========================================
+// CAPACITACIÓN
+// ==========================================
 
-            }
+if (
+    estadoBackend === "CAPACITACION" ||
+    estadoBackend === "CAPACITACIÓN"
+) {
 
+    setEstado("📚 Capacitación");
+    return;
 
-            // ==========================================
-            // TRABAJANDO
-            // ==========================================
+}
 
-            if (
+// ==========================================
+// REUNIÓN
+// ==========================================
 
-                estadoBackend === "ENTRADA" ||
+if (
+    estadoBackend === "REUNION" ||
+    estadoBackend === "REUNIÓN"
+) {
 
-                estadoBackend === "TRABAJANDO" ||
+    setEstado("👥 Reunión");
+    return;
 
-                estadoBackend === "BREAK_FIN" ||
+}
 
-                estadoBackend === "ALMUERZO_FIN" ||
+// ==========================================
+// SALIDA
+// ==========================================
 
-                estadoBackend === "BANO_FIN" ||
+if (estadoBackend === "SALIDA") {
 
-                estadoBackend === "CAPACITACION_FIN" ||
+    setEstado("🔴 Salida");
+    return;
 
-                estadoBackend === "REUNION_FIN"
+}
 
-            ) {
+// ==========================================
+// DISPONIBLE
+// ==========================================
 
-                setEstado(
-                    "🟢 Trabajando"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // BREAK
-            // ==========================================
-
-            if (
-
-                estadoBackend === "BREAK" ||
-
-                estadoBackend === "BREAK_INICIO"
-
-            ) {
-
-                setEstado(
-                    "☕ Break"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // ALMUERZO
-            // ==========================================
-
-            if (
-
-                estadoBackend === "ALMUERZO" ||
-
-                estadoBackend === "ALMUERZO_INICIO"
-
-            ) {
-
-                setEstado(
-                    "🍽 Almuerzo"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // BAÑO
-            // ==========================================
-
-            if (
-
-                estadoBackend === "BANO" ||
-
-                estadoBackend === "BANO_INICIO"
-
-            ) {
-
-                setEstado(
-                    "🚻 Baño"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // CAPACITACIÓN
-            // ==========================================
-
-            if (
-
-                estadoBackend === "CAPACITACION" ||
-
-                estadoBackend === "CAPACITACION_INICIO"
-
-            ) {
-
-                setEstado(
-                    "📚 Capacitación"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // REUNIÓN
-            // ==========================================
-
-            if (
-
-                estadoBackend === "REUNION" ||
-
-                estadoBackend === "REUNION_INICIO"
-
-            ) {
-
-                setEstado(
-                    "👥 Reunión"
-                );
-
-                return;
-
-            }
-
-
-            // ==========================================
-            // SALIDA
-            // ==========================================
-
-            if (
-                estadoBackend === "SALIDA"
-            ) {
-
-                setEstado(
-                    "🔴 Salida"
-                );
-
-                /*
-                 * Al salir termina la jornada visual.
-                 * No borramos inicioJornada aquí porque
-                 * puede ser útil para datos internos,
-                 * pero WorkTimer no se mostrará.
-                 */
-
-                return;
-
-            }
+setEstado("Disponible");
 
 
             // ==========================================
@@ -444,73 +341,54 @@ console.log("RESUMEN EN APP:", resumen);
                 {/* ============================== */}
 
                 <Buttons
-
-    asesor={asesor}
-
-    estado={estado}
-
-    setEstado={setEstado}
-
-    setResumen={setResumen}
-
-    onMovimientoRegistrado={
-        cargarEstado
-    }
-
-/>
-
+                    asesor={asesor}
+                    estado={estado}
+                    setEstado={setEstado}
+                    setResumen={setResumen}
+                    onMovimientoRegistrado={cargarEstado}
+                />
 
                 {/* ============================== */}
                 {/* ESTADO */}
                 {/* ============================== */}
 
                 <StatusCard
-
                     estado={estado}
-
                 />
-
 
                 {/* ============================== */}
                 {/* CONTADOR DE JORNADA */}
                 {/* ============================== */}
 
                 <WorkTimer
-
                     estado={estado}
-
                     inicioJornada={inicioJornada}
-
                 />
-
 
                 {/* ============================== */}
                 {/* CONTADOR DE BREAK */}
                 {/* ============================== */}
 
                 <BreakTimer
-
                     estado={estado}
-
                     inicioEstado={inicioEstado}
-
                 />
-<ResumenJornada
 
-    resumen={resumen}
+                {/* ============================== */}
+                {/* RESUMEN DE JORNADA */}
+                {/* ============================== */}
 
-/>
+                <ResumenJornada
+                    resumen={resumen}
+                />
 
                 {/* ============================== */}
                 {/* MENSAJE */}
                 {/* ============================== */}
 
                 <MessageCard
-
                     mensaje={mensaje}
-
                 />
-
 
                 {/* ============================== */}
                 {/* FOOTER */}
@@ -518,11 +396,15 @@ console.log("RESUMEN EN APP:", resumen);
 
                 <Footer />
 
-<Dashboard />
+                {/* ============================== */}
+                {/* DASHBOARD */}
+                {/* ============================== */}
 
-</div>
+                <Dashboard />
 
-</div>
+            </div>
+
+        </div>
 
     );
 

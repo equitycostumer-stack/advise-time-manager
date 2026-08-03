@@ -1,18 +1,30 @@
 import api from "../services/api";
 
 export default function Buttons({
+
     asesor,
+
     estado,
+
     setEstado,
+
     setResumen,
+
     onMovimientoRegistrado
+
 }) {
+
+    // ======================================================
+    // REGISTRAR MOVIMIENTO
+    // ======================================================
 
     async function registrar(tipo, nuevoEstado) {
 
         if (!asesor) {
+
             alert("Seleccione un asesor.");
             return;
+
         }
 
         console.log("=================================");
@@ -24,68 +36,70 @@ export default function Buttons({
 
         try {
 
-            const respuesta = await api.post(
+            const { data } = await api.post(
+
                 "/movimientos",
+
                 {
+
                     asesor_id: Number(asesor),
+
                     tipo
+
                 }
+
             );
 
-            console.log("RESPUESTA BACKEND:", respuesta.data);
-            console.log(
-    JSON.stringify(
-        respuesta.data,
-        null,
-        2
-    )
-);
+            console.log("RESPUESTA DEL BACKEND");
+            console.log(data);
 
-            if (!respuesta.data?.ok) {
+            if (!data?.ok) {
 
-                alert(
-                    respuesta.data?.error ||
+                throw new Error(
+
+                    data?.mensaje ||
+
+                    data?.error ||
+
                     "No fue posible registrar el movimiento."
+
                 );
 
-                return;
+            }
+
+            const estadoServidor =
+
+                data?.data?.estado ||
+
+                data?.estado ||
+
+                nuevoEstado;
+
+            setEstado(estadoServidor);
+
+            if (setResumen) {
+
+                if (tipo === "SALIDA") {
+
+                    setResumen(
+
+                        data?.resumen ||
+
+                        data?.data?.resumen ||
+
+                        null
+
+                    );
+
+                } else if (tipo === "ENTRADA") {
+
+                    setResumen(null);
+
+                }
 
             }
 
-            // ==========================================
-            // ACTUALIZAR RESUMEN
-            // ==========================================
-
-            if (
-                tipo === "SALIDA" &&
-                respuesta.data.resumen &&
-                setResumen
-            ) {
-
-                setResumen(respuesta.data.resumen);
-
-            }
-
-            if (
-                tipo === "ENTRADA" &&
-                setResumen
-            ) {
-
-                setResumen(null);
-
-            }
-
-            // ==========================================
-            // ACTUALIZAR ESTADO VISUAL
-            // ==========================================
-
-            setEstado(nuevoEstado);
-
-            // ==========================================
-            // VOLVER A CONSULTAR BACKEND
-            // ==========================================
-
-            if (onMovimientoRegistrado) {
+            if (typeof onMovimientoRegistrado === "function") {
 
                 await onMovimientoRegistrado();
 
@@ -93,263 +107,256 @@ export default function Buttons({
 
         } catch (error) {
 
-            console.error(
-                "ERROR REGISTRANDO MOVIMIENTO:",
-                error
-            );
-
-            console.error(
-                "RESPUESTA DEL SERVIDOR:",
-                error.response?.data
-            );
+            console.error(error);
 
             alert(
+
+                error.response?.data?.mensaje ||
+
                 error.response?.data?.error ||
+
+                error.message ||
+
                 "No fue posible registrar el movimiento."
+
             );
 
         }
 
     }
 
+    // ======================================================
+    // ESTILOS
+    // ======================================================
+
     function estilo(color) {
 
         return {
 
             background: color,
+
             color: "#fff",
+
             border: "none",
+
             borderRadius: "10px",
+
             padding: "15px",
+
             fontSize: "18px",
+
             fontWeight: "bold",
-            cursor: "pointer"
+
+            cursor: "pointer",
+
+            width: "100%"
 
         };
 
     }
+// ======================================================
+// ESTADOS
+// ======================================================
 
-    const trabajando =
-        estado === "🟢 Trabajando";
+const estadoActual = String(estado || "")
+    .trim()
+    .toUpperCase();
 
-    const enBreak =
-        estado === "☕ Break";
+const trabajando =
+    estadoActual.includes("TRABAJANDO");
 
-    const enAlmuerzo =
-        estado === "🍽 Almuerzo";
+const enBreak =
+    estadoActual.includes("BREAK");
 
-    const enBano =
-        estado === "🚻 Baño";
+const enAlmuerzo =
+    estadoActual.includes("ALMUERZO");
 
-    const enCapacitacion =
-        estado === "📚 Capacitación";
+const enBano =
+    estadoActual.includes("BANO") ||
+    estadoActual.includes("BAÑO");
 
-    const enReunion =
-        estado === "👥 Reunión";
+const enCapacitacion =
+    estadoActual.includes("CAPACITACION") ||
+    estadoActual.includes("CAPACITACIÓN");
 
-    // Permitir ENTRADA cuando está disponible o ya salió
-    const disponible = [
-        "Disponible",
-        "🔴 Salida"
-    ].includes(estado);
+const enReunion =
+    estadoActual.includes("REUNION") ||
+    estadoActual.includes("REUNIÓN");
 
-    return (
+const disponible =
+    estadoActual.includes("DISPONIBLE") ||
+    estadoActual.includes("SALIDA");
 
-        <div className="grid">
+return (
 
-            <button
-                style={estilo("#0B5ED7")}
-                disabled={!disponible}
-                onClick={() =>
-                    registrar(
-                        "ENTRADA",
-                        "🟢 Trabajando"
-                    )
-                }
-            >
-                🟢 ENTRADA
-            </button>
+    <div className="grid">
 
-            <button
-                style={estilo("#F39C12")}
-                disabled={
-                    !trabajando &&
-                    !enBreak
-                }
-                onClick={() => {
+        {/* ====================================== */}
+        {/* ENTRADA */}
+        {/* ====================================== */}
 
-                    if (enBreak) {
+        <button
+            style={estilo("#0B5ED7")}
+            disabled={!disponible}
+            onClick={() =>
+                registrar(
+                    "ENTRADA",
+                    "TRABAJANDO"
+                )
+            }
+        >
+            🟢 ENTRADA
+        </button>
 
-                        registrar(
-                            "BREAK_FIN",
-                            "🟢 Trabajando"
-                        );
+        {/* ====================================== */}
+        {/* BREAK */}
+        {/* ====================================== */}
 
-                    } else {
-
-                        registrar(
-                            "BREAK_INICIO",
-                            "☕ Break"
-                        );
-
-                    }
-
-                }}
-            >
-                {
+        <button
+            style={estilo("#F39C12")}
+            disabled={
+                !trabajando &&
+                !enBreak
+            }
+            onClick={() =>
+                registrar(
                     enBreak
-                        ? "▶ REGRESO BREAK"
-                        : "☕ BREAK"
-                }
-            </button>
+                        ? "BREAK_FIN"
+                        : "BREAK_INICIO",
+                    enBreak
+                        ? "TRABAJANDO"
+                        : "BREAK"
+                )
+            }
+        >
+            {
+                enBreak
+                    ? "▶ REGRESO BREAK"
+                    : "☕ BREAK"
+            }
+        </button>
 
-            <button
-                style={estilo("#27AE60")}
-                disabled={
-                    !trabajando &&
-                    !enAlmuerzo
-                }
-                onClick={() => {
+        {/* ====================================== */}
+        {/* ALMUERZO */}
+        {/* ====================================== */}
 
-                    if (enAlmuerzo) {
-
-                        registrar(
-                            "ALMUERZO_FIN",
-                            "🟢 Trabajando"
-                        );
-
-                    } else {
-
-                        registrar(
-                            "ALMUERZO_INICIO",
-                            "🍽 Almuerzo"
-                        );
-
-                    }
-
-                }}
-            >
-                {
+        <button
+            style={estilo("#27AE60")}
+            disabled={
+                !trabajando &&
+                !enAlmuerzo
+            }
+            onClick={() =>
+                registrar(
                     enAlmuerzo
-                        ? "▶ REGRESO ALMUERZO"
-                        : "🍽 ALMUERZO"
-                }
-            </button>
+                        ? "ALMUERZO_FIN"
+                        : "ALMUERZO_INICIO",
+                    enAlmuerzo
+                        ? "TRABAJANDO"
+                        : "ALMUERZO"
+                )
+            }
+        >
+            {
+                enAlmuerzo
+                    ? "▶ REGRESO ALMUERZO"
+                    : "🍽 ALMUERZO"
+            }
+        </button>
+        {/* ====================================== */}
+        {/* BAÑO */}
+        {/* ====================================== */}
 
-            <button
-                style={estilo("#17A2B8")}
-                disabled={
-                    !trabajando &&
-                    !enBano
-                }
-                onClick={() => {
-
-                    if (enBano) {
-
-                        registrar(
-                            "BANO_FIN",
-                            "🟢 Trabajando"
-                        );
-
-                    } else {
-
-                        registrar(
-                            "BANO_INICIO",
-                            "🚻 Baño"
-                        );
-
-                    }
-
-                }}
-            >
-                {
+        <button
+            style={estilo("#16A085")}
+            disabled={!trabajando && !enBano}
+            onClick={() =>
+                registrar(
                     enBano
-                        ? "▶ REGRESO BAÑO"
-                        : "🚻 BAÑO"
-                }
-            </button>
+                        ? "BANO_FIN"
+                        : "BANO_INICIO",
+                    enBano
+                        ? "TRABAJANDO"
+                        : "BANO"
+                )
+            }
+        >
+            {
+                enBano
+                    ? "▶ REGRESO BAÑO"
+                    : "🚻 BAÑO"
+            }
+        </button>
 
-            <button
-                style={estilo("#6F42C1")}
-                disabled={
-                    !trabajando &&
-                    !enCapacitacion
-                }
-                onClick={() => {
+        {/* ====================================== */}
+        {/* CAPACITACIÓN */}
+        {/* ====================================== */}
 
-                    if (enCapacitacion) {
-
-                        registrar(
-                            "CAPACITACION_FIN",
-                            "🟢 Trabajando"
-                        );
-
-                    } else {
-
-                        registrar(
-                            "CAPACITACION_INICIO",
-                            "📚 Capacitación"
-                        );
-
-                    }
-
-                }}
-            >
-                {
+        <button
+            style={estilo("#8E44AD")}
+            disabled={!trabajando && !enCapacitacion}
+            onClick={() =>
+                registrar(
                     enCapacitacion
-                        ? "▶ REGRESO CAPACITACIÓN"
-                        : "📚 CAPACITACIÓN"
-                }
-            </button>
+                        ? "CAPACITACION_FIN"
+                        : "CAPACITACION_INICIO",
+                    enCapacitacion
+                        ? "TRABAJANDO"
+                        : "CAPACITACION"
+                )
+            }
+        >
+            {
+                enCapacitacion
+                    ? "▶ FIN CAPACITACIÓN"
+                    : "📚 CAPACITACIÓN"
+            }
+        </button>
 
-            <button
-                style={estilo("#20C997")}
-                disabled={
-                    !trabajando &&
-                    !enReunion
-                }
-                onClick={() => {
+        {/* ====================================== */}
+        {/* REUNIÓN */}
+        {/* ====================================== */}
 
-                    if (enReunion) {
-
-                        registrar(
-                            "REUNION_FIN",
-                            "🟢 Trabajando"
-                        );
-
-                    } else {
-
-                        registrar(
-                            "REUNION_INICIO",
-                            "👥 Reunión"
-                        );
-
-                    }
-
-                }}
-            >
-                {
+        <button
+            style={estilo("#2C3E50")}
+            disabled={!trabajando && !enReunion}
+            onClick={() =>
+                registrar(
                     enReunion
-                        ? "▶ REGRESO REUNIÓN"
-                        : "👥 REUNIÓN"
-                }
-            </button>
+                        ? "REUNION_FIN"
+                        : "REUNION_INICIO",
+                    enReunion
+                        ? "TRABAJANDO"
+                        : "REUNION"
+                )
+            }
+        >
+            {
+                enReunion
+                    ? "▶ FIN REUNIÓN"
+                    : "👥 REUNIÓN"
+            }
+        </button>
 
-            <button
-                style={estilo("#DC3545")}
-                disabled={!trabajando}
-                onClick={() =>
-                    registrar(
-                        "SALIDA",
-                        "🔴 Salida"
-                    )
-                }
-            >
-                🔴 SALIDA
-            </button>
+        {/* ====================================== */}
+        {/* SALIDA */}
+        {/* ====================================== */}
 
-        </div>
+        <button
+            style={estilo("#C0392B")}
+            disabled={!trabajando}
+            onClick={() =>
+                registrar(
+                    "SALIDA",
+                    "SALIDA"
+                )
+            }
+        >
+            🔴 SALIDA
+        </button>
 
-    );
+    </div>
+
+);
 
 }

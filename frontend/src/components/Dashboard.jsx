@@ -54,7 +54,9 @@ export default function Dashboard() {
                 `/movimientos/historial/${asesor.id}`
             );
 
-            setHistorial(res.data || []);
+            setHistorial(
+    res.data?.data?.movimientos || []
+);
 
             setAsesorSeleccionado(asesor);
 

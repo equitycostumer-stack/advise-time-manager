@@ -118,13 +118,7 @@ const obtenerEstadoActual = async (req, res) => {
         const estado =
             await movimientosService.obtenerEstadoActual(asesor_id);
 
-        return res.status(200).json({
-
-            ok: true,
-
-            data: estado
-
-        });
+        return res.status(200).json(estado);
 
     } catch (error) {
 
@@ -142,7 +136,6 @@ const obtenerEstadoActual = async (req, res) => {
 
 };
 
-
 // ======================================================
 // OBTENER HISTORIAL
 // ======================================================
@@ -151,7 +144,9 @@ const obtenerHistorial = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(req.params.asesorId || req.query.asesor_id);
+        const asesor_id = Number(
+            req.params.asesorId || req.query.asesor_id
+        );
 
         if (!asesor_id) {
 
@@ -168,13 +163,7 @@ const obtenerHistorial = async (req, res) => {
         const historial =
             await movimientosService.obtenerHistorial(asesor_id);
 
-        return res.status(200).json({
-
-            ok: true,
-
-            data: historial
-
-        });
+        return res.status(200).json(historial);
 
     } catch (error) {
 
@@ -199,7 +188,9 @@ const obtenerResumenJornada = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(req.params.asesorId || req.query.asesor_id);
+        const asesor_id = Number(
+            req.params.asesorId || req.query.asesor_id
+        );
 
         if (!asesor_id) {
 
@@ -214,15 +205,11 @@ const obtenerResumenJornada = async (req, res) => {
         }
 
         const resumen =
-            await movimientosService.obtenerResumenJornada(asesor_id);
+            await movimientosService.obtenerResumenJornada(
+                asesor_id
+            );
 
-        return res.status(200).json({
-
-            ok: true,
-
-            data: resumen
-
-        });
+        return res.status(200).json(resumen);
 
     } catch (error) {
 
@@ -239,7 +226,6 @@ const obtenerResumenJornada = async (req, res) => {
     }
 
 };
-
 // ======================================================
 // OBTENER RESUMEN DEL DÍA
 // ======================================================
@@ -307,21 +293,5 @@ module.exports = {
     obtenerResumenJornada,
 
     obtenerResumen
-
-};
-
-// ======================================================
-// EXPORTACIONES
-// ======================================================
-
-module.exports = {
-
-    registrarMovimiento,
-
-    obtenerEstadoActual,
-
-    obtenerHistorial,
-
-    obtenerResumenJornada
 
 };

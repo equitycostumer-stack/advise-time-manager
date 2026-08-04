@@ -203,7 +203,7 @@ async obtenerMovimientosDelDia(asesorId, fecha = null) {
 
 }
 // ======================================================
-// OBTENER RESUMEN DEL DÍA
+// OBTENER ÚLTIMO RESUMEN DEL DÍA
 // ======================================================
 
 async obtenerResumenDia(asesorId, fecha = null) {
@@ -213,6 +213,7 @@ async obtenerResumenDia(asesorId, fecha = null) {
         FROM resumen_jornada
         WHERE asesor_id = ?
           AND fecha = COALESCE(?, CURDATE())
+        ORDER BY id DESC
         LIMIT 1
     `;
 

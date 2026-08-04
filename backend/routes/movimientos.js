@@ -1,42 +1,42 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-    registrarMovimiento,
-    obtenerHistorial,
-    obtenerEstadoActual,
-    obtenerResumenJornada,
-    obtenerResumen
-} = require("../controllers/movimientosController");
+const movimientosController = require("../controllers/movimientosController");
 
 // ======================================================
 // REGISTRAR MOVIMIENTO
 // ======================================================
 
-router.post("/", registrarMovimiento);
+router.post(
+    "/",
+    movimientosController.registrarMovimiento
+);
 
 // ======================================================
 // ESTADO ACTUAL
 // ======================================================
 
-router.get("/estado/:asesorId", obtenerEstadoActual);
+router.get(
+    "/estado/:asesorId",
+    movimientosController.obtenerEstadoActual
+);
 
 // ======================================================
-// HISTORIAL DEL DÍA
+// HISTORIAL
 // ======================================================
 
-router.get("/historial/:asesorId", obtenerHistorial);
+router.get(
+    "/historial/:asesorId",
+    movimientosController.obtenerHistorial
+);
 
 // ======================================================
-// RESUMEN DE JORNADA (LEGACY)
+// RESUMEN DE JORNADA
 // ======================================================
 
-router.get("/resumen-jornada/:asesorId", obtenerResumenJornada);
-
-// ======================================================
-// RESUMEN AUTOMÁTICO DEL DÍA
-// ======================================================
-
-router.get("/resumen/:asesorId", obtenerResumen);
+router.get(
+    "/resumen-jornada/:asesorId",
+    movimientosController.obtenerResumenJornada
+);
 
 module.exports = router;

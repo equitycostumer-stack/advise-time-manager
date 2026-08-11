@@ -12,94 +12,234 @@ export default function Dashboard() {
     const [incidencias, setIncidencias] = useState([]);
     const [historial, setHistorial] = useState([]);
     const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
+    const [resumenJornada, setResumenJornada] = useState(null);
+    const [incidenciasHistorial, setIncidenciasHistorial] = useState([]);
+    const [ahora, setAhora] = useState(Date.now());
 
-    // =====================================================
-    // CARGAR DASHBOARD
-    // =====================================================
+// =====================================================
+// CARGAR DASHBOARD
+// =====================================================
 
-    async function cargarDashboard() {
+async function cargarDashboard() {
 
-        try {
+    try {
 
-            // Dashboard
-            const dashboard = await api.get("/dashboard");
+        const dashboard = await api.get("/dashboard");
 
-            setAsesores(dashboard.data.asesores || []);
+console.log("====================================");
+console.log("RESPUESTA COMPLETA");
+console.log(dashboard.data);
+console.log("====================================");
 
-            // Incidencias reales
-            const incidenciasRes = await api.get("/incidencias");
+console.log("dashboard.data.asesores");
+console.log(dashboard.data.asesores);
 
-            setIncidencias(incidenciasRes.data || []);
+console.log("Array.isArray:");
+console.log(Array.isArray(dashboard.data.asesores));
 
-        } catch (error) {
+setAsesores(dashboard.data.asesores || []);
 
-            console.error(
-                "❌ Error cargando dashboard:",
-                error
-            );
+        const incidenciasRes = await api.get("/incidencias");
 
-        }
+        console.log("INCIDENCIAS:", incidenciasRes.data);
 
-    }
+        setIncidencias(incidenciasRes.data || []);
 
-    // =====================================================
-    // VER HISTORIAL DE UN ASESOR
-    // =====================================================
+    } catch (error) {
 
-    async function verHistorial(asesor) {
+        console.error("ERROR DASHBOARD");
 
-        try {
+        console.error(error);
 
-            const res = await api.get(
-                `/movimientos/historial/${asesor.id}`
-            );
+        if (error.response) {
 
-            setHistorial(
-    res.data?.data?.movimientos || []
-);
-
-            setAsesorSeleccionado(asesor);
-
-        } catch (error) {
-
-            console.error(
-                "❌ Error cargando historial:",
-                error
-            );
-
-            alert(
-                "No fue posible cargar el historial."
-            );
+            console.error(error.response.data);
 
         }
 
     }
 
-    // =====================================================
-    // ACTUALIZACIÓN AUTOMÁTICA
-    // =====================================================
+}
+// =====================================================
+// RELOJ DEL DASHBOARD
+// =====================================================
 
-    useEffect(() => {
+useEffect(() => {
 
-        // Cargar inmediatamente
+    const timer = setInterval(() => {
+
+        setAhora(Date.now());
+
+    }, 1000);
+
+    return () => clearInterval(timer);
+
+}, []);
+// =====================================================
+// VER HISTORIAL DE UN ASESOR
+// =====================================================
+
+async function verHistorial(asesor) {
+
+    try {
+
+        console.clear();
+
+        console.log("========================================");
+        console.log("📋 CARGANDO HISTORIAL");
+        console.log("Asesor:", asesor.nombre);
+        console.log("ID:", asesor.id);
+        console.log("========================================");
+
+        const [
+
+            historialRes,
+
+            resumenRes,
+
+            incidenciasRes
+
+        ] = await Promise.all([
+
+            api.get(`/movimientos/historial/${asesor.id}`),
+
+            api.get(`/movimientos/resumen/${asesor.id}`),
+
+            api.get(`/incidencias/asesor/${asesor.id}`)
+
+        ]);
+
+        console.log("✅ Historial:", historialRes.data);
+        console.log("✅ Resumen:", resumenRes.data);
+        console.log("✅ Incidencias:", incidenciasRes.data);
+
+        let movimientos = [];
+
+        if (Array.isArray(historialRes.data)) {
+
+            movimientos = historialRes.data;
+
+        }
+
+        else if (Array.isArray(historialRes.data?.data)) {
+
+            movimientos = historialRes.data.data;
+
+        }
+
+        else if (Array.isArray(historialRes.data?.data?.movimientos)) {
+
+            movimientos = historialRes.data.data.movimientos;
+
+        }
+
+        else if (
+
+            Array.isArray(
+
+                historialRes.data?.data?.data?.movimientos
+
+            )
+
+        ) {
+
+            movimientos =
+
+                historialRes.data.data.data.movimientos;
+
+        }
+
+        setHistorial(movimientos);
+
+        setResumenJornada(
+
+            resumenRes.data?.data?.resumen ||
+
+            resumenRes.data?.resumen ||
+
+            null
+
+        );
+
+        setIncidenciasHistorial(
+
+            incidenciasRes.data?.data ||
+
+            incidenciasRes.data ||
+
+            []
+
+        );
+
+        setAsesorSeleccionado(asesor);
+
+        console.log("✅ Historial abierto correctamente.");
+
+    }
+
+    catch (error) {
+
+        console.error("========================================");
+        console.error("❌ ERROR CARGANDO HISTORIAL");
+        console.error("========================================");
+
+        console.error(error);
+
+        if (error.response) {
+
+            console.error("STATUS:", error.response.status);
+
+            console.error("URL:", error.config?.url);
+
+            console.error("DATA:", error.response.data);
+
+        }
+
+        else if (error.request) {
+
+            console.error("No hubo respuesta del servidor.");
+
+            console.error(error.request);
+
+        }
+
+        else {
+
+            console.error("Error:", error.message);
+
+        }
+
+        alert("No fue posible cargar el historial.");
+
+    }
+
+}
+// =====================================================
+// INICIALIZAR DASHBOARD
+// =====================================================
+
+useEffect(() => {
+
+    cargarDashboard();
+
+    const intervalo = setInterval(() => {
+
         cargarDashboard();
 
-        // Actualizar cada 5 segundos
-        const intervalo = setInterval(() => {
+    }, 5000);
 
-            cargarDashboard();
+    return () => {
 
-        }, 5000);
+        clearInterval(intervalo);
 
-        // Limpiar intervalo cuando el componente se desmonta
-        return () => {
+    };
 
-            clearInterval(intervalo);
-
-        };
-
-    }, []);
-
+}, []);
+console.log("==================================");
+console.log("RENDER DASHBOARD");
+console.log("ASESORES:", asesores);
+console.log("TOTAL:", asesores.length);
+console.log("==================================");
     // =====================================================
     // INTERFAZ
     // =====================================================
@@ -429,105 +569,123 @@ export default function Dashboard() {
                     }
                 </p>
 
-                {/* =====================================================
-                    TIEMPO EN ESTADO
-                ===================================================== */}
+{/* =====================================================
+    TIEMPO EN ESTADO
+===================================================== */}
 
-                <p>
-                    <strong>⏱ Tiempo en estado</strong>
-                    <br />
+<p>
+    <strong>⏱ Tiempo en estado</strong>
+    <br />
 
-                    {
+    {(() => {
 
-                        !a.inicio_estado
+        if (!a.inicio_estado) {
 
-                            ? "--:--:--"
+            return "--:--:--";
 
-                        : a.estado === "SALIDA"
+        }
 
-                            ? "✅ Finalizado"
+        if (a.estado === "SALIDA") {
 
-                        : (() => {
+            return "✅ Finalizado";
 
-                            const inicio =
-                                new Date(a.inicio_estado).getTime();
+        }
 
-                            const ahora = Date.now();
+        const inicio = new Date(a.inicio_estado);
 
-                            let segundos = Math.floor(
-                                (ahora - inicio) / 1000
-                            );
+        if (Number.isNaN(inicio.getTime())) {
 
-                            if (segundos < 0) {
-                                segundos = 0;
-                            }
+            return "--:--:--";
 
-                            const horas = Math.floor(segundos / 3600);
+        }
 
-                            const minutos = Math.floor(
-                                (segundos % 3600) / 60
-                            );
+        const fechaActual = new Date(ahora);
 
-                            const seg = segundos % 60;
+        const diferencia = Math.max(
+            0,
+            Math.floor((fechaActual.getTime() - inicio.getTime()) / 1000)
+        );
 
-                            return (
-                                String(horas).padStart(2, "0") +
-                                ":" +
-                                String(minutos).padStart(2, "0") +
-                                ":" +
-                                String(seg).padStart(2, "0")
-                            );
+        const horas = Math.floor(diferencia / 3600);
 
-                        })()
+        const minutos = Math.floor(
+            (diferencia % 3600) / 60
+        );
 
-                    }
+        const segundos = diferencia % 60;
+
+        return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+
+    })()}
 
 </p>
 
-                {/* =====================================================
-                    RETRASO
-                ===================================================== */}
 
-                <p>
-                    <strong>Retraso</strong>
-                    <br />
+{/* =====================================================
+    RETRASO
+===================================================== */}
 
-                    {
-                        a.llego_tarde
-                            ? `🔴 ${a.minutos_retraso} min`
-                            : "🟢 Puntual"
-                    }
+<p>
 
-                </p>
+    <strong>Retraso</strong>
 
-                {/* =====================================================
-                    HISTORIAL
-                ===================================================== */}
+    <br />
 
-                <button
-                    onClick={() => verHistorial(a)}
-                    style={{
-                        marginTop: "10px",
-                        width: "100%",
-                        padding: "8px",
-                        border: "none",
-                        borderRadius: "6px",
-                        background: "#0d6efd",
-                        color: "white",
-                        cursor: "pointer",
-                        fontWeight: "bold"
-                    }}
-                >
-                    📋 Ver historial
-                </button>
+    {
+
+        a.llego_tarde
+
+            ? `🔴 ${a.minutos_retraso ?? 0} min`
+
+            : "🟢 Puntual"
+
+    }
+
+</p>
+
+
+{/* =====================================================
+    HISTORIAL
+===================================================== */}
+
+<button
+
+    onClick={() => verHistorial(a)}
+
+    style={{
+
+        marginTop: "10px",
+
+        width: "100%",
+
+        padding: "10px",
+
+        border: "none",
+
+        borderRadius: "8px",
+
+        background: "#0d6efd",
+
+        color: "#fff",
+
+        cursor: "pointer",
+
+        fontWeight: "bold",
+
+        transition: "0.2s"
+
+    }}
+
+>
+
+    📋 Ver historial
+
+</button>
 
             </div>
-
         );
 
-    })
-
-}
+    })}
 
 </div>
 
@@ -539,125 +697,123 @@ export default function Dashboard() {
     asesores={asesores}
 />
 
-        {/* =====================================================
-            CENTRO DE INCIDENCIAS
-        ===================================================== */}
 
-        <CentroIncidencias
-            incidencias={incidencias}
-        />
+{/* =====================================================
+    CENTRO DE INCIDENCIAS
+===================================================== */}
 
-
-        {/* =====================================================
-            PANEL DE INCIDENCIAS
-        ===================================================== */}
-
-        <PanelIncidencias
-            incidencias={incidencias}
-            onActualizar={cargarDashboard}
-        />
+<CentroIncidencias
+    incidencias={incidencias}
+/>
 
 
-        {/* =====================================================
-            MODAL DE HISTORIAL
-        ===================================================== */}
+{/* =====================================================
+    PANEL DE INCIDENCIAS
+===================================================== */}
 
-        {
-            asesorSeleccionado && (
+<PanelIncidencias
+    incidencias={incidencias}
+    onActualizar={cargarDashboard}
+/>
 
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    aria-labelledby="historial-titulo"
 
-                    onClick={(e) => {
+{/* =====================================================
+    MODAL HISTORIAL
+===================================================== */}
 
-                        // Permite cerrar haciendo clic fuera
-                        if (e.target === e.currentTarget) {
+{
 
-                            setAsesorSeleccionado(null);
-                            setHistorial([]);
+    asesorSeleccionado && (
 
-                        }
+        <div
 
-                    }}
+            role="dialog"
 
+            aria-modal="true"
+
+            aria-labelledby="historial-titulo"
+
+            onClick={(e) => {
+
+                if (e.target === e.currentTarget) {
+
+                    setAsesorSeleccionado(null);
+
+                    setHistorial([]);
+
+                }
+
+            }}
+
+            style={{
+
+                position: "fixed",
+
+                inset: 0,
+
+                background: "rgba(0,0,0,.55)",
+
+                display: "flex",
+
+                justifyContent: "center",
+
+                alignItems: "center",
+
+                padding: "20px",
+
+                zIndex: 9999
+
+            }}
+
+        >
+
+            <div
+
+                style={{
+
+                    background: "#fff",
+
+                    width: "100%",
+
+                    maxWidth: "700px",
+
+                    maxHeight: "90vh",
+
+                    overflowY: "auto",
+
+                    borderRadius: "14px",
+
+                    padding: "25px",
+
+                    boxShadow:
+                        "0 12px 35px rgba(0,0,0,.30)"
+
+                }}
+
+            >
+
+                <h2
+                    id="historial-titulo"
                     style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-
-                        background:
-                            "rgba(0,0,0,0.55)",
-
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-
-                        padding: "20px",
-
-                        boxSizing: "border-box",
-
-                        zIndex: 9999
+                        marginTop: 0
                     }}
                 >
 
-                    {/* =================================================
-                        VENTANA DEL HISTORIAL
-                    ================================================= */}
+                    📋 Historial de {asesorSeleccionado.nombre}
 
-                    <div
-                        style={{
-                            background: "#ffffff",
+                </h2>
 
-                            width: "100%",
-                            maxWidth: "550px",
+                <hr />
 
-                            maxHeight: "85vh",
+                {/* ==========================================
+                    AQUÍ VAMOS A PONER EL RESUMEN DEL DÍA
+                ========================================== */}
 
-                            overflowY: "auto",
-
-                            borderRadius: "14px",
-
-                            padding: "25px",
-
-                            boxSizing: "border-box",
-
-                            boxShadow:
-                                "0 10px 40px rgba(0,0,0,0.30)"
-                        }}
-                    >
-
-                        {/* =================================================
-                            ENCABEZADO
-                        ================================================= */}
-
-                        <h2
-                            id="historial-titulo"
-                            style={{
-                                marginTop: 0,
-                                marginBottom: "10px",
-                                fontSize: "22px"
-                            }}
-                        >
-                            📋 Historial de{" "}
-                            {asesorSeleccionado.nombre}
-                        </h2>
-
-
-                        <hr
-                            style={{
-                                border: 0,
-                                borderTop:
-                                    "1px solid #ddd",
-                                marginBottom: "20px"
-                            }}
-                        />
-
-
-                        {/* =================================================
+                {/* ==========================================
+                    AQUÍ VAN A IR LAS ALERTAS DEL DÍA
+                ========================================== */}
+            
+                     {/* =================================================
                             EXPORTAR HISTORIAL
                         ================================================= */}
 
@@ -772,11 +928,8 @@ export default function Dashboard() {
 
 
                                                 const fechaValida =
-                                                    fechaMovimiento &&
-                                                    !Number.isNaN(
-                                                        fechaMovimiento.getTime()
-                                                    );
-
+                                                fechaMovimiento instanceof Date &&
+                                                !Number.isNaN(fechaMovimiento.getTime());
 
                                                 return (
 
@@ -841,92 +994,76 @@ export default function Dashboard() {
 
                                                         {/* OBSERVACIÓN */}
 
-                                                        {
-                                                            m.observacion && (
+{m.observacion && (
 
-                                                                <div
-                                                                    style={{
-                                                                        marginTop:
-                                                                            "5px",
-
-                                                                        fontSize:
-                                                                            "13px",
-
-                                                                        color:
-                                                                            "#777"
-                                                                    }}
-                                                                >
-                                                                    📝{" "}
-                                                                    {
-                                                                        m.observacion
-                                                                    }
-                                                                </div>
-
-                                                            )
-                                                        }
-
-                                                    </div>
-
-                                                );
-
-                                            })
-                                        }
-
-                                    </div>
-
-                                )
-                        }
-
-
-                        {/* =================================================
-                            BOTÓN CERRAR
-                        ================================================= */}
-
-                        <button
-                            type="button"
-
-                            onClick={() => {
-
-                                setAsesorSeleccionado(null);
-                                setHistorial([]);
-
-                            }}
-
-                            style={{
-                                marginTop: "20px",
-
-                                width: "100%",
-
-                                padding: "11px",
-
-                                border: "none",
-
-                                background:
-                                    "#dc3545",
-
-                                color: "white",
-
-                                borderRadius: "8px",
-
-                                cursor: "pointer",
-
-                                fontWeight: "bold",
-
-                                fontSize: "15px"
-                            }}
-                        >
-                            ✕ Cerrar
-                        </button>
-
-                    </div>
-
-                </div>
-
-            )
-        }
-
+    <div
+        style={{
+            marginTop: "6px",
+            padding: "6px 10px",
+            background: "#f8f9fa",
+            borderRadius: "6px",
+            fontSize: "13px",
+            color: "#666"
+        }}
+    >
+        📝 {m.observacion}
     </div>
 
-    );
+)}
+
+</div>
+
+);
+
+})
+
+}
+
+</div>
+
+)
+
+}
+
+{/* =================================================
+    BOTÓN CERRAR
+================================================= */}
+
+<button
+    type="button"
+    onClick={() => {
+
+        setAsesorSeleccionado(null);
+        setHistorial([]);
+        setResumenJornada(null);
+        setIncidenciasHistorial([]);
+
+    }}
+    style={{
+        marginTop: "20px",
+        width: "100%",
+        padding: "12px",
+        border: "none",
+        borderRadius: "8px",
+        background: "#dc3545",
+        color: "#fff",
+        cursor: "pointer",
+        fontWeight: "bold",
+        fontSize: "15px",
+        transition: "0.2s"
+    }}
+>
+    ✕ Cerrar
+</button>
+
+</div>
+
+</div>
+
+)}
+
+</div>
+
+);
 
 }

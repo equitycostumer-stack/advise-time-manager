@@ -20,102 +20,55 @@ export default function Buttons({
 
     async function registrar(tipo, nuevoEstado) {
 
-        if (!asesor) {
+    console.log("===== PASO 1 =====");
 
-            alert("Seleccione un asesor.");
-            return;
+    if (!asesor) {
 
-        }
+        console.log("No hay asesor seleccionado");
 
-        console.log("=================================");
-        console.log("REGISTRANDO MOVIMIENTO");
-        console.log("Asesor:", asesor);
-        console.log("Estado actual:", estado);
-        console.log("Movimiento:", tipo);
-        console.log("=================================");
+        alert("Seleccione un asesor.");
 
-        try {
+        return;
 
-            const { data } = await api.post(
+    }
 
-                "/movimientos",
+    console.log("===== PASO 2 =====");
 
-                {
+    console.log({
+        asesor,
+        tipo,
+        nuevoEstado
+    });
 
-                    asesor_id: Number(asesor),
+    try {
 
-                    tipo
+        console.log("===== PASO 3 =====");
 
-                }
+        const { data } = await api.post(
 
-            );
+            "/movimientos",
 
-            console.log("RESPUESTA DEL BACKEND");
-            console.log(data);
+            {
 
-            if (!data?.ok) {
+                asesor_id: Number(asesor),
 
-                throw new Error(
-
-                    data?.mensaje ||
-
-                    data?.error ||
-
-                    "No fue posible registrar el movimiento."
-
-                );
+                tipo
 
             }
 
-            const estadoServidor =
+        );
 
-                data?.data?.estado ||
+        console.log("===== PASO 4 =====");
 
-                data?.estado ||
+        console.log(data);
 
-                nuevoEstado;
+        if (!data?.ok) {
 
-            setEstado(estadoServidor);
+            throw new Error(
 
-            if (setResumen) {
+                data?.mensaje ||
 
-                if (tipo === "SALIDA") {
-
-                    setResumen(
-
-                        data?.resumen ||
-
-                        data?.data?.resumen ||
-
-                        null
-
-                    );
-
-                } else if (tipo === "ENTRADA") {
-
-                    setResumen(null);
-
-                }
-
-            }
-
-            if (typeof onMovimientoRegistrado === "function") {
-
-                await onMovimientoRegistrado();
-
-            }
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(
-
-                error.response?.data?.mensaje ||
-
-                error.response?.data?.error ||
-
-                error.message ||
+                data?.error ||
 
                 "No fue posible registrar el movimiento."
 
@@ -123,7 +76,75 @@ export default function Buttons({
 
         }
 
+        console.log("===== PASO 5 =====");
+
+        const estadoServidor =
+
+            data?.data?.estado ||
+
+            data?.estado ||
+
+            nuevoEstado;
+
+        setEstado(estadoServidor);
+
+        if (setResumen) {
+
+            if (tipo === "SALIDA") {
+
+                setResumen(
+
+                    data?.resumen ||
+
+                    data?.data?.resumen ||
+
+                    null
+
+                );
+
+            }
+
+            else if (tipo === "ENTRADA") {
+
+                setResumen(null);
+
+            }
+
+        }
+
+        if (typeof onMovimientoRegistrado === "function") {
+
+            console.log("===== PASO 6 =====");
+
+            await onMovimientoRegistrado();
+
+        }
+
+        console.log("===== PASO 7 =====");
+
     }
+
+    catch (error) {
+
+        console.log("===== ERROR =====");
+
+        console.error(error);
+
+        alert(
+
+            error.response?.data?.mensaje ||
+
+            error.response?.data?.error ||
+
+            error.message ||
+
+            "No fue posible registrar el movimiento."
+
+        );
+
+    }
+
+}
 
     // ======================================================
     // ESTILOS

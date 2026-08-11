@@ -1,3 +1,9 @@
+// ======================================================
+// EQUITY LINE PROFESSIONAL SERVICES
+// TIME MANAGER
+// MOVIMIENTOS ROUTES
+// ======================================================
+
 const express = require("express");
 const router = express.Router();
 
@@ -13,7 +19,7 @@ router.post(
 );
 
 // ======================================================
-// ESTADO ACTUAL
+// OBTENER ESTADO ACTUAL
 // ======================================================
 
 router.get(
@@ -22,7 +28,7 @@ router.get(
 );
 
 // ======================================================
-// HISTORIAL
+// OBTENER HISTORIAL
 // ======================================================
 
 router.get(
@@ -31,7 +37,16 @@ router.get(
 );
 
 // ======================================================
-// RESUMEN DE JORNADA
+// RESUMEN DEL DÍA (RUTA QUE USA EL FRONTEND)
+// ======================================================
+
+router.get(
+    "/resumen/:asesorId",
+    movimientosController.obtenerResumen
+);
+
+// ======================================================
+// RESUMEN DE JORNADA (COMPATIBILIDAD)
 // ======================================================
 
 router.get(

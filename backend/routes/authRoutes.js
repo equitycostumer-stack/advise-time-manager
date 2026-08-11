@@ -5,7 +5,9 @@
 // ======================================================
 
 const express = require("express");
-
+console.log("====================================");
+console.log("AUTH ROUTES CARGADAS");
+console.log("====================================");
 const router = express.Router();
 
 const authController = require("../controllers/authController");

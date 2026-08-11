@@ -6,11 +6,14 @@
 
 const movimientosService = require("../services/movimientosService");
 
+const resumenJornadaService = require(
+    "../services/resumenJornadaService"
+);
+
 const {
     TIPOS,
     ESTADOS
 } = require("../constants/movimientos");
-
 
 // ======================================================
 // NORMALIZAR TIPO
@@ -26,6 +29,18 @@ const normalizarTipo = (tipo) => {
 
 };
 
+// ======================================================
+// OBTENER ID DEL ASESOR
+// ======================================================
+
+const obtenerAsesorId = (req) => {
+
+    return Number(
+        req.params.asesorId ||
+        req.query.asesor_id
+    );
+
+};
 
 // ======================================================
 // REGISTRAR MOVIMIENTO
@@ -70,7 +85,9 @@ const registrarMovimiento = async (req, res) => {
         }
 
         const resultado =
-            await movimientosService.registrarMovimiento(datos);
+            await movimientosService.registrarMovimiento(
+                datos
+            );
 
         return res.status(200).json(resultado);
 
@@ -91,6 +108,7 @@ const registrarMovimiento = async (req, res) => {
     }
 
 };
+
 // ======================================================
 // OBTENER ESTADO ACTUAL
 // ======================================================
@@ -99,9 +117,8 @@ const obtenerEstadoActual = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(
-    req.params.asesorId || req.query.asesor_id
-);
+        const asesor_id =
+            obtenerAsesorId(req);
 
         if (!asesor_id) {
 
@@ -116,11 +133,15 @@ const obtenerEstadoActual = async (req, res) => {
         }
 
         const estado =
-            await movimientosService.obtenerEstadoActual(asesor_id);
+            await movimientosService.obtenerEstadoActual(
+                asesor_id
+            );
 
         return res.status(200).json(estado);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -144,9 +165,8 @@ const obtenerHistorial = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(
-            req.params.asesorId || req.query.asesor_id
-        );
+        const asesor_id =
+            obtenerAsesorId(req);
 
         if (!asesor_id) {
 
@@ -161,11 +181,15 @@ const obtenerHistorial = async (req, res) => {
         }
 
         const historial =
-            await movimientosService.obtenerHistorial(asesor_id);
+            await movimientosService.obtenerHistorial(
+                asesor_id
+            );
 
         return res.status(200).json(historial);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -180,6 +204,7 @@ const obtenerHistorial = async (req, res) => {
     }
 
 };
+
 // ======================================================
 // OBTENER RESUMEN DE JORNADA
 // ======================================================
@@ -188,9 +213,8 @@ const obtenerResumenJornada = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(
-            req.params.asesorId || req.query.asesor_id
-        );
+        const asesor_id =
+            obtenerAsesorId(req);
 
         if (!asesor_id) {
 
@@ -211,7 +235,9 @@ const obtenerResumenJornada = async (req, res) => {
 
         return res.status(200).json(resumen);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -234,7 +260,8 @@ const obtenerResumen = async (req, res) => {
 
     try {
 
-        const asesor_id = Number(req.params.asesorId);
+        const asesor_id =
+            obtenerAsesorId(req);
 
         if (!asesor_id) {
 
@@ -247,6 +274,14 @@ const obtenerResumen = async (req, res) => {
             });
 
         }
+
+        // ==========================================
+        // ACTUALIZAR RESUMEN ANTES DE ENVIARLO
+        // ==========================================
+
+        await resumenJornadaService.actualizar(
+            asesor_id
+        );
 
         const resumen =
             await movimientosService.obtenerResumen(
@@ -261,7 +296,9 @@ const obtenerResumen = async (req, res) => {
 
         });
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
 
@@ -276,7 +313,6 @@ const obtenerResumen = async (req, res) => {
     }
 
 };
-
 
 // ======================================================
 // EXPORTAR CONTROLADORES

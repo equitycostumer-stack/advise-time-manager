@@ -3,6 +3,32 @@
 // RESUMEN DE JORNADA
 // ======================================================
 
+function formatearTiempo(ms = 0) {
+
+    if (!ms || ms <= 0) return "00:00:00";
+
+    const total = Math.floor(ms / 1000);
+
+    const horas = String(Math.floor(total / 3600)).padStart(2, "0");
+    const minutos = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+    const segundos = String(total % 60).padStart(2, "0");
+
+    return `${horas}:${minutos}:${segundos}`;
+
+}
+
+function formatearHora(fecha) {
+
+    if (!fecha) return "--";
+
+    return new Date(fecha).toLocaleTimeString("es-CO", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+}
+
 function fila(nombre, valor) {
 
     return (
@@ -11,7 +37,6 @@ function fila(nombre, valor) {
             style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
                 padding: "10px 0",
                 borderBottom: "1px solid #ececec"
             }}
@@ -19,9 +44,7 @@ function fila(nombre, valor) {
 
             <span>{nombre}</span>
 
-            <strong>
-                {valor ?? "--"}
-            </strong>
+            <strong>{valor}</strong>
 
         </div>
 
@@ -29,22 +52,17 @@ function fila(nombre, valor) {
 
 }
 
-export default function ResumenJornada({ resumen }) {
+export default function ResumenJornada({ resumen, asesor }) {
 
     if (!resumen) return null;
-
-    const asesor = resumen.asesor || {};
-    const jornada = resumen.jornada || {};
-    const entrada = resumen.entrada || null;
-    const salida = resumen.salida || null;
 
     return (
 
         <div
             style={{
-                marginTop: "20px",
-                padding: "22px",
-                borderRadius: "12px",
+                marginTop: 20,
+                padding: 22,
+                borderRadius: 12,
                 background: "#fff",
                 border: "1px solid #ddd",
                 boxShadow: "0 2px 8px rgba(0,0,0,.08)"
@@ -54,181 +72,91 @@ export default function ResumenJornada({ resumen }) {
             <h2
                 style={{
                     textAlign: "center",
-                    marginBottom: "20px"
+                    marginBottom: 20
                 }}
             >
-
                 📊 RESUMEN DE JORNADA
-
             </h2>
-
-            {/* ====================================== */}
-            {/* ASESOR */}
-            {/* ====================================== */}
 
             {fila(
                 "👤 Asesor",
-                asesor.nombre
-            )}
-
-            {/* ====================================== */}
-            {/* ESTADO */}
-            {/* ====================================== */}
-
-            {fila(
-                "Estado actual",
-                jornada.estado || "SIN ESTADO"
+                asesor
+                    ? asesor.nombre
+                    : `ID ${resumen.asesor_id}`
             )}
 
             {fila(
-                "Jornada iniciada",
-                jornada.iniciada ? "✅ Sí" : "❌ No"
+                "🟢 Hora entrada",
+                formatearHora(resumen.hora_entrada)
             )}
 
             {fila(
-                "Jornada finalizada",
-                jornada.finalizada ? "✅ Sí" : "❌ No"
-            )}
-
-            {/* ====================================== */}
-            {/* ENTRADA */}
-            {/* ====================================== */}
-
-            {fila(
-
-                "🟢 Hora de entrada",
-
-                entrada?.fecha_hora
-                    ? new Date(
-                        entrada.fecha_hora
-                    ).toLocaleTimeString("es-CO", {
-
-                        hour: "2-digit",
-                        minute: "2-digit"
-
-                    })
-                    : "--"
-
-            )}
-
-            {/* ====================================== */}
-            {/* SALIDA */}
-            {/* ====================================== */}
-
-            {fila(
-
-                "🔴 Hora de salida",
-
-                salida?.fecha_hora
-                    ? new Date(
-                        salida.fecha_hora
-                    ).toLocaleTimeString("es-CO", {
-
-                        hour: "2-digit",
-                        minute: "2-digit"
-
-                    })
+                "🔴 Hora salida",
+                resumen.hora_salida
+                    ? formatearHora(resumen.hora_salida)
                     : "Jornada activa"
-
             )}
-
-            {/* ====================================== */}
-            {/* MOVIMIENTOS */}
-            {/* ====================================== */}
 
             {fila(
-
-                "📋 Total movimientos",
-
-                resumen.movimientos
-                    ? resumen.movimientos.length
-                    : 0
-
+                "⏱ Tiempo trabajado",
+                formatearTiempo(resumen.tiempo_trabajado)
             )}
 
-            {/* ====================================== */}
-            {/* ESTADÍSTICAS (cuando existan) */}
-            {/* ====================================== */}
-
-            {resumen.tiempo_trabajado &&
-
-                fila(
-                    "⏱ Tiempo trabajado",
-                    resumen.tiempo_trabajado
-                )
-
-            }
-
-            {resumen.tiempo_break &&
-
-                fila(
-                    "☕ Break",
-                    resumen.tiempo_break
-                )
-
-            }
-
-            {resumen.tiempo_almuerzo &&
-
-                fila(
-                    "🍽 Almuerzo",
-                    resumen.tiempo_almuerzo
-                )
-
-            }
-
-            {resumen.tiempo_bano &&
-
-                fila(
-                    "🚻 Baño",
-                    resumen.tiempo_bano
-                )
-
-            }
-
-            {resumen.tiempo_capacitacion &&
-
-                fila(
-                    "📚 Capacitación",
-                    resumen.tiempo_capacitacion
-                )
-
-            }
-
-            {resumen.tiempo_reunion &&
-
-                fila(
-                    "👥 Reunión",
-                    resumen.tiempo_reunion
-                )
-
-            }
-
-            {resumen.tiempo_productivo && (
-
-                <div
-                    style={{
-                        marginTop: "20px",
-                        paddingTop: "15px",
-                        borderTop: "2px solid #ddd",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontWeight: "bold",
-                        fontSize: "18px"
-                    }}
-                >
-
-                    <span>
-                        💼 Tiempo productivo
-                    </span>
-
-                    <span>
-                        {resumen.tiempo_productivo}
-                    </span>
-
-                </div>
-
+            {fila(
+                "☕ Break",
+                formatearTiempo(resumen.tiempo_break)
             )}
+
+            {fila(
+                "🍽 Almuerzo",
+                formatearTiempo(resumen.tiempo_almuerzo)
+            )}
+
+            {fila(
+                "🚻 Baño",
+                formatearTiempo(resumen.tiempo_bano)
+            )}
+
+            {fila(
+                "📚 Capacitación",
+                formatearTiempo(resumen.tiempo_capacitacion)
+            )}
+
+            {fila(
+                "👥 Reunión",
+                formatearTiempo(resumen.tiempo_reunion)
+            )}
+
+            {fila(
+                "⏰ Llegó tarde",
+                resumen.llego_tarde ? "Sí" : "No"
+            )}
+
+            {fila(
+                "⌛ Minutos retraso",
+                resumen.minutos_retraso ?? 0
+            )}
+
+            <div
+                style={{
+                    marginTop: 18,
+                    paddingTop: 18,
+                    borderTop: "2px solid #ddd",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontWeight: "bold",
+                    fontSize: 18,
+                    color: "#0b6b3a"
+                }}
+            >
+
+                <span>💼 Tiempo productivo</span>
+
+                <span>
+                    {formatearTiempo(resumen.tiempo_productivo)}
+                </span>
+
+            </div>
 
         </div>
 

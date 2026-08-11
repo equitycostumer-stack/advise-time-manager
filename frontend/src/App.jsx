@@ -104,43 +104,47 @@ useEffect(() => {
 // OBTENER ASESORES
 // ==========================================
 
-    async function cargarAsesores() {
+async function cargarAsesores() {
 
-        try {
+    try {
 
-            const respuesta =
-                await api.get("/asesores");
+        setCargando(true);
 
-            console.log(
-                "ASESORES RECIBIDOS:",
-                respuesta.data
-            );
+        const { data } = await api.get("/asesores");
 
-            setAsesores(
-                Array.isArray(respuesta.data)
-                    ? respuesta.data
-                    : []
-            );
+        console.log("==================================");
+        console.log("👥 ASESORES RECIBIDOS");
+        console.log(data);
+        console.log("==================================");
 
-        } catch (error) {
+        const lista = Array.isArray(data) ? data : [];
 
-            console.error(
-                "ERROR CARGANDO ASESORES:",
-                error
-            );
+        setAsesores(lista);
 
-            setAsesores([]);
+    } catch (error) {
 
-        } finally {
+        console.error("❌ ERROR CARGANDO ASESORES");
 
-            setCargando(false);
+        console.error(error);
+
+        if (error.response) {
+
+            console.error("STATUS:", error.response.status);
+            console.error(error.response.data);
 
         }
 
+        setAsesores([]);
+
+    } finally {
+
+        setCargando(false);
+
     }
 
+}
 
-    // ==========================================
+// ==========================================
 // OBTENER ESTADO ACTUAL
 // ==========================================
 
@@ -148,138 +152,73 @@ async function cargarEstado() {
 
     try {
 
-        const respuesta =
-            await api.get(
-                `/movimientos/estado/${asesor}`
-            );
+        const { data } = await api.get(
+    `/movimientos/estado/${asesor}`
+);
+console.log("================================");
+console.log("ESTADO DEVUELTO POR API");
+console.log(JSON.stringify(data, null, 2));
+console.log("================================");
 
-        console.log(
-            "ESTADO RECIBIDO:",
-            respuesta.data
-        );
+        if (!data || !data.estado) {
 
-        const datos = respuesta.data?.data?.estado;
+    setEstado("Disponible");
+    setInicioEstado(null);
+    setInicioJornada(null);
+    return;
 
-        if (!datos) {
+}
 
-            setEstado("Disponible");
-            setInicioEstado(null);
-            setInicioJornada(null);
-
-            return;
-
-        }
-
-        const estadoBackend = String(datos.estado || "")
+        const estadoBackend = String(data.estado)
             .trim()
             .toUpperCase();
 
-        setInicioEstado(
-            datos.inicio_estado || null
-        );
+        setInicioEstado(data.inicio_estado || null);
+        setInicioJornada(data.inicio_jornada || null);
 
-        setInicioJornada(
-            datos.inicio_jornada || null
-        );
+        switch (estadoBackend) {
 
-        // ==========================================
-        // TRABAJANDO
-        // ==========================================
+            case "TRABAJANDO":
+                setEstado("🟢 Trabajando");
+                break;
 
-        if (estadoBackend === "TRABAJANDO") {
+            case "BREAK":
+                setEstado("☕ Break");
+                break;
 
-            setEstado("🟢 Trabajando");
-            return;
+            case "ALMUERZO":
+                setEstado("🍽 Almuerzo");
+                break;
 
-        }
+            case "BANO":
+            case "BAÑO":
+                setEstado("🚻 Baño");
+                break;
 
-        // ==========================================
-        // BREAK
-        // ==========================================
+            case "CAPACITACION":
+            case "CAPACITACIÓN":
+                setEstado("📚 Capacitación");
+                break;
 
-        if (estadoBackend === "BREAK") {
+            case "REUNION":
+            case "REUNIÓN":
+                setEstado("👥 Reunión");
+                break;
 
-            setEstado("☕ Break");
-            return;
+            case "SALIDA":
+                setEstado("🔴 Salida");
+                break;
 
-        }
-
-        // ==========================================
-        // ALMUERZO
-        // ==========================================
-
-        if (estadoBackend === "ALMUERZO") {
-
-            setEstado("🍽 Almuerzo");
-            return;
-
-        }
-
-        // ==========================================
-        // BAÑO
-        // ==========================================
-
-        if (
-            estadoBackend === "BANO" ||
-            estadoBackend === "BAÑO"
-        ) {
-
-            setEstado("🚻 Baño");
-            return;
+            default:
+                setEstado("Disponible");
+                break;
 
         }
-
-        // ==========================================
-        // CAPACITACIÓN
-        // ==========================================
-
-        if (
-            estadoBackend === "CAPACITACION" ||
-            estadoBackend === "CAPACITACIÓN"
-        ) {
-
-            setEstado("📚 Capacitación");
-            return;
-
-        }
-
-        // ==========================================
-        // REUNIÓN
-        // ==========================================
-
-        if (
-            estadoBackend === "REUNION" ||
-            estadoBackend === "REUNIÓN"
-        ) {
-
-            setEstado("👥 Reunión");
-            return;
-
-        }
-
-        // ==========================================
-        // SALIDA
-        // ==========================================
-
-        if (estadoBackend === "SALIDA") {
-
-            setEstado("🔴 Salida");
-            return;
-
-        }
-
-        // ==========================================
-        // DISPONIBLE
-        // ==========================================
-
-        setEstado("Disponible");
 
     } catch (error) {
 
-        console.error(
-            "ERROR CARGANDO ESTADO:",
-            error
-        );
+        console.error("ERROR CARGANDO ESTADO");
+        console.error(error);
 
         setEstado("Disponible");
         setInicioEstado(null);
@@ -307,9 +246,19 @@ async function cargarResumen() {
             respuesta.data
         );
 
-        setResumen(
-            respuesta.data.data || null
-        );
+        const resumen =
+            respuesta.data.data || null;
+
+        setResumen(resumen);
+
+
+if (resumen?.jornada?.inicio_estado) {
+
+    setInicioEstado(
+        resumen.jornada.inicio_estado
+    );
+
+}
 
     } catch (error) {
 
@@ -319,6 +268,10 @@ async function cargarResumen() {
         );
 
         setResumen(null);
+
+        setInicioEstado(null);
+
+        setInicioJornada(null);
 
     }
 
@@ -346,6 +299,10 @@ async function cargarResumen() {
 
     console.log("ESTADO:", estado);
     console.log("RESUMEN EN APP:", resumen);
+
+    console.log("APP -> inicioJornada:", inicioJornada);
+    console.log("APP -> inicioEstado:", inicioEstado);
+    console.log("APP -> estado:", estado);
 
     // ==========================================
     // INTERFAZ
@@ -393,13 +350,13 @@ async function cargarResumen() {
                 <StatusCard
                     estado={estado}
                 />
-
+              
                 {/* ============================== */}
                 {/* CONTADOR DE JORNADA */}
                 {/* ============================== */}
-
-                <WorkTimer
-                    estado={estado}
+                 
+                 <WorkTimer
+                     estado={estado}
                     inicioJornada={inicioJornada}
                 />
 
@@ -417,8 +374,9 @@ async function cargarResumen() {
                 {/* ============================== */}
 
                 <ResumenJornada
-                    resumen={resumen}
-                />
+    resumen={resumen}
+    asesor={asesores.find(a => a.id === Number(asesor))}
+/>
 
                 {/* ============================== */}
                 {/* MENSAJE */}

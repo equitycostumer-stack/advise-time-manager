@@ -8,7 +8,7 @@ const {
 } = require("../controllers/incidenciasController");
 
 // ======================================================
-// OBTENER INCIDENCIAS
+// INCIDENCIAS PENDIENTES (Dashboard)
 // ======================================================
 
 router.get("/", (req, res) => {
@@ -37,7 +37,7 @@ router.get("/", (req, res) => {
 
                 ok: false,
 
-                error: "Error obteniendo incidencias."
+                mensaje: "Error obteniendo incidencias."
 
             });
 
@@ -50,12 +50,71 @@ router.get("/", (req, res) => {
 });
 
 // ======================================================
+// HISTORIAL COMPLETO DE INCIDENCIAS DEL DÍA
+// ======================================================
+
+router.get("/asesor/:asesorId", (req, res) => {
+
+    const sql = `
+        SELECT
+            id,
+            tipo,
+            descripcion,
+            fecha_hora,
+            revisada
+        FROM incidencias
+        WHERE
+            asesor_id = ?
+            AND DATE(fecha_hora)=CURDATE()
+        ORDER BY fecha_hora DESC
+    `;
+
+    db.query(
+
+        sql,
+
+        [req.params.asesorId],
+
+        (err, rows) => {
+
+            if (err) {
+
+                console.error(err);
+
+                return res.status(500).json({
+
+                    ok:false,
+
+                    mensaje:"Error obteniendo historial."
+
+                });
+
+            }
+
+            res.json({
+
+                ok:true,
+
+                incidencias:rows
+
+            });
+
+        }
+
+    );
+
+});
+
+// ======================================================
 // REVISAR INCIDENCIA
 // ======================================================
 
 router.put(
+
     "/:id/revisar",
+
     revisarIncidencia
+
 );
 
 module.exports = router;

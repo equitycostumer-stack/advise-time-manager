@@ -54,13 +54,49 @@ const app = express();
 // CORS
 // ======================================================
 
-app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://advise-time-manager-seven.vercel.app"
+const corsOptions = {
+    origin: (origin, callback) => {
+
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "https://advise-time-manager-seven.vercel.app"
+        ];
+
+        // Permitir peticiones sin Origin
+        // (Postman, servidor, etc.)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(
+            new Error(`Origen no permitido por CORS: ${origin}`)
+        );
+    },
+
+    methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
     ],
-    credentials: true
-}));
+
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization"
+    ],
+
+    credentials: true,
+
+    optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 // ======================================================
 // MIDDLEWARES

@@ -8,45 +8,124 @@ export default function Alertas({ asesores = [] }) {
 
     asesores.forEach((a) => {
 
-        if (!a.inicio_estado) return;
+        // ==============================================
+        // LLEGADA TARDE
+        // ==============================================
+
+        if (
+            a.llego_tarde === true ||
+            a.llego_tarde === 1
+        ) {
+
+            const minutosRetraso =
+                Number(a.minutos_retraso) || 0;
+
+            alertas.push(
+                `🔴 ${a.nombre} llegó tarde por ${minutosRetraso} minutos`
+            );
+
+        }
+
+        // ==============================================
+        // SI NO TIENE ESTADO, NO CONTINUAR
+        // ==============================================
+
+        if (!a.inicio_estado) {
+            return;
+        }
 
         const minutos = Math.floor(
-            (Date.now() - new Date(a.inicio_estado).getTime()) / 60000
+            (
+                Date.now() -
+                new Date(a.inicio_estado).getTime()
+            ) / 60000
         );
 
+        // ==============================================
         // BREAK
-        if (a.estado === "BREAK" && minutos > 15) {
+        // ==============================================
+
+        if (
+            a.estado === "BREAK" &&
+            minutos > 15
+        ) {
+
             alertas.push(
-                `🔴 ${a.nombre} lleva ${minutos} minutos en Break`
+                `☕ ${a.nombre} lleva ${minutos} minutos en Break`
             );
+
         }
 
+        // ==============================================
         // ALMUERZO
-        if (a.estado === "ALMUERZO" && minutos > 60) {
+        // ==============================================
+
+        if (
+            a.estado === "ALMUERZO" &&
+            minutos > 60
+        ) {
+
             alertas.push(
-                `🔴 ${a.nombre} lleva ${minutos} minutos en Almuerzo`
+                `🍽️ ${a.nombre} lleva ${minutos} minutos en Almuerzo`
             );
+
         }
 
+        // ==============================================
         // BAÑO
-        if (a.estado === "BANO" && minutos > 10) {
-            alertas.push(
-                `🔴 ${a.nombre} lleva ${minutos} minutos en Baño`
-            );
+        // ==============================================
+
+        if (
+            a.estado === "BANO" ||
+            a.estado === "BAÑO"
+        ) {
+
+            if (minutos > 10) {
+
+                alertas.push(
+                    `🚻 ${a.nombre} lleva ${minutos} minutos en Baño`
+                );
+
+            }
+
         }
 
+        // ==============================================
         // CAPACITACIÓN
-        if (a.estado === "CAPACITACION" && minutos > 90) {
-            alertas.push(
-                `🔴 ${a.nombre} lleva ${minutos} minutos en Capacitación`
-            );
+        // ==============================================
+
+        if (
+            a.estado === "CAPACITACION" ||
+            a.estado === "CAPACITACIÓN"
+        ) {
+
+            if (minutos > 90) {
+
+                alertas.push(
+                    `📚 ${a.nombre} lleva ${minutos} minutos en Capacitación`
+                );
+
+            }
+
         }
 
+        // ==============================================
         // REUNIÓN
-        if (a.estado === "REUNION" && minutos > 90) {
-            alertas.push(
-                `🔴 ${a.nombre} lleva ${minutos} minutos en Reunión`
-            );
+        // ==============================================
+
+        if (
+            a.estado === "REUNION" ||
+            a.estado === "REUNIÓN"
+        ) {
+
+            if (minutos > 90) {
+
+                alertas.push(
+                    `👥 ${a.nombre} lleva ${minutos} minutos en Reunión`
+                );
+
+            }
+
         }
 
     });
@@ -93,20 +172,26 @@ export default function Alertas({ asesores = [] }) {
                             paddingLeft: 20
                         }}
                     >
+
                         {
-                            alertas.map((alerta, index) => (
-                                <li
-                                    key={index}
-                                    style={{
-                                        marginBottom: 8,
-                                        color: "#dc3545",
-                                        fontWeight: "bold"
-                                    }}
-                                >
-                                    {alerta}
-                                </li>
-                            ))
+                            alertas.map(
+                                (alerta, index) => (
+
+                                    <li
+                                        key={index}
+                                        style={{
+                                            marginBottom: 8,
+                                            color: "#dc3545",
+                                            fontWeight: "bold"
+                                        }}
+                                    >
+                                        {alerta}
+                                    </li>
+
+                                )
+                            )
                         }
+
                     </ul>
 
                 )

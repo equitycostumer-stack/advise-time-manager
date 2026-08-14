@@ -1,8 +1,57 @@
 import { useEffect, useState } from "react";
 
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
-// TIME MANAGER
+// CONVERTIR FECHA MYSQL -> COLOMBIA
+// ======================================================
+
+function convertirFechaColombia(fecha) {
+
+    if (!fecha) {
+        return null;
+    }
+
+    if (fecha instanceof Date) {
+        return fecha;
+    }
+
+    const valor =
+        String(fecha).trim();
+
+    if (!valor) {
+        return null;
+    }
+
+    // Si ya tiene zona horaria, respetarla
+    if (
+        valor.endsWith("Z") ||
+        /[+-]\d{2}:\d{2}$/.test(valor)
+    ) {
+
+        const fechaConvertida =
+            new Date(valor);
+
+        return Number.isNaN(
+            fechaConvertida.getTime()
+        )
+            ? null
+            : fechaConvertida;
+    }
+
+    // DATETIME de MySQL
+    const fechaConvertida =
+        new Date(
+            valor.replace(" ", "T") +
+            "-05:00"
+        );
+
+    return Number.isNaN(
+        fechaConvertida.getTime()
+    )
+        ? null
+        : fechaConvertida;
+}
+
+// ======================================================
 // CRONÓMETRO DE JORNADA
 // ======================================================
 
@@ -11,13 +60,16 @@ export default function WorkTimer({
     inicioJornada
 }) {
 
-    const [segundos, setSegundos] = useState(0);
+    const [segundos, setSegundos] =
+        useState(0);
 
     // ==================================================
-    // CONVERTIR SEGUNDOS A HH:MM:SS
+    // FORMATO
     // ==================================================
 
-    function convertirTiempo(totalSegundos) {
+    function convertirTiempo(
+        totalSegundos
+    ) {
 
         const horas =
             Math.floor(
@@ -39,22 +91,20 @@ export default function WorkTimer({
             segundosRestantes
 
         ]
-            .map(numero =>
-                String(numero).padStart(2, "0")
+            .map(
+                numero =>
+                    String(numero)
+                        .padStart(2, "0")
             )
             .join(":");
 
     }
 
     // ==================================================
-    // CALCULAR TIEMPO REAL
+    // CRONÓMETRO
     // ==================================================
 
     useEffect(() => {
-
-        // ------------------------------------------------
-        // SI NO HAY INICIO
-        // ------------------------------------------------
 
         if (!inicioJornada) {
 
@@ -64,22 +114,12 @@ export default function WorkTimer({
 
         }
 
-        // ------------------------------------------------
-        // CREAR FECHA
-        // ------------------------------------------------
-
         const inicio =
-            new Date(inicioJornada);
+            convertirFechaColombia(
+                inicioJornada
+            );
 
-        // ------------------------------------------------
-        // VALIDAR FECHA
-        // ------------------------------------------------
-
-        if (
-            Number.isNaN(
-                inicio.getTime()
-            )
-        ) {
+        if (!inicio) {
 
             console.error(
                 "❌ WorkTimer: fecha inválida:",
@@ -92,51 +132,41 @@ export default function WorkTimer({
 
         }
 
-        // ------------------------------------------------
-        // ACTUALIZAR
-        // ------------------------------------------------
+        console.log(
+            "⏱ WorkTimer INICIO:",
+            inicio.toISOString()
+        );
 
-        const actualizarTiempo = () => {
+        const actualizarTiempo =
+            () => {
 
-            const ahora =
-                new Date();
+                const ahora =
+                    new Date();
 
-            const diferencia =
-                Math.floor(
-                    (
-                        ahora.getTime() -
-                        inicio.getTime()
-                    ) / 1000
+                const diferencia =
+                    Math.floor(
+                        (
+                            ahora.getTime() -
+                            inicio.getTime()
+                        ) / 1000
+                    );
+
+                setSegundos(
+                    Math.max(
+                        diferencia,
+                        0
+                    )
                 );
 
-            setSegundos(
-                Math.max(
-                    diferencia,
-                    0
-                )
-            );
-
-        };
-
-        // ------------------------------------------------
-        // EJECUTAR INMEDIATAMENTE
-        // ------------------------------------------------
+            };
 
         actualizarTiempo();
-
-        // ------------------------------------------------
-        // ACTUALIZAR CADA SEGUNDO
-        // ------------------------------------------------
 
         const intervalo =
             setInterval(
                 actualizarTiempo,
                 1000
             );
-
-        // ------------------------------------------------
-        // LIMPIAR
-        // ------------------------------------------------
 
         return () => {
 
@@ -149,7 +179,7 @@ export default function WorkTimer({
     }, [inicioJornada]);
 
     // ==================================================
-    // NO MOSTRAR SI NO HAY JORNADA
+    // NO MOSTRAR
     // ==================================================
 
     if (
@@ -166,12 +196,10 @@ export default function WorkTimer({
 
     }
 
-    // ==================================================
-    // TIEMPO FORMATEADO
-    // ==================================================
-
     const tiempoFormateado =
-        convertirTiempo(segundos);
+        convertirTiempo(
+            segundos
+        );
 
     // ==================================================
     // INTERFAZ
@@ -190,10 +218,6 @@ export default function WorkTimer({
             }}
         >
 
-            {/* ==========================================
-                TÍTULO
-            ========================================== */}
-
             <div
                 style={{
                     fontSize: "16px",
@@ -205,10 +229,6 @@ export default function WorkTimer({
                 ⏱ TIEMPO DE JORNADA
 
             </div>
-
-            {/* ==========================================
-                CRONÓMETRO
-            ========================================== */}
 
             <div
                 style={{
@@ -224,10 +244,6 @@ export default function WorkTimer({
                 {tiempoFormateado}
 
             </div>
-
-            {/* ==========================================
-                DESCRIPCIÓN
-            ========================================== */}
 
             <div
                 style={{

@@ -6,6 +6,86 @@ import Alertas from "./Alertas";
 import CentroIncidencias from "./CentroIncidencias";
 import PanelIncidencias from "./PanelIncidencias";
 
+// =====================================================
+// CONVERTIR FECHA MYSQL -> COLOMBIA
+// =====================================================
+
+function convertirFechaColombia(fecha) {
+
+    if (!fecha) {
+        return null;
+    }
+
+    if (fecha instanceof Date) {
+        return fecha;
+    }
+
+    const valor =
+        String(fecha).trim();
+
+    if (!valor) {
+        return null;
+    }
+
+    // Si ya contiene zona horaria, respetarla
+    if (
+        valor.endsWith("Z") ||
+        /[+-]\d{2}:\d{2}$/.test(valor)
+    ) {
+
+        const fechaConvertida =
+            new Date(valor);
+
+        return Number.isNaN(
+            fechaConvertida.getTime()
+        )
+            ? null
+            : fechaConvertida;
+    }
+
+    // MySQL DATETIME:
+    // YYYY-MM-DD HH:mm:ss
+    //
+    // Se interpreta explícitamente como
+    // hora Colombia UTC-05:00.
+    const fechaConvertida =
+        new Date(
+            valor.replace(" ", "T") +
+            "-05:00"
+        );
+
+    return Number.isNaN(
+        fechaConvertida.getTime()
+    )
+        ? null
+        : fechaConvertida;
+}
+
+// =====================================================
+// FORMATO DE HORA COLOMBIA
+// =====================================================
+
+function formatearHoraColombia(fecha) {
+
+    const fechaConvertida =
+        convertirFechaColombia(fecha);
+
+    if (!fechaConvertida) {
+        return "--:--:--";
+    }
+
+    return fechaConvertida.toLocaleTimeString(
+        "es-CO",
+        {
+            timeZone: "America/Bogota",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        }
+    );
+}
+
 export default function Dashboard() {
 
     const [asesores, setAsesores] = useState([]);
@@ -558,14 +638,10 @@ console.log("==================================");
 
                     {
                         a.inicio_estado
-                            ? new Date(a.inicio_estado).toLocaleTimeString(
-                                  [],
-                                  {
-                                      hour: "2-digit",
-                                      minute: "2-digit"
-                                  }
-                              )
-                            : "--:--"
+                          ? formatearHoraColombia(
+                                    a.inicio_estado
+                            )
+                          : "--:--"
                     }
                 </p>
 
@@ -574,7 +650,11 @@ console.log("==================================");
 ===================================================== */}
 
 <p>
-    <strong>⏱ Tiempo en estado</strong>
+
+    <strong>
+        ⏱ Tiempo en estado
+    </strong>
+
     <br />
 
     {(() => {
@@ -585,36 +665,57 @@ console.log("==================================");
 
         }
 
-        if (a.estado === "SALIDA") {
+        if (
+            a.estado === "SALIDA"
+        ) {
 
             return "✅ Finalizado";
 
         }
 
-        const inicio = new Date(a.inicio_estado);
+        const inicio =
+            convertirFechaColombia(
+                a.inicio_estado
+            );
 
-        if (Number.isNaN(inicio.getTime())) {
+        if (!inicio) {
 
             return "--:--:--";
 
         }
 
-        const fechaActual = new Date(ahora);
+        const fechaActual =
+          new Date(ahora);
 
-        const diferencia = Math.max(
-            0,
-            Math.floor((fechaActual.getTime() - inicio.getTime()) / 1000)
+        const diferencia =
+            Math.max(
+                0,
+                Math.floor(
+                    (
+                        fechaActual.getTime() -
+                        inicio.getTime()
+                    ) / 1000
+                )
+            );
+
+        const horas =
+            Math.floor(
+                diferencia / 3600
+            );
+
+        const minutos =
+            Math.floor(
+                (diferencia % 3600) / 60
+            );
+
+        const segundos =
+            diferencia % 60;
+
+        return (
+            `${String(horas).padStart(2, "0")}:` +
+            `${String(minutos).padStart(2, "0")}:` +
+            `${String(segundos).padStart(2, "0")}`
         );
-
-        const horas = Math.floor(diferencia / 3600);
-
-        const minutos = Math.floor(
-            (diferencia % 3600) / 60
-        );
-
-        const segundos = diferencia % 60;
-
-        return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
 
     })()}
 
@@ -695,6 +796,7 @@ console.log("==================================");
 
 <Alertas
     asesores={asesores}
+    incidencias={incidencias}
 />
 
 
@@ -920,11 +1022,11 @@ console.log("==================================");
                                                 // =================================================
 
                                                 const fechaMovimiento =
-                                                    m.fecha_hora
-                                                        ? new Date(
-                                                            m.fecha_hora
-                                                        )
-                                                        : null;
+                                                      m.fecha_hora
+                                                           ? convertirFechaColombia(
+                                                               m.fecha_hora
+                                                            )
+                                                            : null;
 
 
                                                 const fechaValida =
@@ -972,18 +1074,15 @@ console.log("==================================");
                                                             {
                                                                 fechaValida
 
-                                                                    ? fechaMovimiento.toLocaleTimeString(
-                                                                        [],
-                                                                        {
-                                                                            hour:
-                                                                                "2-digit",
-
-                                                                            minute:
-                                                                                "2-digit",
-
-                                                                            second:
-                                                                                "2-digit"
-                                                                        }
+                                                                    ? 
+                                                                    fechaMovimiento.toLocaleTimeString(
+                                                                         "es-CO",
+                                                                          {
+                                                                             timeZone: "America/Bogota",
+                                                                             hour: "2-digit",
+                                                                             minute: "2-digit",
+                                                                             second: "2-digit"
+                                                                          }
                                                                     )
 
                                                                     : "--:--:--"

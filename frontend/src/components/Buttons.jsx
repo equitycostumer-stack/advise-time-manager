@@ -1,3 +1,4 @@
+import { useState } from "react";
 import api from "../services/api";
 
 export default function Buttons({
@@ -15,60 +16,215 @@ export default function Buttons({
 }) {
 
     // ======================================================
+    // EFECTO VISUAL DE PRESIÓN DEL BOTÓN
+    // ======================================================
+
+    const [botonPresionado, setBotonPresionado] =
+        useState(null);
+
+
+    // ======================================================
     // REGISTRAR MOVIMIENTO
     // ======================================================
 
-    async function registrar(tipo, nuevoEstado) {
-
-    console.log("===== PASO 1 =====");
-
-    if (!asesor) {
-
-        console.log("No hay asesor seleccionado");
-
-        alert("Seleccione un asesor.");
-
-        return;
-
-    }
-
-    console.log("===== PASO 2 =====");
-
-    console.log({
-        asesor,
+    async function registrar(
         tipo,
         nuevoEstado
-    });
+    ) {
 
-    try {
+        console.log(
+            "===== PASO 1 ====="
+        );
 
-        console.log("===== PASO 3 =====");
 
-        const { data } = await api.post(
+        if (!asesor) {
 
-            "/movimientos",
+            console.log(
+                "No hay asesor seleccionado"
+            );
 
-            {
+            alert(
+                "Seleccione un asesor."
+            );
 
-                asesor_id: Number(asesor),
+            return;
 
-                tipo
+        }
+
+
+        console.log(
+            "===== PASO 2 ====="
+        );
+
+
+        console.log({
+
+            asesor,
+
+            tipo,
+
+            nuevoEstado
+
+        });
+
+
+        // ==================================================
+        // ACTIVAR EFECTO VISUAL
+        // ==================================================
+
+        setBotonPresionado(
+            tipo
+        );
+
+
+        try {
+
+            console.log(
+                "===== PASO 3 ====="
+            );
+
+
+            const { data } =
+
+                await api.post(
+
+                    "/movimientos",
+
+                    {
+
+                        asesor_id:
+                            Number(asesor),
+
+                        tipo
+
+                    }
+
+                );
+
+
+            console.log(
+                "===== PASO 4 ====="
+            );
+
+
+            console.log(
+                data
+            );
+
+
+            if (!data?.ok) {
+
+                throw new Error(
+
+                    data?.mensaje ||
+
+                    data?.error ||
+
+                    "No fue posible registrar el movimiento."
+
+                );
 
             }
 
-        );
 
-        console.log("===== PASO 4 =====");
+            console.log(
+                "===== PASO 5 ====="
+            );
 
-        console.log(data);
 
-        if (!data?.ok) {
+            const estadoServidor =
 
-            throw new Error(
+                data?.data?.estado ||
 
-                data?.mensaje ||
+                data?.estado ||
 
-                data?.error ||
+                nuevoEstado;
+
+
+            setEstado(
+                estadoServidor
+            );
+
+
+            // ==================================================
+            // ACTUALIZAR RESUMEN
+            // ==================================================
+
+            if (setResumen) {
+
+                if (
+                    tipo === "SALIDA"
+                ) {
+
+                    setResumen(
+
+                        data?.resumen ||
+
+                        data?.data?.resumen ||
+
+                        null
+
+                    );
+
+                }
+
+                else if (
+                    tipo === "ENTRADA"
+                ) {
+
+                    setResumen(
+                        null
+                    );
+
+                }
+
+            }
+
+
+            // ==================================================
+            // ACTUALIZAR INFORMACIÓN
+            // ==================================================
+
+            if (
+                typeof onMovimientoRegistrado ===
+                "function"
+            ) {
+
+                console.log(
+                    "===== PASO 6 ====="
+                );
+
+
+                await onMovimientoRegistrado();
+
+            }
+
+
+            console.log(
+                "===== PASO 7 ====="
+            );
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "===== ERROR ====="
+            );
+
+
+            console.error(
+                error
+            );
+
+
+            alert(
+
+                error.response?.data?.mensaje ||
+
+                error.response?.data?.error ||
+
+                error.message ||
 
                 "No fue posible registrar el movimiento."
 
@@ -76,308 +232,373 @@ export default function Buttons({
 
         }
 
-        console.log("===== PASO 5 =====");
+        finally {
 
-        const estadoServidor =
+            // ==============================================
+            // QUITAR EFECTO VISUAL
+            // ==============================================
 
-            data?.data?.estado ||
+            setTimeout(() => {
 
-            data?.estado ||
-
-            nuevoEstado;
-
-        setEstado(estadoServidor);
-
-        if (setResumen) {
-
-            if (tipo === "SALIDA") {
-
-                setResumen(
-
-                    data?.resumen ||
-
-                    data?.data?.resumen ||
-
+                setBotonPresionado(
                     null
-
                 );
 
-            }
-
-            else if (tipo === "ENTRADA") {
-
-                setResumen(null);
-
-            }
+            }, 150);
 
         }
 
-        if (typeof onMovimientoRegistrado === "function") {
-
-            console.log("===== PASO 6 =====");
-
-            await onMovimientoRegistrado();
-
-        }
-
-        console.log("===== PASO 7 =====");
-
     }
-
-    catch (error) {
-
-        console.log("===== ERROR =====");
-
-        console.error(error);
-
-        alert(
-
-            error.response?.data?.mensaje ||
-
-            error.response?.data?.error ||
-
-            error.message ||
-
-            "No fue posible registrar el movimiento."
-
-        );
-
-    }
-
-}
-
     // ======================================================
     // ESTILOS
     // ======================================================
 
-    function estilo(color) {
+    function estilo(
+        color,
+        tipo
+    ) {
+
+        const presionado =
+            botonPresionado === tipo;
+
 
         return {
 
-            background: color,
+            background:
+                color,
 
-            color: "#fff",
+            color:
+                "#fff",
 
-            border: "none",
+            border:
+                "none",
 
-            borderRadius: "10px",
+            borderRadius:
+                "10px",
 
-            padding: "15px",
+            padding:
+                "15px",
 
-            fontSize: "18px",
+            fontSize:
+                "18px",
 
-            fontWeight: "bold",
+            fontWeight:
+                "bold",
 
-            cursor: "pointer",
+            cursor:
+                "pointer",
 
-            width: "100%"
+            width:
+                "100%",
+
+
+            // ==============================================
+            // EFECTO DE PRESIÓN
+            // ==============================================
+
+            transform:
+                presionado
+                    ? "translateY(4px) scale(0.98)"
+                    : "translateY(0) scale(1)",
+
+
+            boxShadow:
+                presionado
+
+                    ? "inset 0 3px 7px rgba(0,0,0,0.35)"
+
+                    : "0 5px 8px rgba(0,0,0,0.20)",
+
+
+            transition:
+                "transform 0.08s ease, box-shadow 0.08s ease"
 
         };
 
     }
-// ======================================================
-// ESTADOS
-// ======================================================
 
-const estadoActual = String(estado || "")
-    .trim()
-    .toUpperCase();
 
-const trabajando =
-    estadoActual.includes("TRABAJANDO");
+    // ======================================================
+    // ESTADOS
+    // ======================================================
 
-const enBreak =
-    estadoActual.includes("BREAK");
+    const estadoActual =
+        String(estado || "")
+            .trim()
+            .toUpperCase();
 
-const enAlmuerzo =
-    estadoActual.includes("ALMUERZO");
 
-const enBano =
-    estadoActual.includes("BANO") ||
-    estadoActual.includes("BAÑO");
+    const trabajando =
+        estadoActual.includes(
+            "TRABAJANDO"
+        );
 
-const enCapacitacion =
-    estadoActual.includes("CAPACITACION") ||
-    estadoActual.includes("CAPACITACIÓN");
 
-const enReunion =
-    estadoActual.includes("REUNION") ||
-    estadoActual.includes("REUNIÓN");
+    const enBreak =
+        estadoActual.includes(
+            "BREAK"
+        );
 
-const disponible =
-    estadoActual.includes("DISPONIBLE") ||
-    estadoActual.includes("SALIDA");
 
-return (
+    const enAlmuerzo =
+        estadoActual.includes(
+            "ALMUERZO"
+        );
 
-    <div className="grid">
 
-        {/* ====================================== */}
-        {/* ENTRADA */}
-        {/* ====================================== */}
+    const enBano =
+        estadoActual.includes("BANO") ||
+        estadoActual.includes("BAÑO");
 
-        <button
-            style={estilo("#0B5ED7")}
-            disabled={!disponible}
-            onClick={() =>
-                registrar(
-                    "ENTRADA",
-                    "TRABAJANDO"
-                )
-            }
-        >
-            🟢 ENTRADA
-        </button>
 
-        {/* ====================================== */}
-        {/* BREAK */}
-        {/* ====================================== */}
+    const enCapacitacion =
+        estadoActual.includes(
+            "CAPACITACION"
+        ) ||
+        estadoActual.includes(
+            "CAPACITACIÓN"
+        );
 
-        <button
-            style={estilo("#F39C12")}
-            disabled={
-                !trabajando &&
-                !enBreak
-            }
-            onClick={() =>
-                registrar(
+
+    const enReunion =
+        estadoActual.includes(
+            "REUNION"
+        ) ||
+        estadoActual.includes(
+            "REUNIÓN"
+        );
+
+
+    const disponible =
+        estadoActual.includes(
+            "DISPONIBLE"
+        ) ||
+        estadoActual.includes(
+            "SALIDA"
+        );
+
+
+    return (
+
+        <div className="grid">
+
+            {/* ====================================== */}
+            {/* ENTRADA */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#0B5ED7",
+                    "ENTRADA"
+                )}
+                disabled={!disponible}
+                onClick={() =>
+                    registrar(
+                        "ENTRADA",
+                        "TRABAJANDO"
+                    )
+                }
+            >
+                🟢 ENTRADA
+            </button>
+
+
+            {/* ====================================== */}
+            {/* BREAK */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#F39C12",
                     enBreak
                         ? "BREAK_FIN"
-                        : "BREAK_INICIO",
+                        : "BREAK_INICIO"
+                )}
+                disabled={
+                    !trabajando &&
+                    !enBreak
+                }
+                onClick={() =>
+                    registrar(
+                        enBreak
+                            ? "BREAK_FIN"
+                            : "BREAK_INICIO",
+
+                        enBreak
+                            ? "TRABAJANDO"
+                            : "BREAK"
+                    )
+                }
+            >
+                {
                     enBreak
-                        ? "TRABAJANDO"
-                        : "BREAK"
-                )
-            }
-        >
-            {
-                enBreak
-                    ? "▶ REGRESO BREAK"
-                    : "☕ BREAK"
-            }
-        </button>
+                        ? "▶ REGRESO BREAK"
+                        : "☕ BREAK"
+                }
+            </button>
+            {/* ====================================== */}
+            {/* ALMUERZO */}
+            {/* ====================================== */}
 
-        {/* ====================================== */}
-        {/* ALMUERZO */}
-        {/* ====================================== */}
-
-        <button
-            style={estilo("#27AE60")}
-            disabled={
-                !trabajando &&
-                !enAlmuerzo
-            }
-            onClick={() =>
-                registrar(
+            <button
+                style={estilo(
+                    "#27AE60",
                     enAlmuerzo
                         ? "ALMUERZO_FIN"
-                        : "ALMUERZO_INICIO",
-                    enAlmuerzo
-                        ? "TRABAJANDO"
-                        : "ALMUERZO"
-                )
-            }
-        >
-            {
-                enAlmuerzo
-                    ? "▶ REGRESO ALMUERZO"
-                    : "🍽 ALMUERZO"
-            }
-        </button>
-        {/* ====================================== */}
-        {/* BAÑO */}
-        {/* ====================================== */}
+                        : "ALMUERZO_INICIO"
+                )}
+                disabled={
+                    !trabajando &&
+                    !enAlmuerzo
+                }
+                onClick={() =>
+                    registrar(
+                        enAlmuerzo
+                            ? "ALMUERZO_FIN"
+                            : "ALMUERZO_INICIO",
 
-        <button
-            style={estilo("#16A085")}
-            disabled={!trabajando && !enBano}
-            onClick={() =>
-                registrar(
+                        enAlmuerzo
+                            ? "TRABAJANDO"
+                            : "ALMUERZO"
+                    )
+                }
+            >
+                {
+                    enAlmuerzo
+                        ? "▶ REGRESO ALMUERZO"
+                        : "🍽 ALMUERZO"
+                }
+            </button>
+
+
+            {/* ====================================== */}
+            {/* BAÑO */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#16A085",
                     enBano
                         ? "BANO_FIN"
-                        : "BANO_INICIO",
+                        : "BANO_INICIO"
+                )}
+                disabled={
+                    !trabajando &&
+                    !enBano
+                }
+                onClick={() =>
+                    registrar(
+                        enBano
+                            ? "BANO_FIN"
+                            : "BANO_INICIO",
+
+                        enBano
+                            ? "TRABAJANDO"
+                            : "BANO"
+                    )
+                }
+            >
+                {
                     enBano
-                        ? "TRABAJANDO"
-                        : "BANO"
-                )
-            }
-        >
-            {
-                enBano
-                    ? "▶ REGRESO BAÑO"
-                    : "🚻 BAÑO"
-            }
-        </button>
+                        ? "▶ REGRESO BAÑO"
+                        : "🚻 BAÑO"
+                }
+            </button>
 
-        {/* ====================================== */}
-        {/* CAPACITACIÓN */}
-        {/* ====================================== */}
 
-        <button
-            style={estilo("#8E44AD")}
-            disabled={!trabajando && !enCapacitacion}
-            onClick={() =>
-                registrar(
+            {/* ====================================== */}
+            {/* CAPACITACIÓN */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#8E44AD",
                     enCapacitacion
                         ? "CAPACITACION_FIN"
-                        : "CAPACITACION_INICIO",
+                        : "CAPACITACION_INICIO"
+                )}
+                disabled={
+                    !trabajando &&
+                    !enCapacitacion
+                }
+                onClick={() =>
+                    registrar(
+                        enCapacitacion
+                            ? "CAPACITACION_FIN"
+                            : "CAPACITACION_INICIO",
+
+                        enCapacitacion
+                            ? "TRABAJANDO"
+                            : "CAPACITACION"
+                    )
+                }
+            >
+                {
                     enCapacitacion
-                        ? "TRABAJANDO"
-                        : "CAPACITACION"
-                )
-            }
-        >
-            {
-                enCapacitacion
-                    ? "▶ FIN CAPACITACIÓN"
-                    : "📚 CAPACITACIÓN"
-            }
-        </button>
+                        ? "▶ FIN CAPACITACIÓN"
+                        : "📚 CAPACITACIÓN"
+                }
+            </button>
 
-        {/* ====================================== */}
-        {/* REUNIÓN */}
-        {/* ====================================== */}
 
-        <button
-            style={estilo("#2C3E50")}
-            disabled={!trabajando && !enReunion}
-            onClick={() =>
-                registrar(
+            {/* ====================================== */}
+            {/* REUNIÓN */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#2C3E50",
                     enReunion
                         ? "REUNION_FIN"
-                        : "REUNION_INICIO",
+                        : "REUNION_INICIO"
+                )}
+                disabled={
+                    !trabajando &&
+                    !enReunion
+                }
+                onClick={() =>
+                    registrar(
+                        enReunion
+                            ? "REUNION_FIN"
+                            : "REUNION_INICIO",
+
+                        enReunion
+                            ? "TRABAJANDO"
+                            : "REUNION"
+                    )
+                }
+            >
+                {
                     enReunion
-                        ? "TRABAJANDO"
-                        : "REUNION"
-                )
-            }
-        >
-            {
-                enReunion
-                    ? "▶ FIN REUNIÓN"
-                    : "👥 REUNIÓN"
-            }
-        </button>
+                        ? "▶ FIN REUNIÓN"
+                        : "👥 REUNIÓN"
+                }
+            </button>
 
-        {/* ====================================== */}
-        {/* SALIDA */}
-        {/* ====================================== */}
 
-        <button
-            style={estilo("#C0392B")}
-            disabled={!trabajando}
-            onClick={() =>
-                registrar(
-                    "SALIDA",
+            {/* ====================================== */}
+            {/* SALIDA */}
+            {/* ====================================== */}
+
+            <button
+                style={estilo(
+                    "#C0392B",
                     "SALIDA"
-                )
-            }
-        >
-            🔴 SALIDA
-        </button>
+                )}
+                disabled={!trabajando}
+                onClick={() =>
+                    registrar(
+                        "SALIDA",
+                        "SALIDA"
+                    )
+                }
+            >
+                🔴 SALIDA
+            </button>
 
-    </div>
 
-);
+        </div>
+
+    );
 
 }

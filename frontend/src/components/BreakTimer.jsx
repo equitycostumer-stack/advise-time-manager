@@ -1,28 +1,79 @@
 import { useEffect, useState } from "react";
 
-export default function BreakTimer({ estado, inicioEstado }) {
+// ======================================================
+// CONVERTIR FECHA MYSQL -> COLOMBIA
+// ======================================================
 
-    // ==========================================
-    // LÍMITE DEL BREAK
-    // ==========================================
+function convertirFechaColombia(fecha) {
 
-    const LIMITE_BREAK = 15 * 60;
+    if (!fecha) {
+        return null;
+    }
 
+    if (fecha instanceof Date) {
+        return fecha;
+    }
 
-    // ==========================================
-    // ESTADOS
-    // ==========================================
+    const valor =
+        String(fecha).trim();
 
-    const [segundosTranscurridos, setSegundosTranscurridos] =
-        useState(0);
+    if (!valor) {
+        return null;
+    }
 
-    const [excedido, setExcedido] =
-        useState(false);
+    if (
+        valor.endsWith("Z") ||
+        /[+-]\d{2}:\d{2}$/.test(valor)
+    ) {
 
+        const fechaConvertida =
+            new Date(valor);
 
-    // ==========================================
+        return Number.isNaN(
+            fechaConvertida.getTime()
+        )
+            ? null
+            : fechaConvertida;
+    }
+
+    const fechaConvertida =
+        new Date(
+            valor.replace(" ", "T") +
+            "-05:00"
+        );
+
+    return Number.isNaN(
+        fechaConvertida.getTime()
+    )
+        ? null
+        : fechaConvertida;
+}
+
+// ======================================================
+// BREAK TIMER
+// ======================================================
+
+export default function BreakTimer({
+    estado,
+    inicioEstado
+}) {
+
+    const LIMITE_BREAK =
+        15 * 60;
+
+    const [
+        segundosTranscurridos,
+        setSegundosTranscurridos
+    ] = useState(0);
+
+    const [
+        excedido,
+        setExcedido
+    ] = useState(false);
+
+    // ==================================================
     // CONTADOR
-    // ==========================================
+    // ==================================================
 
     useEffect(() => {
 
@@ -38,73 +89,84 @@ export default function BreakTimer({ estado, inicioEstado }) {
 
         }
 
+        const inicio =
+            convertirFechaColombia(
+                inicioEstado
+            );
+
+        if (!inicio) {
+
+            console.error(
+                "❌ BreakTimer: fecha inválida:",
+                inicioEstado
+            );
+
+            setSegundosTranscurridos(0);
+            setExcedido(false);
+
+            return;
+
+        }
+
+        console.log(
+            "☕ BreakTimer INICIO:",
+            inicio.toISOString()
+        );
 
         function actualizarTiempo() {
-
-            const inicio =
-                new Date(inicioEstado);
 
             const ahora =
                 new Date();
 
-
             const diferencia =
                 Math.floor(
-                    (ahora.getTime() - inicio.getTime()) /
-                    1000
+                    (
+                        ahora.getTime() -
+                        inicio.getTime()
+                    ) / 1000
                 );
 
-
             const segundos =
-                diferencia > 0
-                    ? diferencia
-                    : 0;
-
+                Math.max(
+                    diferencia,
+                    0
+                );
 
             setSegundosTranscurridos(
                 segundos
             );
 
-
-            if (
-                segundos >= LIMITE_BREAK
-            ) {
-
-                setExcedido(true);
-
-            } else {
-
-                setExcedido(false);
-
-            }
+            setExcedido(
+                segundos >=
+                LIMITE_BREAK
+            );
 
         }
 
-
-        // Ejecutar inmediatamente
         actualizarTiempo();
 
-
-        // Actualizar cada segundo
         const intervalo =
             setInterval(
                 actualizarTiempo,
                 1000
             );
 
-
         return () => {
 
-            clearInterval(intervalo);
+            clearInterval(
+                intervalo
+            );
 
         };
 
-    }, [estado, inicioEstado]);
+    }, [
+        estado,
+        inicioEstado
+    ]);
 
-
-    // ==========================================
-    // SI NO ESTÁ EN BREAK
-    // ==========================================
+    // ==================================================
+    // NO ESTÁ EN BREAK
+    // ==================================================
 
     if (
         estado !== "☕ Break"
@@ -114,10 +176,9 @@ export default function BreakTimer({ estado, inicioEstado }) {
 
     }
 
-
-    // ==========================================
+    // ==================================================
     // TIEMPO RESTANTE
-    // ==========================================
+    // ==================================================
 
     const segundosRestantes =
         Math.max(
@@ -126,60 +187,49 @@ export default function BreakTimer({ estado, inicioEstado }) {
             0
         );
 
-
-    // ==========================================
-    // FORMATO DEL TIEMPO RESTANTE
-    // ==========================================
+    // ==================================================
+    // FORMATO RESTANTE
+    // ==================================================
 
     const minutosRestantes =
         Math.floor(
             segundosRestantes / 60
         );
 
-
     const segundosRestantesFinal =
         segundosRestantes % 60;
 
-
     const tiempoRestanteFormateado =
-
         `${String(
             minutosRestantes
         ).padStart(2, "0")}:` +
-
         `${String(
             segundosRestantesFinal
         ).padStart(2, "0")}`;
 
-
-    // ==========================================
-    // TIEMPO TOTAL TRANSCURRIDO
-    // ==========================================
+    // ==================================================
+    // TIEMPO TOTAL
+    // ==================================================
 
     const minutosTranscurridos =
         Math.floor(
             segundosTranscurridos / 60
         );
 
-
     const segundosTranscurridosFinal =
         segundosTranscurridos % 60;
 
-
     const tiempoTranscurridoFormateado =
-
         `${String(
             minutosTranscurridos
         ).padStart(2, "0")}:` +
-
         `${String(
             segundosTranscurridosFinal
         ).padStart(2, "0")}`;
 
-
-    // ==========================================
-    // RENDER
-    // ==========================================
+    // ==================================================
+    // INTERFAZ
+    // ==================================================
 
     return (
 
@@ -190,48 +240,39 @@ export default function BreakTimer({ estado, inicioEstado }) {
                 borderRadius: "15px",
                 textAlign: "center",
 
-                background: excedido
-                    ? "#FDECEC"
-                    : "#FFF7E6",
+                background:
+                    excedido
+                        ? "#FDECEC"
+                        : "#FFF7E6",
 
-                border: excedido
-                    ? "2px solid #DC3545"
-                    : "2px solid #F39C12",
+                border:
+                    excedido
+                        ? "2px solid #DC3545"
+                        : "2px solid #F39C12",
 
                 transition:
                     "all 0.3s ease"
             }}
         >
 
-            {/* ==================================
-                TÍTULO
-            ================================== */}
-
             <div
                 style={{
                     fontSize: "17px",
                     fontWeight: "bold",
 
-                    color: excedido
-                        ? "#B02A37"
-                        : "#9A6700"
+                    color:
+                        excedido
+                            ? "#B02A37"
+                            : "#9A6700"
                 }}
             >
 
                 {excedido
-
                     ? "🔴 BREAK EXCEDIDO"
-
                     : "☕ TIEMPO DE BREAK"
-
                 }
 
             </div>
-
-
-            {/* ==================================
-                CONTADOR
-            ================================== */}
 
             <div
                 style={{
@@ -239,26 +280,19 @@ export default function BreakTimer({ estado, inicioEstado }) {
                     fontWeight: "bold",
                     marginTop: "10px",
 
-                    color: excedido
-                        ? "#DC3545"
-                        : "#D68910"
+                    color:
+                        excedido
+                            ? "#DC3545"
+                            : "#D68910"
                 }}
             >
 
                 {excedido
-
                     ? tiempoTranscurridoFormateado
-
                     : tiempoRestanteFormateado
-
                 }
 
             </div>
-
-
-            {/* ==================================
-                INFORMACIÓN
-            ================================== */}
 
             <div
                 style={{
@@ -269,19 +303,11 @@ export default function BreakTimer({ estado, inicioEstado }) {
             >
 
                 {excedido
-
                     ? "Tiempo total de Break"
-
                     : "Tiempo restante de tu descanso"
-
                 }
 
             </div>
-
-
-            {/* ==================================
-                LÍMITE
-            ================================== */}
 
             <div
                 style={{
@@ -291,14 +317,10 @@ export default function BreakTimer({ estado, inicioEstado }) {
                 }}
             >
 
-                Límite permitido: <strong>15:00</strong>
+                Límite permitido:
+                <strong> 15:00</strong>
 
             </div>
-
-
-            {/* ==================================
-                ALERTA VISUAL
-            ================================== */}
 
             {excedido && (
 

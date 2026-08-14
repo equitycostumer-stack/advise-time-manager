@@ -14,15 +14,19 @@ const registrarIncidencia = (
     // Primero revisar si ya existe una incidencia igual SIN revisar
 
     const verificar = `
-        SELECT id
-        FROM incidencias
-        WHERE asesor_id = ?
-        AND tipo = ?
-        AND revisada = 0
-        LIMIT 1
-    `;
+    SELECT id
+    FROM incidencias
+    WHERE asesor_id = ?
+    AND tipo = ?
+    AND revisada = 0
+    AND DATE(fecha_hora) = CURDATE()
+    LIMIT 1
+`;
 
-    db.query(verificar, [asesorId, tipo], (err, rows) => {
+    db.query(
+    verificar,
+    [asesorId, tipo],
+    (err, rows) => {
 
         if (err) {
 

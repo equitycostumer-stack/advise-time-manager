@@ -1,8 +1,6 @@
 const movimientosRepository =
     require("../repositories/movimientosRepository");
-const {
-    registrarIncidencia
-} = require("../controllers/incidenciasController");
+
 
 // ======================================================
 // EQUITY LINE PROFESSIONAL SERVICES
@@ -18,39 +16,27 @@ class ResumenJornadaService {
     convertirFechaColombia(fecha) {
 
         if (!fecha) {
-
             return null;
-
         }
 
-
         // ----------------------------------------------
-        // Si ya es Date
+        // Si ya es Date, devolverlo directamente
         // ----------------------------------------------
 
-        if (
-            fecha instanceof Date
-        ) {
+        if (fecha instanceof Date) {
 
-            return Number.isNaN(
-                fecha.getTime()
-            )
+            return Number.isNaN(fecha.getTime())
                 ? null
                 : fecha;
 
         }
 
-
         const valor =
             String(fecha).trim();
 
-
         if (!valor) {
-
             return null;
-
         }
-
 
         // ----------------------------------------------
         // Si ya contiene zona horaria
@@ -64,7 +50,6 @@ class ResumenJornadaService {
             const fechaConvertida =
                 new Date(valor);
 
-
             return Number.isNaN(
                 fechaConvertida.getTime()
             )
@@ -73,29 +58,21 @@ class ResumenJornadaService {
 
         }
 
-
         // ----------------------------------------------
         // MYSQL DATETIME
         //
         // YYYY-MM-DD HH:mm:ss
         //
-        // Se interpreta como Colombia.
+        // Se interpreta SIEMPRE como Colombia.
         // Colombia = UTC-05:00
         // ----------------------------------------------
 
         const fechaTexto =
-            valor.replace(
-                " ",
-                "T"
-            ) +
+            valor.replace(" ", "T") +
             "-05:00";
 
-
         const fechaConvertida =
-            new Date(
-                fechaTexto
-            );
-
+            new Date(fechaTexto);
 
         return Number.isNaN(
             fechaConvertida.getTime()
@@ -110,9 +87,7 @@ class ResumenJornadaService {
     // ACTUALIZAR RESUMEN
     // ==================================================
 
-    async actualizar(
-        asesorId
-    ) {
+    async actualizar(asesorId) {
 
         // ----------------------------------------------
         // VALIDACIÓN
@@ -126,7 +101,6 @@ class ResumenJornadaService {
 
         }
 
-
         // ----------------------------------------------
         // OBTENER MOVIMIENTOS DEL DÍA
         // ----------------------------------------------
@@ -137,7 +111,6 @@ class ResumenJornadaService {
                     asesorId
                 );
 
-
         if (
             !Array.isArray(movimientos) ||
             !movimientos.length
@@ -147,31 +120,23 @@ class ResumenJornadaService {
 
         }
 
-
         // ==============================================
         // QUEDARSE CON LA ÚLTIMA JORNADA
         // ==============================================
 
-        let ultimaEntrada =
-            -1;
-
+        let ultimaEntrada = -1;
 
         for (
-            let i =
-                movimientos.length - 1;
-
+            let i = movimientos.length - 1;
             i >= 0;
-
             i--
         ) {
 
             if (
-                movimientos[i].tipo ===
-                "ENTRADA"
+                movimientos[i].tipo === "ENTRADA"
             ) {
 
-                ultimaEntrada =
-                    i;
+                ultimaEntrada = i;
 
                 break;
 
@@ -179,15 +144,12 @@ class ResumenJornadaService {
 
         }
 
-
         // ----------------------------------------------
-        // Si existe una entrada posterior,
-        // eliminar movimientos anteriores.
+        // Si existe una entrada, eliminar todo
+        // anterior a esa entrada.
         // ----------------------------------------------
 
-        if (
-            ultimaEntrada > 0
-        ) {
+        if (ultimaEntrada > 0) {
 
             movimientos.splice(
                 0,
@@ -195,7 +157,6 @@ class ResumenJornadaService {
             );
 
         }
-
 
         // ==============================================
         // DEBUG DE MOVIMIENTOS
@@ -205,11 +166,9 @@ class ResumenJornadaService {
             "=========================================="
         );
 
-
         console.log(
             "📋 MOVIMIENTOS PARA RESUMEN"
         );
-
 
         console.table(
             movimientos.map(
@@ -225,11 +184,9 @@ class ResumenJornadaService {
             )
         );
 
-
         console.log(
             "=========================================="
         );
-
 
         // ==============================================
         // OBTENER / CREAR RESUMEN DEL DÍA
@@ -241,14 +198,12 @@ class ResumenJornadaService {
                     asesorId
                 );
 
-
         if (!resumen) {
 
             await movimientosRepository
                 .crearResumenDia(
                     asesorId
                 );
-
 
             resumen =
                 await movimientosRepository
@@ -258,7 +213,6 @@ class ResumenJornadaService {
 
         }
 
-
         if (!resumen) {
 
             throw new Error(
@@ -266,7 +220,6 @@ class ResumenJornadaService {
             );
 
         }
-
 
         // ==============================================
         // ENTRADA Y SALIDA
@@ -280,28 +233,23 @@ class ResumenJornadaService {
                 movimientos
             );
 
-
         console.log(
             "=========================================="
         );
-
 
         console.log(
             "🟢 ENTRADA:",
             horaEntrada
         );
 
-
         console.log(
             "🔴 SALIDA :",
             horaSalida
         );
 
-
         console.log(
             "=========================================="
         );
-
 
         // ==============================================
         // CALCULAR TIEMPOS
@@ -312,62 +260,27 @@ class ResumenJornadaService {
                 movimientos
             );
 
-
         const {
-
             tiempoTrabajado,
-
             tiempoBreak,
-
             tiempoAlmuerzo,
-
             tiempoBano,
-
             tiempoCapacitacion,
-
             tiempoReunion,
-
             tiempoProductivo
-
-        } =
-            tiempos;
-
+        } = tiempos;
 
         // ==============================================
         // CALCULAR RETRASO
         // ==============================================
 
         const {
-
             llego_tarde,
-
             minutos_retraso
-
         } =
             this.calcularRetraso(
                 horaEntrada
             );
-// ==================================================
-// CREAR INCIDENCIA POR LLEGADA TARDE
-// ==================================================
-
-if (
-    minutos_retraso > 0
-) {
-
-    registrarIncidencia(
-
-        asesorId,
-
-        "LLEGADA TARDE",
-
-        "ALTA",
-
-        `${minutos_retraso} minutos de retraso`
-
-    );
-
-}
 
         // ==============================================
         // GUARDAR RESUMEN
@@ -412,100 +325,79 @@ if (
                 }
             );
 
-
-        // ==============================================
-        // DEBUG DEL RESUMEN
-        // ==============================================
-
         console.log(
             "=========================================="
         );
 
-
         console.log(
             "✅ RESUMEN ACTUALIZADO"
         );
-
 
         console.log(
             "Asesor:",
             asesorId
         );
 
-
         console.log(
             "Trabajado:",
             tiempoTrabajado
         );
-
 
         console.log(
             "Break:",
             tiempoBreak
         );
 
-
         console.log(
             "Almuerzo:",
             tiempoAlmuerzo
         );
-
 
         console.log(
             "Baño:",
             tiempoBano
         );
 
-
         console.log(
             "Capacitación:",
             tiempoCapacitacion
         );
-
 
         console.log(
             "Reunión:",
             tiempoReunion
         );
 
-
         console.log(
             "Productivo:",
             tiempoProductivo
         );
-
 
         console.log(
             "Llegó tarde:",
             llego_tarde
         );
 
-
         console.log(
             "Minutos retraso:",
             minutos_retraso
         );
-
 
         console.log(
             "=========================================="
         );
 
     }
-   // ==================================================
+
+
+    // ==================================================
     // OBTENER ENTRADA Y SALIDA
     // ==================================================
 
-    obtenerEntradaSalida(
-        movimientos
-    ) {
+    obtenerEntradaSalida(movimientos) {
 
-        let horaEntrada =
-            null;
-
-        let horaSalida =
-            null;
-
+        let horaEntrada = null;
+        let horaSalida = null;
 
         for (
             const movimiento
@@ -517,8 +409,7 @@ if (
             // ------------------------------------------
 
             if (
-                movimiento.tipo ===
-                    "ENTRADA" &&
+                movimiento.tipo === "ENTRADA" &&
                 !horaEntrada
             ) {
 
@@ -527,14 +418,12 @@ if (
 
             }
 
-
             // ------------------------------------------
             // ÚLTIMA SALIDA
             // ------------------------------------------
 
             if (
-                movimiento.tipo ===
-                "SALIDA"
+                movimiento.tipo === "SALIDA"
             ) {
 
                 horaSalida =
@@ -544,11 +433,9 @@ if (
 
         }
 
-
         return {
 
             horaEntrada,
-
             horaSalida
 
         };
@@ -560,9 +447,7 @@ if (
     // CALCULAR RETRASO
     // ==================================================
 
-    calcularRetraso(
-        horaEntrada
-    ) {
+    calcularRetraso(horaEntrada) {
 
         if (!horaEntrada) {
 
@@ -576,12 +461,10 @@ if (
 
         }
 
-
         const entrada =
             this.convertirFechaColombia(
                 horaEntrada
             );
-
 
         if (!entrada) {
 
@@ -600,12 +483,12 @@ if (
 
         }
 
-
         // ----------------------------------------------
         // Crear la hora oficial 10:00 AM
         // usando la misma fecha de la entrada.
         //
-        // Colombia = UTC-05:00
+        // IMPORTANTE:
+        // Se construye explícitamente en Colombia.
         // ----------------------------------------------
 
         const fechaEntradaColombia =
@@ -616,41 +499,31 @@ if (
                     timeZone:
                         "America/Bogota",
 
-                    year:
-                        "numeric",
+                    year: "numeric",
 
-                    month:
-                        "2-digit",
+                    month: "2-digit",
 
-                    day:
-                        "2-digit"
+                    day: "2-digit"
 
                 }
-            ).format(
-                entrada
-            );
-
+            ).format(entrada);
 
         const horaOficial =
             new Date(
                 `${fechaEntradaColombia}T10:00:00-05:00`
             );
 
-
         const diferencia =
             entrada.getTime() -
             horaOficial.getTime();
-
 
         const minutos =
             Math.max(
                 0,
                 Math.floor(
-                    diferencia /
-                    60000
+                    diferencia / 60000
                 )
             );
-
 
         return {
 
@@ -667,225 +540,106 @@ if (
     }
 
 
-// ==================================================
-// ACUMULAR TIEMPO SEGÚN EL ESTADO
-// ==================================================
+    // ==================================================
+    // ACUMULAR TIEMPO SEGÚN EL ESTADO
+    // ==================================================
 
-acumularTiempo(
-    estado,
-    diferencia,
-    acciones
-) {
-
-    // ----------------------------------------------
-    // VALIDACIÓN
-    // ----------------------------------------------
-
-    if (
-        !Number.isFinite(
-            diferencia
-        ) ||
-        diferencia <= 0
+    acumularTiempo(
+        estado,
+        diferencia,
+        acciones
     ) {
 
-        return;
+        // ----------------------------------------------
+        // Nunca permitir tiempos negativos.
+        // ----------------------------------------------
+
+        if (
+            !Number.isFinite(diferencia) ||
+            diferencia <= 0
+        ) {
+
+            return;
+
+        }
+
+        switch (estado) {
+
+            case "ENTRADA":
+
+                acciones.tiempoTrabajado(
+                    diferencia
+                );
+
+                break;
+
+
+            case "BREAK_INICIO":
+
+                acciones.tiempoBreak(
+                    diferencia
+                );
+
+                break;
+
+
+            case "ALMUERZO_INICIO":
+
+                acciones.tiempoAlmuerzo(
+                    diferencia
+                );
+
+                break;
+
+
+            case "BANO_INICIO":
+
+                acciones.tiempoBano(
+                    diferencia
+                );
+
+                break;
+
+
+            case "CAPACITACION_INICIO":
+
+                acciones.tiempoCapacitacion(
+                    diferencia
+                );
+
+                break;
+
+
+            case "REUNION_INICIO":
+
+                acciones.tiempoReunion(
+                    diferencia
+                );
+
+                break;
+
+        }
 
     }
-
-
-    // ----------------------------------------------
-    // ACUMULAR SEGÚN ESTADO
-    //
-    // REGLA:
-    //
-    // El almuerzo es la ÚNICA actividad
-    // que NO cuenta como tiempo trabajado.
-    //
-    // Break, baño, capacitación y reunión
-    // SÍ forman parte del tiempo trabajado,
-    // pero además se registran por separado.
-    // ----------------------------------------------
-
-    switch (
-        estado
-    ) {
-
-
-        // ==========================================
-        // ENTRADA / TRABAJO NORMAL
-        // ==========================================
-
-        case "ENTRADA":
-
-        case "TRABAJANDO":
-
-        case "BREAK_FIN":
-
-        case "ALMUERZO_FIN":
-
-        case "BANO_FIN":
-
-        case "CAPACITACION_FIN":
-
-        case "REUNION_FIN":
-
-            acciones.tiempoTrabajado(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // BREAK
-        //
-        // CUENTA COMO TRABAJADO
-        // Y TAMBIÉN COMO BREAK
-        // ==========================================
-
-        case "BREAK_INICIO":
-
-            acciones.tiempoTrabajado(
-                diferencia
-            );
-
-            acciones.tiempoBreak(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // ALMUERZO
-        //
-        // NO CUENTA COMO TRABAJADO
-        // ==========================================
-
-        case "ALMUERZO_INICIO":
-
-            acciones.tiempoAlmuerzo(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // BAÑO
-        //
-        // CUENTA COMO TRABAJADO
-        // Y TAMBIÉN COMO BAÑO
-        // ==========================================
-
-        case "BANO_INICIO":
-
-            acciones.tiempoTrabajado(
-                diferencia
-            );
-
-            acciones.tiempoBano(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // CAPACITACIÓN
-        //
-        // CUENTA COMO TRABAJADO
-        // Y TAMBIÉN COMO CAPACITACIÓN
-        // ==========================================
-
-        case "CAPACITACION_INICIO":
-
-            acciones.tiempoTrabajado(
-                diferencia
-            );
-
-            acciones.tiempoCapacitacion(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // REUNIÓN
-        //
-        // CUENTA COMO TRABAJADO
-        // Y TAMBIÉN COMO REUNIÓN
-        // ==========================================
-
-        case "REUNION_INICIO":
-
-            acciones.tiempoTrabajado(
-                diferencia
-            );
-
-            acciones.tiempoReunion(
-                diferencia
-            );
-
-            break;
-
-
-        // ==========================================
-        // SALIDA
-        // ==========================================
-
-        case "SALIDA":
-
-            // La jornada ya está cerrada.
-            // No se acumula tiempo adicional.
-
-            break;
-
-
-        // ==========================================
-        // ESTADO DESCONOCIDO
-        // ==========================================
-
-        default:
-
-            console.warn(
-                "⚠️ Estado no reconocido:",
-                estado
-            );
-
-            break;
-
-    }
-
-}
 
 
     // ==================================================
     // CALCULAR TIEMPOS
     // ==================================================
 
-    calcularTiempos(
-        movimientos
-    ) {
+    calcularTiempos(movimientos) {
 
-        let tiempoTrabajado =
-            0;
+        let tiempoTrabajado = 0;
 
-        let tiempoBreak =
-            0;
+        let tiempoBreak = 0;
 
-        let tiempoAlmuerzo =
-            0;
+        let tiempoAlmuerzo = 0;
 
-        let tiempoBano =
-            0;
+        let tiempoBano = 0;
 
-        let tiempoCapacitacion =
-            0;
+        let tiempoCapacitacion = 0;
 
-        let tiempoReunion =
-            0;
+        let tiempoReunion = 0;
 
 
         // ==============================================
@@ -895,106 +649,38 @@ acumularTiempo(
         const acciones = {
 
             tiempoTrabajado:
-                diferencia => {
-
-                    tiempoTrabajado +=
-                        diferencia;
-
-                },
-
+                diferencia =>
+                    tiempoTrabajado += diferencia,
 
             tiempoBreak:
-                diferencia => {
-
-                    tiempoBreak +=
-                        diferencia;
-
-                },
-
+                diferencia =>
+                    tiempoBreak += diferencia,
 
             tiempoAlmuerzo:
-                diferencia => {
-
-                    tiempoAlmuerzo +=
-                        diferencia;
-
-                },
-
+                diferencia =>
+                    tiempoAlmuerzo += diferencia,
 
             tiempoBano:
-                diferencia => {
-
-                    tiempoBano +=
-                        diferencia;
-
-                },
-
+                diferencia =>
+                    tiempoBano += diferencia,
 
             tiempoCapacitacion:
-                diferencia => {
-
-                    tiempoCapacitacion +=
-                        diferencia;
-
-                },
-
+                diferencia =>
+                    tiempoCapacitacion += diferencia,
 
             tiempoReunion:
-                diferencia => {
-
-                    tiempoReunion +=
-                        diferencia;
-
-                }
+                diferencia =>
+                    tiempoReunion += diferencia
 
         };
 
 
-        // ==============================================
-        // VALIDAR MOVIMIENTOS
-        // ==============================================
+        let ultimoEstado = null;
 
-        if (
-            !Array.isArray(
-                movimientos
-            ) ||
-            !movimientos.length
-        ) {
-
-            return {
-
-                tiempoTrabajado: 0,
-
-                tiempoBreak: 0,
-
-                tiempoAlmuerzo: 0,
-
-                tiempoBano: 0,
-
-                tiempoCapacitacion: 0,
-
-                tiempoReunion: 0,
-
-                tiempoProductivo: 0
-
-            };
-
-        }
+        let inicioEstado = null;
 
 
         // ==============================================
-        // ESTADO ACTUAL
-        // ==============================================
-
-        let ultimoEstado =
-            null;
-
-        let inicioEstado =
-            null;
-
-        let jornadaCerrada =
-            false;
-      // ==============================================
         // RECORRER MOVIMIENTOS
         // ==============================================
 
@@ -1003,48 +689,10 @@ acumularTiempo(
             of movimientos
         ) {
 
-            // ------------------------------------------
-            // IGNORAR MOVIMIENTOS INVÁLIDOS
-            // ------------------------------------------
-
-            if (
-                !movimiento ||
-                !movimiento.tipo ||
-                !movimiento.fecha_hora
-            ) {
-
-                console.warn(
-                    "⚠️ Movimiento inválido:",
-                    movimiento
-                );
-
-                continue;
-
-            }
-
-
-            // ------------------------------------------
-            // SI YA SALIÓ, NO PROCESAR MÁS
-            // ------------------------------------------
-
-            if (
-                jornadaCerrada
-            ) {
-
-                continue;
-
-            }
-
-
-            // ------------------------------------------
-            // CONVERTIR FECHA
-            // ------------------------------------------
-
             const fechaActual =
                 this.convertirFechaColombia(
                     movimiento.fecha_hora
                 );
-
 
             // ------------------------------------------
             // FECHA INVÁLIDA
@@ -1062,177 +710,361 @@ acumularTiempo(
             }
 
 
-            // ==========================================
-            // PRIMER MOVIMIENTO
-            // ==========================================
+            // ==================================================
+// ACUMULAR TIEMPO SEGÚN EL ESTADO
+// ==================================================
 
-            if (!inicioEstado) {
+acumularTiempo(
+    estado,
+    diferencia,
+    acciones
+) {
 
-                inicioEstado =
-                    fechaActual;
+    // ----------------------------------------------
+    // VALIDACIÓN
+    // ----------------------------------------------
 
-                ultimoEstado =
-                    movimiento.tipo;
+    if (
+        !Number.isFinite(diferencia) ||
+        diferencia <= 0
+    ) {
 
+        return;
 
-                console.log(
-                    "=========================================="
-                );
+    }
 
+    // ----------------------------------------------
+    // ACUMULAR SEGÚN ESTADO
+    // ----------------------------------------------
 
-                console.log(
-                    "RAW MYSQL:",
-                    movimiento.fecha_hora
-                );
+    switch (estado) {
 
+        // ==========================================
+        // TIEMPO PRODUCTIVO / TRABAJADO
+        // ==========================================
 
-                console.log(
-                    "FECHA INTERPRETADA:",
-                    fechaActual.toISOString()
-                );
+        case "ENTRADA":
+        case "TRABAJANDO":
+        case "BREAK_FIN":
+        case "ALMUERZO_FIN":
+        case "BANO_FIN":
+        case "CAPACITACION_FIN":
+        case "REUNION_FIN":
 
-
-                console.log(
-                    "LOCAL COLOMBIA:",
-                    fechaActual.toLocaleString(
-                        "es-CO",
-                        {
-
-                            timeZone:
-                                "America/Bogota",
-
-                            dateStyle:
-                                "short",
-
-                            timeStyle:
-                                "medium"
-
-                        }
-                    )
-                );
-
-
-                console.log(
-                    "=========================================="
-                );
-
-
-                // --------------------------------------
-                // SI LA JORNADA COMIENZA EN SALIDA
-                // --------------------------------------
-
-                if (
-                    movimiento.tipo ===
-                    "SALIDA"
-                ) {
-
-                    jornadaCerrada =
-                        true;
-
-                }
-
-
-                continue;
-
-            }
-
-
-            // ==========================================
-            // DIFERENCIA ENTRE ESTADOS
-            // ==========================================
-
-            const diferencia =
-                fechaActual.getTime() -
-                inicioEstado.getTime();
-
-
-            console.log(
-                "Estado:",
-                ultimoEstado,
-                "Diferencia:",
+            acciones.tiempoTrabajado(
                 diferencia
             );
 
+            break;
 
-            // ==========================================
-            // ACUMULAR ESTADO ANTERIOR
-            // ==========================================
 
-            this.acumularTiempo(
-                ultimoEstado,
-                diferencia,
-                acciones
+        // ==========================================
+        // BREAK
+        // ==========================================
+
+        case "BREAK_INICIO":
+
+            acciones.tiempoBreak(
+                diferencia
+            );
+
+            break;
+
+
+        // ==========================================
+        // ALMUERZO
+        // ==========================================
+
+        case "ALMUERZO_INICIO":
+
+            acciones.tiempoAlmuerzo(
+                diferencia
+            );
+
+            break;
+
+
+        // ==========================================
+        // BAÑO
+        // ==========================================
+
+        case "BANO_INICIO":
+
+            acciones.tiempoBano(
+                diferencia
+            );
+
+            break;
+
+
+        // ==========================================
+        // CAPACITACIÓN
+        // ==========================================
+
+        case "CAPACITACION_INICIO":
+
+            acciones.tiempoCapacitacion(
+                diferencia
+            );
+
+            break;
+
+
+        // ==========================================
+        // REUNIÓN
+        // ==========================================
+
+        case "REUNION_INICIO":
+
+            acciones.tiempoReunion(
+                diferencia
+            );
+
+            break;
+
+
+        // ==========================================
+        // SALIDA
+        // ==========================================
+
+        case "SALIDA":
+
+            // Una jornada cerrada no acumula tiempo.
+            break;
+
+
+        // ==========================================
+        // ESTADOS DESCONOCIDOS
+        // ==========================================
+
+        default:
+
+            console.warn(
+                "⚠️ Estado no reconocido:",
+                estado
+            );
+
+            break;
+
+    }
+
+}
+
+
+// ==================================================
+// CALCULAR TIEMPOS
+// ==================================================
+
+calcularTiempos(movimientos) {
+
+    let tiempoTrabajado = 0;
+
+    let tiempoBreak = 0;
+
+    let tiempoAlmuerzo = 0;
+
+    let tiempoBano = 0;
+
+    let tiempoCapacitacion = 0;
+
+    let tiempoReunion = 0;
+
+
+    // ==============================================
+    // FUNCIONES DE ACUMULACIÓN
+    // ==============================================
+
+    const acciones = {
+
+        tiempoTrabajado:
+            diferencia => {
+
+                tiempoTrabajado += diferencia;
+
+            },
+
+
+        tiempoBreak:
+            diferencia => {
+
+                tiempoBreak += diferencia;
+
+            },
+
+
+        tiempoAlmuerzo:
+            diferencia => {
+
+                tiempoAlmuerzo += diferencia;
+
+            },
+
+
+        tiempoBano:
+            diferencia => {
+
+                tiempoBano += diferencia;
+
+            },
+
+
+        tiempoCapacitacion:
+            diferencia => {
+
+                tiempoCapacitacion += diferencia;
+
+            },
+
+
+        tiempoReunion:
+            diferencia => {
+
+                tiempoReunion += diferencia;
+
+            }
+
+    };
+
+
+    // ==============================================
+    // VALIDAR MOVIMIENTOS
+    // ==============================================
+
+    if (
+        !Array.isArray(movimientos) ||
+        !movimientos.length
+    ) {
+
+        return {
+
+            tiempoTrabajado: 0,
+
+            tiempoBreak: 0,
+
+            tiempoAlmuerzo: 0,
+
+            tiempoBano: 0,
+
+            tiempoCapacitacion: 0,
+
+            tiempoReunion: 0,
+
+            tiempoProductivo: 0
+
+        };
+
+    }
+
+
+    // ==============================================
+    // ESTADO ACTUAL
+    // ==============================================
+
+    let ultimoEstado = null;
+
+    let inicioEstado = null;
+
+    let jornadaCerrada = false;
+
+
+    // ==============================================
+    // RECORRER MOVIMIENTOS
+    // ==============================================
+
+    for (
+        const movimiento
+        of movimientos
+    ) {
+
+        // ------------------------------------------
+        // IGNORAR MOVIMIENTOS INVÁLIDOS
+        // ------------------------------------------
+
+        if (
+            !movimiento ||
+            !movimiento.tipo ||
+            !movimiento.fecha_hora
+        ) {
+
+            console.warn(
+                "⚠️ Movimiento inválido:",
+                movimiento
+            );
+
+            continue;
+
+        }
+
+
+        // ------------------------------------------
+        // SI YA SALIÓ, NO PROCESAR MÁS
+        // ------------------------------------------
+
+        if (jornadaCerrada) {
+
+            continue;
+
+        }
+
+
+        // ------------------------------------------
+        // CONVERTIR FECHA
+        // ------------------------------------------
+
+        const fechaActual =
+            this.convertirFechaColombia(
+                movimiento.fecha_hora
             );
 
 
-            // ==========================================
-            // NUEVO ESTADO
-            // ==========================================
+        // ------------------------------------------
+        // FECHA INVÁLIDA
+        // ------------------------------------------
 
-            ultimoEstado =
-                movimiento.tipo;
+        if (!fechaActual) {
+
+            console.error(
+                "❌ Fecha inválida:",
+                movimiento.fecha_hora
+            );
+
+            continue;
+
+        }
+
+
+        // ==========================================
+        // PRIMER MOVIMIENTO
+        // ==========================================
+
+        if (!inicioEstado) {
 
             inicioEstado =
                 fechaActual;
 
-
-            // ==========================================
-            // SALIDA CIERRA LA JORNADA
-            // ==========================================
-
-            if (
-                movimiento.tipo ===
-                "SALIDA"
-            ) {
-
-                jornadaCerrada =
-                    true;
-
-
-                console.log(
-                    "🔴 JORNADA CERRADA EN:",
-                    fechaActual.toISOString()
-                );
-
-
-                break;
-
-            }
-
-        }
-        // ==============================================
-        // CONTINUAR ÚLTIMO ESTADO HASTA AHORA
-        //
-        // SOLO SI LA JORNADA SIGUE ACTIVA
-        // ==============================================
-
-        if (
-            inicioEstado &&
-            ultimoEstado &&
-            !jornadaCerrada
-        ) {
-
-            const ahora =
-                new Date();
+            ultimoEstado =
+                movimiento.tipo;
 
 
             console.log(
                 "=========================================="
             );
 
-
             console.log(
-                "AHORA ISO:",
-                ahora.toISOString()
+                "RAW MYSQL:",
+                movimiento.fecha_hora
             );
 
+            console.log(
+                "FECHA INTERPRETADA:",
+                fechaActual.toISOString()
+            );
 
             console.log(
-                "AHORA COLOMBIA:",
-                ahora.toLocaleString(
+                "LOCAL COLOMBIA:",
+                fechaActual.toLocaleString(
                     "es-CO",
                     {
-
                         timeZone:
                             "America/Bogota",
 
@@ -1241,118 +1073,216 @@ acumularTiempo(
 
                         timeStyle:
                             "medium"
-
                     }
                 )
             );
-
-
-            console.log(
-                "ÚLTIMO ESTADO:",
-                ultimoEstado
-            );
-
-
-            console.log(
-                "INICIO ESTADO:",
-                inicioEstado.toISOString()
-            );
-
 
             console.log(
                 "=========================================="
             );
 
 
-            // ------------------------------------------
-            // DIFERENCIA DESDE EL ÚLTIMO MOVIMIENTO
-            // HASTA ESTE MOMENTO
-            // ------------------------------------------
+            // --------------------------------------
+            // SI LA JORNADA YA COMIENZA EN SALIDA
+            // --------------------------------------
 
-            const diferenciaActual =
-                ahora.getTime() -
-                inicioEstado.getTime();
+            if (
+                movimiento.tipo === "SALIDA"
+            ) {
 
+                jornadaCerrada = true;
 
-            console.log(
-                "Estado actual:",
-                ultimoEstado
-            );
+            }
 
 
-            console.log(
-                "Diferencia actual:",
-                diferenciaActual
-            );
-
-
-            // ------------------------------------------
-            // ACUMULAR ÚLTIMO ESTADO
-            // ------------------------------------------
-
-            this.acumularTiempo(
-                ultimoEstado,
-                diferenciaActual,
-                acciones
-            );
+            continue;
 
         }
 
 
-        // ==============================================
-// TIEMPO PRODUCTIVO
-//
-// El almuerzo NO cuenta como tiempo trabajado.
-//
-// Por lo tanto:
-//
-// tiempoTrabajado
-// ya excluye ALMUERZO.
-//
-// Solo se descuentan las actividades
-// que sí están incluidas dentro del
-// tiempo trabajado.
-// ==============================================
+        // ==========================================
+        // DIFERENCIA ENTRE ESTADOS
+        // ==========================================
 
-const tiempoProductivo =
-    Math.max(
-        0,
-
-        tiempoTrabajado -
-
-        tiempoBreak -
-
-        tiempoBano -
-
-        tiempoCapacitacion -
-
-        tiempoReunion
-    );
+        const diferencia =
+            fechaActual.getTime() -
+            inicioEstado.getTime();
 
 
-        // ==============================================
-        // RESULTADO
-        // ==============================================
+        console.log(
+            "Estado:",
+            ultimoEstado,
+            "Diferencia:",
+            diferencia
+        );
 
-        return {
 
-            tiempoTrabajado,
+        // ==========================================
+        // ACUMULAR ESTADO ANTERIOR
+        // ==========================================
 
-            tiempoBreak,
+        this.acumularTiempo(
+            ultimoEstado,
+            diferencia,
+            acciones
+        );
 
-            tiempoAlmuerzo,
 
-            tiempoBano,
+        // ==========================================
+        // NUEVO ESTADO
+        // ==========================================
 
-            tiempoCapacitacion,
+        ultimoEstado =
+            movimiento.tipo;
 
-            tiempoReunion,
+        inicioEstado =
+            fechaActual;
 
-            tiempoProductivo
 
-        };
+        // ==========================================
+        // SALIDA CIERRA LA JORNADA
+        // ==========================================
+
+        if (
+            movimiento.tipo === "SALIDA"
+        ) {
+
+            jornadaCerrada = true;
+
+            console.log(
+                "🔴 JORNADA CERRADA EN:",
+                fechaActual.toISOString()
+            );
+
+            break;
+
+        }
 
     }
+
+
+    // ==============================================
+    // CONTINUAR ÚLTIMO ESTADO HASTA AHORA
+    // SOLO SI LA JORNADA SIGUE ACTIVA
+    // ==============================================
+
+    if (
+        inicioEstado &&
+        ultimoEstado &&
+        !jornadaCerrada
+    ) {
+
+        const ahora =
+            new Date();
+
+
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "AHORA ISO:",
+            ahora.toISOString()
+        );
+
+        console.log(
+            "AHORA COLOMBIA:",
+            ahora.toLocaleString(
+                "es-CO",
+                {
+                    timeZone:
+                        "America/Bogota",
+
+                    dateStyle:
+                        "short",
+
+                    timeStyle:
+                        "medium"
+                }
+            )
+        );
+
+        console.log(
+            "ÚLTIMO ESTADO:",
+            ultimoEstado
+        );
+
+        console.log(
+            "INICIO ESTADO:",
+            inicioEstado.toISOString()
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+
+        const diferenciaActual =
+            ahora.getTime() -
+            inicioEstado.getTime();
+
+
+        console.log(
+            "Estado actual:",
+            ultimoEstado
+        );
+
+        console.log(
+            "Diferencia actual:",
+            diferenciaActual
+        );
+
+
+        this.acumularTiempo(
+            ultimoEstado,
+            diferenciaActual,
+            acciones
+        );
+
+    }
+
+
+    // ==============================================
+    // TIEMPO PRODUCTIVO
+    // ==============================================
+
+    const tiempoProductivo =
+        Math.max(
+            0,
+            tiempoTrabajado -
+            tiempoBreak -
+            tiempoAlmuerzo -
+            tiempoBano -
+            tiempoCapacitacion -
+            tiempoReunion
+        );
+
+
+    // ==============================================
+    // RESULTADO
+    // ==============================================
+
+    return {
+
+        tiempoTrabajado,
+
+        tiempoBreak,
+
+        tiempoAlmuerzo,
+
+        tiempoBano,
+
+        tiempoCapacitacion,
+
+        tiempoReunion,
+
+        tiempoProductivo
+
+    };
+
+}
+
+
     // ==================================================
     // GUARDAR RESUMEN
     // ==================================================
@@ -1362,10 +1292,6 @@ const tiempoProductivo =
         datos
     ) {
 
-        // ----------------------------------------------
-        // VALIDACIÓN
-        // ----------------------------------------------
-
         if (!resumenId) {
 
             throw new Error(
@@ -1373,11 +1299,6 @@ const tiempoProductivo =
             );
 
         }
-
-
-        // ----------------------------------------------
-        // ACTUALIZAR RESUMEN
-        // ----------------------------------------------
 
         await movimientosRepository
             .actualizarResumenDia(
@@ -1395,4 +1316,4 @@ const tiempoProductivo =
 // ======================================================
 
 module.exports =
-    new ResumenJornadaService();      
+    new ResumenJornadaService();

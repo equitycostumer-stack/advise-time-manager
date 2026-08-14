@@ -590,7 +590,7 @@ const fechaMysql = fechaHora
 }
 
 // ======================================================
-// OBTENER MOVIMIENTOS DEL DÍA ACTUAL - COLOMBIA
+// OBTENER MOVIMIENTOS DEL DÍA ACTUAL
 // ======================================================
 
 async obtenerMovimientosDelDia(asesorId) {
@@ -608,7 +608,12 @@ async obtenerMovimientosDelDia(asesorId) {
     }
 
     // --------------------------------------------------
-    // FECHA ACTUAL EN COLOMBIA
+    // FECHA ACTUAL DE COLOMBIA
+    //
+    // MySQL/Railway trabaja internamente en UTC.
+    // Por eso NO usamos CURDATE() directamente.
+    //
+    // Convertimos explícitamente UTC -> Colombia.
     // --------------------------------------------------
 
     const sql = `
@@ -648,17 +653,6 @@ async obtenerMovimientosDelDia(asesorId) {
                 )
             ) + INTERVAL 1 DAY
 
-            -- ==========================================
-            -- IMPORTANTE:
-            -- NO PERMITIR MOVIMIENTOS FUTUROS
-            -- ==========================================
-
-            AND fecha_hora <= CONVERT_TZ(
-                UTC_TIMESTAMP(),
-                '+00:00',
-                '-05:00'
-            )
-
         ORDER BY
 
             fecha_hora ASC,
@@ -676,6 +670,7 @@ async obtenerMovimientosDelDia(asesorId) {
     return movimientos;
 
 }
+
 
 // ======================================================
 // OBTENER RESUMEN DEL DÍA

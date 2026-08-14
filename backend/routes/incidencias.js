@@ -14,17 +14,37 @@ const {
 router.get("/", (req, res) => {
 
     const sql = `
+
         SELECT
-            i.*,
+
+            i.id,
+            i.asesor_id,
+            i.tipo,
+            i.nivel,
+            i.detalle,
+            i.fecha_hora,
+            i.revisada,
+            i.revisada_por,
+            i.comentario,
+            i.fecha_revision,
+
             a.nombre
+
         FROM incidencias i
+
         INNER JOIN asesores a
             ON a.id = i.asesor_id
+
         WHERE
+
             i.revisada = 0
+
             AND DATE(i.fecha_hora) = CURDATE()
+
         ORDER BY
+
             i.fecha_hora DESC
+
     `;
 
     db.query(sql, (err, rows) => {
@@ -56,17 +76,39 @@ router.get("/", (req, res) => {
 router.get("/asesor/:asesorId", (req, res) => {
 
     const sql = `
+
         SELECT
+
             id,
+
             tipo,
-            descripcion,
+
+            nivel,
+
+            detalle AS descripcion,
+
             fecha_hora,
-            revisada
+
+            revisada,
+
+            revisada_por,
+
+            comentario,
+
+            fecha_revision
+
         FROM incidencias
+
         WHERE
+
             asesor_id = ?
-            AND DATE(fecha_hora)=CURDATE()
-        ORDER BY fecha_hora DESC
+
+            AND DATE(fecha_hora) = CURDATE()
+
+        ORDER BY
+
+            fecha_hora DESC
+
     `;
 
     db.query(
@@ -83,9 +125,9 @@ router.get("/asesor/:asesorId", (req, res) => {
 
                 return res.status(500).json({
 
-                    ok:false,
+                    ok: false,
 
-                    mensaje:"Error obteniendo historial."
+                    mensaje: "Error obteniendo historial."
 
                 });
 
@@ -93,9 +135,9 @@ router.get("/asesor/:asesorId", (req, res) => {
 
             res.json({
 
-                ok:true,
+                ok: true,
 
-                incidencias:rows
+                incidencias: rows
 
             });
 

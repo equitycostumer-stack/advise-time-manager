@@ -335,74 +335,79 @@ function App() {
     }
 
     // ==================================================
-    // OBTENER RESUMEN
-    // ==================================================
+// OBTENER RESUMEN
+// ==================================================
 
-    async function cargarResumen() {
+async function cargarResumen() {
 
-        try {
+    try {
 
-            const respuesta =
-                await api.get(
-                    `/movimientos/resumen/${asesor}`
+        const respuesta =
+            await api.get(
+                `/movimientos/resumen/${asesor}`
+            );
+
+        console.log(
+            "RESUMEN RECIBIDO:",
+            respuesta.data
+        );
+
+        const resumenRecibido =
+            respuesta.data.data || null;
+
+        setResumen(
+            resumenRecibido
+        );
+
+        // ==================================================
+        // OBTENER INICIO DE JORNADA
+        // ==================================================
+
+        const inicioJornadaRecibido =
+            resumenRecibido
+                ?.jornada
+                ?.inicio_jornada;
+
+        if (inicioJornadaRecibido) {
+
+            const fechaConvertida =
+                convertirFechaColombia(
+                    inicioJornadaRecibido
                 );
 
             console.log(
-                "RESUMEN RECIBIDO:",
-                respuesta.data
+                "INICIO JORNADA CONVERTIDO:",
+                fechaConvertida
             );
 
-            const resumenRecibido =
-                respuesta.data.data || null;
-
-            setResumen(
-                resumenRecibido
+            setInicioJornada(
+                fechaConvertida
             );
 
-            if (
-                resumenRecibido?.jornada
-                    ?.inicio_estado
-            ) {
+        } else {
 
-                setInicioEstado(
-                    convertirFechaColombia(
-                        resumenRecibido
-                            .jornada
-                            .inicio_estado
-                    )
-                );
-
-            }
-
-            if (
-                resumenRecibido?.jornada
-                    ?.inicio_jornada
-            ) {
-
-                setInicioJornada(
-                    convertirFechaColombia(
-                        resumenRecibido
-                            .jornada
-                            .inicio_jornada
-                    )
-                );
-
-            }
-
-        } catch (error) {
-
-            console.error(
-                "ERROR CARGANDO RESUMEN:",
-                error
+            console.log(
+                "RESUMEN SIN inicio_jornada"
             );
 
-            setResumen(null);
-            setInicioEstado(null);
             setInicioJornada(null);
 
         }
 
+    } catch (error) {
+
+        console.error(
+            "ERROR CARGANDO RESUMEN:",
+            error
+        );
+
+        setResumen(null);
+        setInicioEstado(null);
+        setInicioJornada(null);
+
     }
+
+}
 
     // ==================================================
     // CARGANDO

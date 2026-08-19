@@ -225,6 +225,32 @@ async crearEstadoActual(
     // EJECUTAR
     // --------------------------------------------------
 
+     const formatearFecha = (fecha) => {
+
+        return new Intl.DateTimeFormat(
+            "sv-SE",
+            {
+                timeZone: "America/Bogota",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        )
+            .format(fecha)
+            .replace(",", "");
+
+    };
+
+    const inicioEstadoMysql =
+        formatearFecha(inicioEstado);
+
+    const inicioJornadaMysql =
+        formatearFecha(inicioJornada);
+
     return await this.ejecutar(
 
         sql,
@@ -233,15 +259,16 @@ async crearEstadoActual(
 
             asesorId,
             estado,
-            inicioEstado,
-            inicioJornada,
-            inicioEstado
+            inicioEstadoMysql,
+            inicioJornadaMysql,
+            inicioEstadoMysql
 
         ]
 
     );
 
 }
+
 // ======================================================
 // CREAR RESUMEN DEL DÍA
 // ======================================================

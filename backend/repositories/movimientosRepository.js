@@ -332,15 +332,23 @@ async actualizarEstadoActual(
     // FORMATEAR FECHAS PARA MYSQL
     // ===========================================
 
-    const formatearFecha = (fecha) => {
+     const formatearFecha = (fecha) => {
 
-        return new Date(
-            fecha.getTime() -
-            fecha.getTimezoneOffset() * 60000
+        return new Intl.DateTimeFormat(
+            "sv-SE",
+            {
+                timeZone: "America/Bogota",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
         )
-            .toISOString()
-            .slice(0, 19)
-            .replace("T", " ");
+            .format(fecha)
+            .replace(",", "");
 
     };
 

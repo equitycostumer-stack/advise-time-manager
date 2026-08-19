@@ -372,11 +372,18 @@ export default function Buttons({
     const disponible =
         estadoActual.includes(
             "DISPONIBLE"
-        ) ||
-        estadoActual.includes(
-            "SALIDA"
         );
-
+        
+console.log("================================");
+console.log("DEBUG BOTONES");
+console.log("asesor:", asesor);
+console.log("estado ORIGINAL:", estado);
+console.log("estado NORMALIZADO:", estadoActual);
+console.log("disponible:", disponible);
+console.log("trabajando:", trabajando);
+console.log("enBreak:", enBreak);
+console.log("enAlmuerzo:", enAlmuerzo);
+console.log("================================");
 
     return (
 

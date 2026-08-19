@@ -1,3 +1,5 @@
+const horariosRepository =
+    require("../repositories/horariosRepository");
 const movimientosRepository =
     require("../repositories/movimientosRepository");
 const {
@@ -338,13 +340,10 @@ class ResumenJornadaService {
         // ==============================================
 
         const {
-
             llego_tarde,
-
             minutos_retraso
-
         } =
-            this.calcularRetraso(
+            await this.calcularRetraso(
                 horaEntrada
             );
 // ==================================================
@@ -555,116 +554,201 @@ if (
 
     }
 
+// ==================================================
+// CALCULAR RETRASO SEGÚN HORARIO OFICIAL
+// ==================================================
+
+async calcularRetraso(horaEntrada) {
+
+    if (!horaEntrada) {
+
+        return {
+            llego_tarde: 0,
+            minutos_retraso: 0
+        };
+
+    }
+
+
+    // ==================================================
+    // CONVERTIR ENTRADA A FECHA REAL
+    // ==================================================
+
+    const entrada =
+        this.convertirFechaColombia(
+            horaEntrada
+        );
+
+
+    if (!entrada) {
+
+        console.error(
+            "❌ No fue posible interpretar la hora de entrada:",
+            horaEntrada
+        );
+
+        return {
+            llego_tarde: 0,
+            minutos_retraso: 0
+        };
+
+    }
+
+
+    // ==================================================
+    // OBTENER DÍA DE LA SEMANA EN COLOMBIA
+    // ==================================================
+
+    const nombreDia =
+        new Intl.DateTimeFormat(
+            "en-US",
+            {
+                timeZone: "America/Bogota",
+                weekday: "long"
+            }
+        )
+        .format(entrada);
+
+
+    const diasSemana = {
+
+        Sunday: "DOMINGO",
+        Monday: "LUNES",
+        Tuesday: "MARTES",
+        Wednesday: "MIERCOLES",
+        Thursday: "JUEVES",
+        Friday: "VIERNES",
+        Saturday: "SABADO"
+
+    };
+
+
+    const diaSemana =
+        diasSemana[nombreDia];
+
+
+    console.log(
+        "📅 DÍA COLOMBIA:",
+        diaSemana
+    );
+
+
+    // ==================================================
+    // OBTENER HORARIO OFICIAL
+    // ==================================================
+
+    const horario =
+        await horariosRepository
+            .obtenerHorarioDia(
+                diaSemana
+            );
+
+
+    console.log(
+        "🕐 HORARIO OFICIAL:",
+        horario
+    );
+
+
+    // ==================================================
+    // DOMINGO / DÍA SIN HORARIO
+    // ==================================================
+
+    if (!horario) {
+
+        console.log(
+            "ℹ️ No existe horario laboral para:",
+            diaSemana
+        );
+
+        return {
+            llego_tarde: 0,
+            minutos_retraso: 0
+        };
+
+    }
+
+
+    // ==================================================
+    // OBTENER FECHA EN COLOMBIA
+    // ==================================================
+
+    const fechaEntradaColombia =
+        new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone: "America/Bogota",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }
+        )
+        .format(entrada);
+
+
+    // ==================================================
+    // CONSTRUIR HORA OFICIAL
+    // ==================================================
+
+    const horaOficial =
+        new Date(
+            `${fechaEntradaColombia}T${horario.hora_entrada}-05:00`
+        );
+
+
+    console.log(
+        "🟢 ENTRADA REAL:",
+        entrada.toISOString()
+    );
+
+
+    console.log(
+        "🟡 ENTRADA OFICIAL:",
+        horaOficial.toISOString()
+    );
+
 
     // ==================================================
     // CALCULAR RETRASO
     // ==================================================
 
-    calcularRetraso(
-        horaEntrada
-    ) {
-
-        if (!horaEntrada) {
-
-            return {
-
-                llego_tarde: 0,
-
-                minutos_retraso: 0
-
-            };
-
-        }
+    const diferencia =
+        entrada.getTime() -
+        horaOficial.getTime();
 
 
-        const entrada =
-            this.convertirFechaColombia(
-                horaEntrada
-            );
+    const minutos =
+        Math.max(
+            0,
+            Math.floor(
+                diferencia / 60000
+            )
+        );
 
 
-        if (!entrada) {
-
-            console.error(
-                "❌ No fue posible interpretar la hora de entrada:",
-                horaEntrada
-            );
-
-            return {
-
-                llego_tarde: 0,
-
-                minutos_retraso: 0
-
-            };
-
-        }
+    console.log(
+        "⏱️ MINUTOS RETRASO:",
+        minutos
+    );
 
 
-        // ----------------------------------------------
-        // Crear la hora oficial 10:00 AM
-        // usando la misma fecha de la entrada.
-        //
-        // Colombia = UTC-05:00
-        // ----------------------------------------------
+    // ==================================================
+    // RESULTADO
+    // ==================================================
 
-        const fechaEntradaColombia =
-            new Intl.DateTimeFormat(
-                "en-CA",
-                {
+    return {
 
-                    timeZone:
-                        "America/Bogota",
+        llego_tarde:
+            minutos > 0
+                ? 1
+                : 0,
 
-                    year:
-                        "numeric",
+        minutos_retraso:
+            minutos
 
-                    month:
-                        "2-digit",
+    };
 
-                    day:
-                        "2-digit"
-
-                }
-            ).format(
-                entrada
-            );
-
-
-        const horaOficial =
-            new Date(
-                `${fechaEntradaColombia}T10:00:00-05:00`
-            );
-
-
-        const diferencia =
-            entrada.getTime() -
-            horaOficial.getTime();
-
-
-        const minutos =
-            Math.max(
-                0,
-                Math.floor(
-                    diferencia /
-                    60000
-                )
-            );
-
-
-        return {
-
-            llego_tarde:
-                minutos > 0
-                    ? 1
-                    : 0,
-
-            minutos_retraso:
-                minutos
-
-        };
-
-    }
+}
 
 
 // ==================================================

@@ -129,7 +129,10 @@ async obtenerConfiguracion() {
                     '%Y-%m-%d %H:%i:%s'
                 ) AS inicio_jornada,
 
-                ultima_actualizacion
+                DATE_FORMAT(
+                    ultima_actualizacion,
+                    '%Y-%m-%d %H:%i:%s'
+                ) AS ultima_actualizacion
 
             FROM estados_actuales
 
@@ -355,6 +358,16 @@ async actualizarEstadoActual(
 
     if (inicioJornadaMysql !== null) {
 
+        console.log("=================================");
+        console.log("DEBUG ACTUALIZAR ESTADO ACTUAL");
+        console.log("asesorId:", asesorId);
+        console.log("estado:", estado);
+        console.log("inicioEstado recibido:", inicioEstado);
+        console.log("inicioJornada recibido:", inicioJornada);
+        console.log("inicioEstadoMysql:", inicioEstadoMysql);
+        console.log("inicioJornadaMysql:", inicioJornadaMysql);
+        console.log("=================================");
+
         const sql = `
 
             UPDATE estados_actuales
@@ -545,17 +558,66 @@ async insertarMovimiento(
     observacion = null
 ) {
 
-    // ===========================================
-// FORMATEAR FECHA PARA MYSQL
-// HORA OFICIAL: COLOMBIA UTC-05:00
-// ===========================================
+    // ==================================================
+    // CONVERTIR INSTANTE REAL -> HORA COLOMBIA
+    // PARA MYSQL DATETIME
+    // ==================================================
 
-const fechaMysql = fechaHora
-    .toLocaleString("sv-SE", {
-        timeZone: "America/Bogota",
-        hour12: false
-    })
-    .replace("T", " ");
+    const fechaMysql =
+        new Intl.DateTimeFormat(
+            "sv-SE",
+            {
+                timeZone: "America/Bogota",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        )
+        .format(fechaHora)
+        .replace(",", "");
+
+
+    console.log(
+        "=========================================="
+    );
+
+    console.log(
+        "📝 INSERTANDO MOVIMIENTO"
+    );
+
+    console.log(
+        "ASESOR:",
+        asesorId
+    );
+
+    console.log(
+        "TIPO:",
+        tipo
+    );
+
+    console.log(
+        "DATE ORIGINAL:",
+        fechaHora
+    );
+
+    console.log(
+        "DATE ISO:",
+        fechaHora.toISOString()
+    );
+
+    console.log(
+        "HORA COLOMBIA MYSQL:",
+        fechaMysql
+    );
+
+    console.log(
+        "=========================================="
+    );
+
 
     const sql = `
 
@@ -575,20 +637,18 @@ const fechaMysql = fechaHora
 
     `;
 
-    return await this.ejecutar(sql, [
 
-        asesorId,
-
-        tipo,
-
-        fechaMysql,
-
-        observacion
-
-    ]);
+    return await this.ejecutar(
+        sql,
+        [
+            asesorId,
+            tipo,
+            fechaMysql,
+            observacion
+        ]
+    );
 
 }
-
 // ======================================================
 // OBTENER MOVIMIENTOS DEL DÍA ACTUAL - COLOMBIA
 // ======================================================

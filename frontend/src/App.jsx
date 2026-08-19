@@ -335,79 +335,74 @@ function App() {
     }
 
     // ==================================================
-// OBTENER RESUMEN
-// ==================================================
+    // OBTENER RESUMEN
+    // ==================================================
 
-async function cargarResumen() {
+    async function cargarResumen() {
 
-    try {
+        try {
 
-        const respuesta =
-            await api.get(
-                `/movimientos/resumen/${asesor}`
-            );
-
-        console.log(
-            "RESUMEN RECIBIDO:",
-            respuesta.data
-        );
-
-        const resumenRecibido =
-            respuesta.data.data || null;
-
-        setResumen(
-            resumenRecibido
-        );
-
-        // ==================================================
-        // OBTENER INICIO DE JORNADA
-        // ==================================================
-
-        const inicioJornadaRecibido =
-            resumenRecibido
-                ?.jornada
-                ?.inicio_jornada;
-
-        if (inicioJornadaRecibido) {
-
-            const fechaConvertida =
-                convertirFechaColombia(
-                    inicioJornadaRecibido
+            const respuesta =
+                await api.get(
+                    `/movimientos/resumen/${asesor}`
                 );
 
             console.log(
-                "INICIO JORNADA CONVERTIDO:",
-                fechaConvertida
+                "RESUMEN RECIBIDO:",
+                respuesta.data
             );
 
-            setInicioJornada(
-                fechaConvertida
+            const resumenRecibido =
+                respuesta.data.data || null;
+
+            setResumen(
+                resumenRecibido
             );
 
-        } else {
+            if (
+                resumenRecibido?.jornada
+                    ?.inicio_estado
+            ) {
 
-            console.log(
-                "RESUMEN SIN inicio_jornada"
+                setInicioEstado(
+                    convertirFechaColombia(
+                        resumenRecibido
+                            .jornada
+                            .inicio_estado
+                    )
+                );
+
+            }
+
+            if (
+                resumenRecibido?.jornada
+                    ?.inicio_jornada
+            ) {
+
+                setInicioJornada(
+                    convertirFechaColombia(
+                        resumenRecibido
+                            .jornada
+                            .inicio_jornada
+                    )
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "ERROR CARGANDO RESUMEN:",
+                error
             );
 
+            setResumen(null);
+            setInicioEstado(null);
             setInicioJornada(null);
 
         }
 
-    } catch (error) {
-
-        console.error(
-            "ERROR CARGANDO RESUMEN:",
-            error
-        );
-
-        setResumen(null);
-        setInicioEstado(null);
-        setInicioJornada(null);
-
     }
-
-}
 
     // ==================================================
     // CARGANDO
@@ -454,6 +449,38 @@ async function cargarResumen() {
         "APP -> estado:",
         estado
     );
+// ==================================================
+// DEBUG ASESOR SELECCIONADO
+// ==================================================
+
+console.log(
+    "=================================="
+);
+
+console.log(
+    "🔎 ASESOR SELECCIONADO EN APP"
+);
+
+console.log(
+    "asesor:",
+    asesor
+);
+
+console.log(
+    "asesor tipo:",
+    typeof asesor
+);
+
+console.log(
+    "asesor encontrado:",
+    asesores.find(
+        (a) => a.id === Number(asesor)
+    )
+);
+
+console.log(
+    "=================================="
+);
 
     // ==================================================
     // INTERFAZ
@@ -466,7 +493,7 @@ async function cargarResumen() {
             <div className="card">
 
                 <Header />
-
+             
                 <AdvisorSelect
                     asesores={asesores}
                     asesor={asesor}

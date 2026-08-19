@@ -5,148 +5,15 @@
 // ======================================================
 
 const db = require("../config/db");
+const resumenJornadaService = require("../services/resumenJornadaService");
 
-// ======================================================
-// CALCULAR RETRASO SEGÚN EL DÍA
-// ======================================================
 
-function calcularRetraso(inicioJornada) {
-
-    if (!inicioJornada) {
-
-        return {
-            llego_tarde: false,
-            minutos_retraso: 0
-        };
-
-    }
-
-    // -----------------------------------------
-    // Crear fecha de entrada
-    // -----------------------------------------
-
-    const entrada = new Date(inicioJornada);
-
-    if (isNaN(entrada.getTime())) {
-
-        console.error(
-            "❌ FECHA DE ENTRADA INVÁLIDA:",
-            inicioJornada
-        );
-
-        return {
-            llego_tarde: false,
-            minutos_retraso: 0
-        };
-
-    }
-
-    // -----------------------------------------
-    // Día de la semana
-    //
-    // 0 = Domingo
-    // 1 = Lunes
-    // 2 = Martes
-    // 3 = Miércoles
-    // 4 = Jueves
-    // 5 = Viernes
-    // 6 = Sábado
-    // -----------------------------------------
-
-    const dia = entrada.getDay();
-
-    // -----------------------------------------
-    // Hora oficial de ingreso
-    // -----------------------------------------
-
-    const horaOficial = new Date(entrada);
-
-    switch (dia) {
-
-        // Lunes a Jueves
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-
-            horaOficial.setHours(10, 0, 0, 0);
-
-            break;
-
-        // Viernes
-        case 5:
-
-            horaOficial.setHours(11, 0, 0, 0);
-
-            break;
-
-        // Sábado
-        case 6:
-
-            horaOficial.setHours(9, 0, 0, 0);
-
-            break;
-
-        // Domingo
-        default:
-
-            return {
-                llego_tarde: false,
-                minutos_retraso: 0
-            };
-
-    }
-
-    // -----------------------------------------
-    // Diferencia en minutos
-    // -----------------------------------------
-
-    const diferencia = Math.floor(
-        (
-            entrada.getTime() -
-            horaOficial.getTime()
-        ) / 60000
-    );
-
-    const minutosRetraso =
-        Math.max(0, diferencia);
-
-    // -----------------------------------------
-    // LOG
-    // -----------------------------------------
-
-    console.log("================================");
-    console.log("CÁLCULO DE RETRASO");
-    console.log("Entrada:", entrada.toLocaleString("es-CO"));
-    console.log(
-        "Hora oficial:",
-        horaOficial.toLocaleString("es-CO")
-    );
-    console.log("Día:", dia);
-    console.log("Retraso:", minutosRetraso);
-    console.log("================================");
-
-    // -----------------------------------------
-    // RESPUESTA
-    // -----------------------------------------
-
-    return {
-
-        llego_tarde:
-            minutosRetraso > 0,
-
-        minutos_retraso:
-            minutosRetraso
-
-    };
-
-}
 
 // ======================================================
 // DASHBOARD
 // ======================================================
 
-const obtenerDashboard = (req, res) => {
+const obtenerDashboard = async (req, res) => {
 
     console.log("");
     console.log("==========================================");
@@ -227,7 +94,7 @@ const obtenerDashboard = (req, res) => {
     // EJECUTAR SQL
     // --------------------------------------------------
 
-    db.query(sql, (err, rows) => {
+    db.query(sql, async (err, rows) => {
 
         if (err) {
 
@@ -267,8 +134,8 @@ const obtenerDashboard = (req, res) => {
         // PROCESAR ASESORES
         // --------------------------------------------------
 
-        const asesores =
-            rows.map((asesor) => {
+         const asesores =
+            await Promise.all(rows.map(async (asesor) => {
 
                 console.log("");
                 console.log("------------------------------------------");
@@ -295,11 +162,13 @@ const obtenerDashboard = (req, res) => {
                 console.log("------------------------------------------");
 
                 // -----------------------------------------
-                // Calcular retraso
+                // Calcular retraso (misma lógica que el
+                // resumen individual: horario oficial real
+                // + zona horaria Colombia)
                 // -----------------------------------------
 
                 const retraso =
-                    calcularRetraso(
+                    await resumenJornadaService.calcularRetraso(
                         asesor.inicio_jornada
                     );
 
@@ -312,14 +181,14 @@ const obtenerDashboard = (req, res) => {
                     ...asesor,
 
                     llego_tarde:
-                        retraso.llego_tarde,
+                        !!retraso.llego_tarde,
 
                     minutos_retraso:
                         retraso.minutos_retraso
 
                 };
 
-            });
+            }));
 
         // --------------------------------------------------
         // RESPUESTA

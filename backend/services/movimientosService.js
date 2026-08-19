@@ -85,19 +85,40 @@ esMismaFecha(fecha) {
     if (!fecha)
         return false;
 
-    const hoy = new Date();
+    const f = resumenJornadaService.convertirFechaColombia(fecha);
 
-    const f = new Date(fecha);
+    if (!f)
+        return false;
 
-    return (
-
-        hoy.getFullYear() === f.getFullYear() &&
-
-        hoy.getMonth() === f.getMonth() &&
-
-        hoy.getDate() === f.getDate()
-
+    // Fecha/hora actual, interpretada en Colombia
+    const ahoraColombia = new Date(
+        new Intl.DateTimeFormat("sv-SE", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        }).format(new Date()).replace(" ", "T") + "-05:00"
     );
+
+    const fechaColombiaComparar = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(f);
+
+    const hoyColombiaComparar = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(ahoraColombia);
+
+    return fechaColombiaComparar === hoyColombiaComparar;
 
 }
 // =====================================================
@@ -119,14 +140,22 @@ async registrarEntrada(datos) {
     console.log(estadoActual);
     console.log("=================================");
 
-    if (
+    const esJornadaDeHoy =
         estadoActual &&
-        estadoActual.estado !== ESTADOS.SALIDA &&
-        this.esMismaFecha(estadoActual.inicio_jornada)
-    ) {
+        this.esMismaFecha(estadoActual.inicio_jornada);
+
+    // ==================================================
+    // VALIDACIÓN PRIMERO — ANTES DE INSERTAR NADA
+    //
+    // Regla: solo una Entrada/Salida por día.
+    // Si ya existe cualquier registro de jornada de hoy
+    // (TRABAJANDO, en pausa, o ya en SALIDA), se bloquea.
+    // ==================================================
+
+    if (estadoActual && esJornadaDeHoy) {
 
         throw new Error(
-            "El asesor ya tiene una jornada activa."
+            "El asesor ya registró su jornada de hoy."
         );
 
     }
@@ -138,6 +167,10 @@ async registrarEntrada(datos) {
     console.log("ahora:", ahora);
     console.log("=================================");
 
+    // ==================================================
+    // SOLO SE INSERTA SI LA VALIDACIÓN YA PASÓ
+    // ==================================================
+
     await movimientosRepository.insertarMovimiento(
         asesor.id,
         TIPOS.ENTRADA,
@@ -147,25 +180,7 @@ async registrarEntrada(datos) {
 
     if (!estadoActual) {
 
-    await movimientosRepository.crearEstadoActual(
-        asesor.id,
-        ESTADOS.TRABAJANDO,
-        ahora,
-        ahora
-    );
-
-    await movimientosRepository.crearResumenDia(
-        asesor.id,
-        ahora
-    );
-
-} else {
-
-    // Si la jornada es de otro día, se reinicia
-
-    if (!this.esMismaFecha(estadoActual.inicio_jornada)) {
-
-        await movimientosRepository.actualizarEstadoActual(
+        await movimientosRepository.crearEstadoActual(
             asesor.id,
             ESTADOS.TRABAJANDO,
             ahora,
@@ -179,14 +194,32 @@ async registrarEntrada(datos) {
 
     } else {
 
-        throw new Error(
-            "El asesor ya tiene una jornada activa."
+        // Jornada existente es de otro día -> se reinicia
+
+        console.log("=================================");
+        console.log("DEBUG NUEVA JORNADA");
+        console.log("asesor:", asesor.id);
+        console.log("estado anterior:", estadoActual);
+        console.log("inicio_jornada anterior:", estadoActual.inicio_jornada);
+        console.log("fecha actual:", ahora);
+        console.log("=================================");
+
+        await movimientosRepository.actualizarEstadoActual(
+            asesor.id,
+            ESTADOS.TRABAJANDO,
+            ahora,
+            ahora
+        );
+
+        await movimientosRepository.crearResumenDia(
+            asesor.id,
+            ahora
         );
 
     }
 
-}
-await resumenJornadaService.actualizar(asesor.id);
+    await resumenJornadaService.actualizar(asesor.id);
+
     return {
 
         ok: true,

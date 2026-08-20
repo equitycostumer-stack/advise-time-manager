@@ -1,6 +1,7 @@
 const movimientosRepository = require("../repositories/movimientosRepository");
 const resumenJornadaService = require("./resumenJornadaService");
 const { registrarIncidencia } = require("../controllers/incidenciasController");
+const emailService = require("./emailService");
 const {
     TIPOS,
     ESTADOS
@@ -413,7 +414,7 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
     // INCIDENCIA POR EXCESO DE TIEMPO
     // ==========================================
 
-    if (excedioLimite) {
+     if (excedioLimite) {
 
         registrarIncidencia(
             asesor.id,
@@ -421,6 +422,13 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
             "MEDIA",
             `Duración real: ${duracionMinutos} min (límite: ${limiteMinutos} min)`
         );
+
+        emailService.enviarAlertaExceso({
+            asesorNombre: asesor.nombre,
+            tipoPausa: estadoEsperado,
+            duracionMinutos,
+            limiteMinutos
+        });
 
     }
 

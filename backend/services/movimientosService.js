@@ -1,5 +1,6 @@
 const movimientosRepository = require("../repositories/movimientosRepository");
 const resumenJornadaService = require("./resumenJornadaService");
+const { registrarIncidencia } = require("../controllers/incidenciasController");
 const {
     TIPOS,
     ESTADOS
@@ -343,6 +344,56 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
 
     const ahora = new Date();
 
+    // ==========================================
+    // CALCULAR DURACIÓN REAL DE LA PAUSA
+    // ==========================================
+
+    const inicioPausa =
+        resumenJornadaService.convertirFechaColombia(
+            estado.inicio_estado
+        );
+
+    const duracionMinutos =
+        inicioPausa
+            ? Math.max(
+                0,
+                Math.round(
+                    (ahora.getTime() - inicioPausa.getTime()) / 60000
+                )
+            )
+            : 0;
+
+    // ==========================================
+    // OBTENER LÍMITE SEGÚN EL TIPO DE PAUSA
+    // ==========================================
+
+    const configuracion =
+        await movimientosRepository.obtenerConfiguracion();
+
+    const limitesPorEstado = {
+        [ESTADOS.BREAK]: configuracion?.break_max,
+        [ESTADOS.ALMUERZO]: configuracion?.almuerzo_max,
+        [ESTADOS.BANO]: configuracion?.bano_max,
+        [ESTADOS.CAPACITACION]: configuracion?.capacitacion_max,
+        [ESTADOS.REUNION]: configuracion?.reunion_max
+    };
+
+    const limiteMinutos =
+        limitesPorEstado[estadoEsperado] ?? null;
+
+    const excedioLimite =
+        limiteMinutos != null &&
+        duracionMinutos > limiteMinutos;
+
+    console.log("=================================");
+    console.log("DEBUG FIN DE PAUSA");
+    console.log("asesor:", asesor.id);
+    console.log("estado:", estadoEsperado);
+    console.log("duracion (min):", duracionMinutos);
+    console.log("limite (min):", limiteMinutos);
+    console.log("excedio_limite:", excedioLimite);
+    console.log("=================================");
+
     await movimientosRepository.insertarMovimiento(
         asesor.id,
         tipoMovimiento,
@@ -355,14 +406,37 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
         ESTADOS.TRABAJANDO,
         ahora
     );
+
     await resumenJornadaService.actualizar(asesor.id);
+
+    // ==========================================
+    // INCIDENCIA POR EXCESO DE TIEMPO
+    // ==========================================
+
+    if (excedioLimite) {
+
+        registrarIncidencia(
+            asesor.id,
+            `EXCESO ${estadoEsperado}`,
+            "MEDIA",
+            `Duración real: ${duracionMinutos} min (límite: ${limiteMinutos} min)`
+        );
+
+    }
+
     return {
 
         ok: true,
 
         estado: ESTADOS.TRABAJANDO,
 
-        fecha: ahora
+        fecha: ahora,
+
+        duracion_minutos: duracionMinutos,
+
+        limite_minutos: limiteMinutos,
+
+        excedio_limite: excedioLimite
 
     };
 

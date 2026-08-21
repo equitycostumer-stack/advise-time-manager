@@ -7,6 +7,8 @@ export default function Buttons({
 
     estado,
 
+    inicioJornada,
+
     setEstado,
 
     setResumen,
@@ -316,7 +318,33 @@ export default function Buttons({
         };
 
     }
+   
+    // ======================================================
+    // ¿LA JORNADA GUARDADA ES DE HOY? (hora Colombia)
+    // ======================================================
 
+    function esMismaFechaColombia(fecha) {
+
+        if (!(fecha instanceof Date) || Number.isNaN(fecha.getTime())) {
+            return false;
+        }
+
+        const formato = {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        };
+
+        const fechaTexto =
+            new Intl.DateTimeFormat("en-CA", formato).format(fecha);
+
+        const hoyTexto =
+            new Intl.DateTimeFormat("en-CA", formato).format(new Date());
+
+        return fechaTexto === hoyTexto;
+
+    }
 
     // ======================================================
     // ESTADOS
@@ -369,9 +397,14 @@ export default function Buttons({
         );
 
 
+     const jornadaEsDeHoy =
+        esMismaFechaColombia(inicioJornada);
+
     const disponible =
-        estadoActual.includes(
-            "DISPONIBLE"
+        estadoActual.includes("DISPONIBLE") ||
+        (
+            estadoActual.includes("SALIDA") &&
+            !jornadaEsDeHoy
         );
         
 console.log("================================");
@@ -379,6 +412,8 @@ console.log("DEBUG BOTONES");
 console.log("asesor:", asesor);
 console.log("estado ORIGINAL:", estado);
 console.log("estado NORMALIZADO:", estadoActual);
+console.log("inicioJornada:", inicioJornada);
+console.log("jornadaEsDeHoy:", jornadaEsDeHoy);
 console.log("disponible:", disponible);
 console.log("trabajando:", trabajando);
 console.log("enBreak:", enBreak);

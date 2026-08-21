@@ -500,9 +500,10 @@ console.log(
                     setAsesor={setAsesor}
                 />
 
-                <Buttons
+               <Buttons
                     asesor={asesor}
                     estado={estado}
+                    inicioJornada={inicioJornada}
                     setEstado={setEstado}
                     setResumen={setResumen}
                     onMovimientoRegistrado={

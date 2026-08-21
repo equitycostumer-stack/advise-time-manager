@@ -98,12 +98,143 @@ function App() {
     // ==================================================
 
     const mensajes = [
-        "🌿 Inicia tu día con calma. Inhala profundo... exhala.",
-        "💚 Hoy ayudarás a muchas personas.",
-        "😊 Tu paz mental es más importante que cualquier llamada.",
-        "☀️ Sonríe. Hoy será un excelente día.",
-        "🌅 Cada llamada es una nueva oportunidad."
-    ];
+
+    // ==================================================
+    // ☀️ MOTIVACIÓN
+    // ==================================================
+
+    "☀️ Sonríe. Hoy será un excelente día.",
+    "🌅 Cada día es una nueva oportunidad para comenzar mejor.",
+    "💚 Hoy tienes una nueva oportunidad para dar lo mejor de ti.",
+    "🌟 Tu actitud puede transformar completamente tu día.",
+    "😊 Una actitud positiva puede abrir muchas puertas.",
+    "🌞 Comienza el día con energía y termina con satisfacción.",
+    "✨ Hoy puede ser el día en que logres algo importante.",
+    "🌻 Mantén una actitud positiva y sigue avanzando.",
+    "💫 Cada nuevo día trae nuevas oportunidades.",
+    "🙌 Confía en ti y en todo lo que eres capaz de lograr.",
+
+    // ==================================================
+    // 💪 DISCIPLINA Y CONSTANCIA
+    // ==================================================
+
+    "💪 La constancia convierte los pequeños esfuerzos en grandes resultados.",
+    "🏆 La disciplina de hoy construye los logros de mañana.",
+    "🔥 Mantén el enfoque y continúa avanzando.",
+    "📈 Cada esfuerzo cuenta cuando eres constante.",
+    "🎯 La disciplina te acerca cada día más a tus objetivos.",
+    "💎 La excelencia se construye con pequeños esfuerzos diarios.",
+    "🚀 No te detengas. Cada paso te acerca a tu meta.",
+    "💪 Los grandes resultados comienzan con decisiones pequeñas.",
+    "🏅 La constancia siempre termina marcando la diferencia.",
+    "⚡ Hazlo con disciplina, incluso cuando nadie esté mirando.",
+
+    // ==================================================
+    // 🎯 PRODUCTIVIDAD
+    // ==================================================
+
+    "🎯 Enfócate en lo importante y da lo mejor de ti.",
+    "🚀 Un buen día comienza con objetivos claros.",
+    "📋 Organiza tu día, enfócate y avanza paso a paso.",
+    "⏱️ Aprovecha tu tiempo y conviértelo en resultados.",
+    "🧠 Enfócate en lo que puedes controlar.",
+    "🎯 Una meta clara convierte el esfuerzo en dirección.",
+    "📈 Cada tarea completada es un paso hacia un mejor resultado.",
+    "🔥 Mantén tu concentración y aprovecha cada oportunidad.",
+    "💼 Profesionalismo, enfoque y constancia: una gran combinación.",
+    "⚡ No necesitas hacerlo todo de una vez. Avanza paso a paso.",
+
+    // ==================================================
+    // 📞 LLAMADAS Y SERVICIO
+    // ==================================================
+
+    "📞 Cada llamada es una nueva oportunidad.",
+    "📞 Cada conversación puede abrir una nueva posibilidad.",
+    "🤝 Escuchar con atención también es una forma de ayudar.",
+    "😊 Una buena actitud puede cambiar una conversación.",
+    "💚 Cada cliente merece nuestra mejor atención.",
+    "📞 Cada llamada es una oportunidad para conectar y ayudar.",
+    "🎯 Escucha, comprende y busca la mejor solución.",
+    "🤝 Una conversación bien llevada puede marcar la diferencia.",
+    "☎️ Cada llamada puede ser el comienzo de un gran resultado.",
+    "🌟 Haz que cada interacción cuente.",
+
+    // ==================================================
+    // 🤝 TRABAJO EN EQUIPO
+    // ==================================================
+
+    "🤝 Juntos podemos lograr mucho más.",
+    "💚 Un buen equipo convierte los retos en oportunidades.",
+    "👥 El éxito también se construye trabajando en equipo.",
+    "🤝 Ayudar a un compañero también es avanzar.",
+    "🌟 Cada persona aporta algo importante al equipo.",
+    "💪 Cuando trabajamos juntos, los resultados mejoran.",
+    "❤️ El respeto y la colaboración fortalecen cualquier equipo.",
+    "🙌 Un equipo unido puede superar grandes desafíos.",
+    "🎯 Todos tenemos un papel importante en el resultado final.",
+    "💚 El éxito de uno puede inspirar el éxito de todos.",
+
+    // ==================================================
+    // 🌱 CRECIMIENTO
+    // ==================================================
+
+    "🌱 Cada día tienes la oportunidad de aprender algo nuevo.",
+    "📚 Cada experiencia puede convertirse en aprendizaje.",
+    "🧠 Los errores también pueden enseñarnos cómo mejorar.",
+    "🌱 Sigue creciendo, incluso cuando el progreso parezca pequeño.",
+    "📈 Cada día puedes ser un poco mejor que ayer.",
+    "💡 Busca aprender algo nuevo de cada experiencia.",
+    "🌟 Tu crecimiento comienza cuando decides seguir intentando.",
+    "🚀 Cada reto puede convertirse en una oportunidad de crecimiento.",
+    "🌱 Los pequeños avances también son avances.",
+    "💎 El aprendizaje constante es una de las mejores inversiones.",
+
+    // ==================================================
+    // 🏆 ÉXITO Y RESULTADOS
+    // ==================================================
+
+    "🏆 Los resultados son el reflejo de la constancia.",
+    "🎯 Define tu objetivo y trabaja con determinación.",
+    "🚀 El próximo gran resultado puede comenzar hoy.",
+    "🌟 Cada pequeño logro merece ser reconocido.",
+    "💪 Cree en el proceso y sigue trabajando.",
+    "📈 El progreso diario termina construyendo grandes resultados.",
+    "🏅 El esfuerzo constante siempre deja huella.",
+    "🔥 Los resultados extraordinarios comienzan con acciones ordinarias.",
+    "💎 La excelencia no ocurre por casualidad.",
+    "🎯 Enfócate en hacer hoy lo que te acercará a tu meta.",
+
+    // ==================================================
+    // 💚 ACTITUD Y BIENESTAR
+    // ==================================================
+
+    "💚 Respira, enfócate y continúa con buena energía.",
+    "☕ Tómate un momento, respira y vuelve con energía renovada.",
+    "🌿 Inicia tu día con calma y concentración.",
+    "😊 Tu energía también influye en quienes te rodean.",
+    "🌈 Después de cada reto existe una oportunidad para aprender.",
+    "☀️ Una buena actitud hace más agradable cualquier jornada.",
+    "💚 Cuida tu energía y úsala en lo que realmente importa.",
+    "🌿 Mantén la calma, mantén el enfoque y sigue adelante.",
+    "😊 No busques un día perfecto; construye un buen día.",
+    "🌞 Hoy es una nueva oportunidad para hacerlo mejor que ayer.",
+
+    // ==================================================
+    // 🔥 ENERGÍA Y SUPERACIÓN
+    // ==================================================
+
+    "🔥 Tú puedes con el reto de hoy.",
+    "💪 Supera tus propios límites un día a la vez.",
+    "🚀 Atrévete a dar un paso más allá de lo habitual.",
+    "⚡ Comienza con energía, continúa con disciplina y termina con orgullo.",
+    "🏆 No te compares con otros; compite contra tu mejor versión.",
+    "🔥 Cuando mantienes el enfoque, los obstáculos se vuelven oportunidades.",
+    "💪 Cada desafío es una oportunidad para demostrar de qué eres capaz.",
+    "🌟 Tu mejor versión se construye todos los días.",
+    "🚀 Sigue adelante. Todavía hay mucho por conquistar.",
+    "🎯 Hoy es un buen día para superar tus propias expectativas."
+
+];
 
     const [mensaje] = useState(
         mensajes[

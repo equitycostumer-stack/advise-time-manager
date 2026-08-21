@@ -9,6 +9,8 @@ import api from "./services/api";
 import Header from "./components/Header";
 import AdvisorSelect from "./components/AdvisorSelect";
 import Buttons from "./components/Buttons";
+import RegistrarVenta from "./components/RegistrarVenta";
+import VentasDashboard from "./components/VentasDashboard";
 import StatusCard from "./components/StatusCard";
 import MessageCard from "./components/MessageCard";
 import Footer from "./components/Footer";
@@ -646,7 +648,21 @@ console.log(
                         }
                     }
                 />
-
+ <RegistrarVenta
+                    asesor={asesor}
+                    asesorNombre={
+                        asesores.find(
+                            a => a.id === Number(asesor)
+                        )?.nombre
+                    }
+                    onVentaRegistrada={
+                        async () => {
+                            // El resumen individual no incluye ventas
+                            // todavía — esto es solo para refrescar
+                            // si en el futuro se agrega esa info aquí.
+                        }
+                    }
+                />
                 <StatusCard
                     estado={estado}
                 />
@@ -679,6 +695,8 @@ console.log(
                 <Footer />
 
                 <Dashboard />
+
+                <VentasDashboard />
 
             </div>
 

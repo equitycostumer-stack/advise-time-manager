@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import ExportarExcel from "./ExportarExcel";
+import ExportarWord from "./ExportarWord";
 import ExportarHistorial from "./ExportarHistorial";
 import Alertas from "./Alertas";
 import CentroIncidencias from "./CentroIncidencias";
@@ -525,9 +525,7 @@ console.log("==================================");
     EXPORTAR EXCEL
 ===================================================== */}
 
-<ExportarExcel
-    asesores={asesores}
-/>
+<ExportarWord />
 
 
 {/* =====================================================

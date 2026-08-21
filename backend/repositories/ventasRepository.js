@@ -34,8 +34,9 @@ class VentasRepository {
     // CREAR VENTA
     // ==================================================
 
-    async crearVenta(
+     async crearVenta(
         asesorId,
+        clienteId,
         valor,
         fechaHora,
         observacion = null
@@ -47,6 +48,8 @@ class VentasRepository {
 
                 asesor_id,
 
+                cliente_id,
+
                 valor,
 
                 fecha_hora,
@@ -57,7 +60,7 @@ class VentasRepository {
 
             )
 
-            VALUES (?, ?, ?, ?, 'ACTIVA')
+            VALUES (?, ?, ?, ?, ?, 'ACTIVA')
 
         `;
 
@@ -67,6 +70,8 @@ class VentasRepository {
             [
 
                 asesorId,
+
+                clienteId,
 
                 valor,
 
@@ -95,6 +100,8 @@ class VentasRepository {
                 v.id,
 
                 v.asesor_id,
+
+                v.cliente_id,
 
                 v.valor,
 
@@ -154,6 +161,8 @@ class VentasRepository {
                 v.id,
 
                 v.asesor_id,
+
+                v.cliente_id,
 
                 v.valor,
 
@@ -222,6 +231,8 @@ class VentasRepository {
                 v.id,
 
                 v.asesor_id,
+
+                v.cliente_id,
 
                 v.valor,
 

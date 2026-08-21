@@ -53,6 +53,11 @@ class VentasService {
             );
         }
 
+        const clienteId =
+            datos.cliente_id
+                ? String(datos.cliente_id).trim()
+                : null;
+
         // ----------------------------------------------
         // VALIDAR ASESOR (reutiliza la validación ya
         // probada del módulo de movimientos)
@@ -77,6 +82,7 @@ class VentasService {
 
         await ventasRepository.crearVenta(
             asesorId,
+            clienteId,
             valor,
             fechaHora,
             observacion
@@ -92,6 +98,8 @@ class VentasService {
                 id: asesor.id,
                 nombre: asesor.nombre
             },
+
+            cliente_id: clienteId,
 
             valor,
 

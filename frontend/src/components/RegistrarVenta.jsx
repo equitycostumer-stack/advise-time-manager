@@ -13,6 +13,7 @@ export default function RegistrarVenta({
 
     const [abierto, setAbierto] = useState(false);
     const [valor, setValor] = useState("");
+    const [clienteId, setClienteId] = useState("");
     const [observacion, setObservacion] = useState("");
     const [enviando, setEnviando] = useState(false);
 
@@ -28,6 +29,7 @@ export default function RegistrarVenta({
         }
 
         setValor("");
+        setClienteId("");
         setObservacion("");
         setAbierto(true);
 
@@ -60,6 +62,7 @@ export default function RegistrarVenta({
 
             const { data } = await api.post("/ventas", {
                 asesor_id: Number(asesor),
+                cliente_id: clienteId || null,
                 valor: valorNumerico,
                 observacion: observacion || null
             });
@@ -164,6 +167,25 @@ export default function RegistrarVenta({
                         <p style={{ marginTop: 0 }}>
                             {asesorNombre || "—"}
                         </p>
+
+                        <p style={{ marginBottom: "4px" }}>
+                            <strong>ID del cliente</strong>
+                        </p>
+                        <input
+                            type="text"
+                            value={clienteId}
+                            onChange={(e) => setClienteId(e.target.value)}
+                            placeholder="Cédula, póliza o código del cliente"
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "15px",
+                                marginBottom: "15px",
+                                boxSizing: "border-box"
+                            }}
+                        />
 
                         <p style={{ marginBottom: "4px" }}>
                             <strong>Valor de la venta</strong>

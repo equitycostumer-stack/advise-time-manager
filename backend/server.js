@@ -132,6 +132,9 @@ console.log("✓ movimientos");
 app.use("/api/incidencias", require("./routes/incidencias"));
 console.log("✓ incidencias");
 
+app.use("/api/ventas", require("./routes/ventas"));
+console.log("✓ ventas");
+
 app.use("/api/usuarios", require("./routes/usuariosRoutes"));
 console.log("✓ usuarios");
 

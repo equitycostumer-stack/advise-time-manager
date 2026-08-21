@@ -11,7 +11,9 @@ export default function MessageCard({ mensaje }) {
             }}
         >
 
-            <h3>💚 Mensaje del día</h3>
+            <h3 className="mensaje-dia-animado">
+    💚 Mensaje del día
+</h3>
 
             <p
                 style={{

@@ -10,6 +10,10 @@ export default function VentasDashboard() {
 
     const [porAsesor, setPorAsesor] = useState([]);
 
+    const [ventasDia, setVentasDia] = useState([]);
+
+    const [anulando, setAnulando] = useState(null);
+
     // ======================================================
     // CARGAR DATOS
     // ======================================================
@@ -18,9 +22,10 @@ export default function VentasDashboard() {
 
         try {
 
-            const [resDia, resAsesores] = await Promise.all([
+            const [resDia, resAsesores, resListado] = await Promise.all([
                 api.get("/ventas/resumen/dia"),
-                api.get("/ventas/resumen/asesores")
+                api.get("/ventas/resumen/asesores"),
+                api.get("/ventas/dia")
             ]);
 
             setResumenDia(
@@ -33,9 +38,57 @@ export default function VentasDashboard() {
                     : []
             );
 
+            setVentasDia(
+                Array.isArray(resListado.data?.data)
+                    ? resListado.data.data
+                    : []
+            );
+
         } catch (error) {
 
             console.error("Error cargando ventas:", error);
+
+        }
+
+    }
+
+    // ======================================================
+    // ANULAR VENTA
+    // ======================================================
+
+    async function anularVenta(id, clienteId) {
+
+        const confirmar = window.confirm(
+            `¿Anular esta venta${clienteId ? ` (cliente: ${clienteId})` : ""}? Esta acción no se puede deshacer.`
+        );
+
+        if (!confirmar) return;
+
+        setAnulando(id);
+
+        try {
+
+            const { data } = await api.patch(`/ventas/${id}/anular`);
+
+            if (!data?.ok) {
+                throw new Error(data?.mensaje || "No fue posible anular la venta.");
+            }
+
+            await cargarVentas();
+
+        } catch (error) {
+
+            console.error("Error anulando venta:", error);
+
+            alert(
+                error.response?.data?.mensaje ||
+                error.message ||
+                "No fue posible anular la venta."
+            );
+
+        } finally {
+
+            setAnulando(null);
 
         }
 
@@ -161,6 +214,89 @@ export default function VentasDashboard() {
                 ))}
 
             </div>
+
+            {/* =====================================================
+                LISTADO INDIVIDUAL DE VENTAS DEL DÍA
+            ===================================================== */}
+
+            <h3 style={{ marginTop: "30px" }}>
+                📋 Detalle de ventas de hoy
+            </h3>
+
+            {ventasDia.length === 0 ? (
+
+                <p style={{ color: "#666" }}>
+                    No hay ventas registradas hoy.
+                </p>
+
+            ) : (
+
+                <div style={{ marginTop: "10px" }}>
+
+                    {ventasDia.map((v) => (
+
+                        <div
+                            key={v.id}
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "12px",
+                                borderBottom: "1px solid #e5e5e5",
+                                opacity: v.estado === "ANULADA" ? 0.55 : 1
+                            }}
+                        >
+
+                            <div>
+
+                                <strong>{v.asesor_nombre}</strong>
+                                {" — "}
+                                {formatearMoneda(v.valor)}
+
+                                {v.cliente_id && (
+                                    <span style={{ color: "#666", fontSize: "13px" }}>
+                                        {" "}(Cliente: {v.cliente_id})
+                                    </span>
+                                )}
+
+                                <br />
+
+                                <span style={{ color: "#666", fontSize: "13px" }}>
+                                    {v.observacion || "Sin observación"}
+                                    {" — "}
+                                    {v.estado === "ANULADA" ? "🔴 ANULADA" : "🟢 ACTIVA"}
+                                </span>
+
+                            </div>
+
+                            {v.estado === "ACTIVA" && (
+
+                                <button
+                                    onClick={() => anularVenta(v.id, v.cliente_id)}
+                                    disabled={anulando === v.id}
+                                    style={{
+                                        background: anulando === v.id ? "#e39a9a" : "#dc3545",
+                                        color: "#fff",
+                                        border: "none",
+                                        borderRadius: "6px",
+                                        padding: "8px 14px",
+                                        cursor: anulando === v.id ? "default" : "pointer",
+                                        fontWeight: "bold",
+                                        whiteSpace: "nowrap"
+                                    }}
+                                >
+                                    {anulando === v.id ? "Anulando..." : "✕ Anular"}
+                                </button>
+
+                            )}
+
+                        </div>
+
+                    ))}
+
+                </div>
+
+            )}
 
         </div>
 

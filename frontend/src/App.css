@@ -191,7 +191,7 @@
 
 .logo {
     width: 10%;
-    max-width: 100px; 
+    max-width: 20px; 
     height: auto;
     object-fit: contain;
     display: block;
@@ -199,9 +199,9 @@
 }
 
 /* Adaptación para pantallas pequeñas / celulares */
-@media (max-width: 100px) {
+@media (max-width: 600px) {
     .logo {
-        max-width: 100px; /* Tamaño más reducido en celulares */
+        max-width: 25px; /* Tamaño más reducido en celulares */
     }
 }
 

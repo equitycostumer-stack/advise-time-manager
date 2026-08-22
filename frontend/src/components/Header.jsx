@@ -27,8 +27,13 @@ export default function Header() {
                     src={logo}
                     alt="Equity Line"
                     className="logo"
+                    style={{
+                        width: "400px",
+                        height: "auto",
+                        display: "block",
+                        margin: "0 auto 15px auto"
+                    }}
                 />
-
                 <h1 className="title">
 
                     EQUITY LINE

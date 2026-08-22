@@ -175,7 +175,7 @@ export default function RegistrarVenta({
                             type="text"
                             value={clienteId}
                             onChange={(e) => setClienteId(e.target.value)}
-                            placeholder="Cédula, póliza o código del cliente"
+                            placeholder="ID del cliente"
                             style={{
                                 width: "100%",
                                 padding: "10px",
@@ -209,7 +209,7 @@ export default function RegistrarVenta({
                         />
 
                         <p style={{ marginBottom: "4px" }}>
-                            <strong>Observación (opcional)</strong>
+                            <strong>Tipo de Venta</strong>
                         </p>
                         <input
                             type="text"

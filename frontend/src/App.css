@@ -112,7 +112,7 @@
   margin: 32px 0 0;
 
   .logo {
-    height: 18px;
+    height: 11px;
   }
 
   a {
@@ -190,15 +190,19 @@
 }
 
 .logo {
-
-    width: 10px;
-
+    width: 10%;
+    max-width: 100px; 
     height: auto;
-
+    object-fit: contain;
     display: block;
+    margin: 0 auto 10px auto;
+}
 
-    margin: 0 auto 12px auto;
-
+/* Adaptación para pantallas pequeñas / celulares */
+@media (max-width: 100px) {
+    .logo {
+        max-width: 100px; /* Tamaño más reducido en celulares */
+    }
 }
 
 .header h1{

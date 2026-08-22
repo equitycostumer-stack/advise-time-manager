@@ -135,6 +135,9 @@ console.log("✓ incidencias");
 app.use("/api/ventas", require("./routes/ventas"));
 console.log("✓ ventas");
 
+app.use("/api/reportes", require("./routes/reportes"));
+console.log("✓ reportes");
+
 app.use("/api/usuarios", require("./routes/usuariosRoutes"));
 console.log("✓ usuarios");
 

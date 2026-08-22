@@ -17,6 +17,7 @@ import Footer from "./components/Footer";
 import WorkTimer from "./components/WorkTimer";
 import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
+import HistoricoDashboard from "./components/HistoricoDashboard";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -94,6 +95,9 @@ function App() {
 
     const [cargando, setCargando] =
         useState(true);
+
+    const [vista, setVista] =
+        useState("principal");
 
     // ==================================================
     // MENSAJES
@@ -626,7 +630,57 @@ console.log(
             <div className="card">
 
                 <Header />
-             
+
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginBottom: "15px"
+                    }}
+                >
+
+                    <button
+                        onClick={() => setVista("principal")}
+                        style={{
+                            flex: 1,
+                            padding: "12px",
+                            border: "none",
+                            borderRadius: "8px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            background: vista === "principal" ? "#0d6efd" : "#e9ecef",
+                            color: vista === "principal" ? "#fff" : "#333"
+                        }}
+                    >
+                        🏠 Principal
+                    </button>
+
+                    <button
+                        onClick={() => setVista("historico")}
+                        style={{
+                            flex: 1,
+                            padding: "12px",
+                            border: "none",
+                            borderRadius: "8px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            background: vista === "historico" ? "#0d6efd" : "#e9ecef",
+                            color: vista === "historico" ? "#fff" : "#333"
+                        }}
+                    >
+                        📊 Histórico
+                    </button>
+
+                </div>
+
+                {vista === "historico" ? (
+
+                    <HistoricoDashboard />
+
+                ) : (
+
+                <>
+
                 <AdvisorSelect
                     asesores={asesores}
                     asesor={asesor}
@@ -697,6 +751,10 @@ console.log(
                 <Dashboard />
 
                 <VentasDashboard />
+
+                </>
+
+                )}
 
             </div>
 

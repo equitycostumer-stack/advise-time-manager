@@ -78,7 +78,7 @@ export default function Login() {
                         src="/logo.png"
                         alt="Equity Line"
                         style={{
-                            width: 50,
+                            width: 30,
                             marginBottom: 15
                         }}
                         onError={(e) => {

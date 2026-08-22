@@ -4,6 +4,32 @@ const db = require("../config/db");
 // REGISTRAR INCIDENCIA
 // ==============================================
 
+// ==============================================
+// GENERAR FECHA EN HORA COLOMBIA
+// (mismo patrón ya validado en insertarMovimiento()
+// y en ventasService.generarFechaColombia())
+// ==============================================
+
+function generarFechaColombia() {
+
+    return new Intl.DateTimeFormat(
+        "sv-SE",
+        {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        }
+    )
+        .format(new Date())
+        .replace(",", "");
+
+}
+
 const registrarIncidencia = (
     asesorId,
     tipo,
@@ -11,7 +37,11 @@ const registrarIncidencia = (
     detalle
 ) => {
 
+    const fechaHora = generarFechaColombia();
+
     // Primero revisar si ya existe una incidencia igual SIN revisar
+    // (comparamos contra la fecha de HOY en Colombia, no CURDATE()
+    // del servidor, que está en UTC)
 
     const verificar = `
     SELECT id
@@ -19,13 +49,13 @@ const registrarIncidencia = (
     WHERE asesor_id = ?
     AND tipo = ?
     AND revisada = 0
-    AND DATE(fecha_hora) = CURDATE()
+    AND DATE(fecha_hora) = DATE(?)
     LIMIT 1
 `;
 
     db.query(
     verificar,
-    [asesorId, tipo],
+    [asesorId, tipo, fechaHora],
     (err, rows) => {
 
         if (err) {
@@ -52,9 +82,10 @@ const registrarIncidencia = (
                 asesor_id,
                 tipo,
                 nivel,
-                detalle
+                detalle,
+                fecha_hora
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
         `;
 
         db.query(
@@ -65,7 +96,8 @@ const registrarIncidencia = (
                 asesorId,
                 tipo,
                 nivel,
-                detalle
+                detalle,
+                fechaHora
             ],
 
             (err) => {

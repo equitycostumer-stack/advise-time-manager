@@ -18,7 +18,7 @@ export default function Footer() {
 
             <br />
 
-            <strong>Jefa Principal:</strong> Carolina Garcia
+            <strong>Jefa :</strong> Carolina Garcia
 
         </div>
 

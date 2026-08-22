@@ -14,6 +14,8 @@ export default function VentasDashboard() {
 
     const [anulando, setAnulando] = useState(null);
 
+    const [desplegado, setDesplegado] = useState(false);
+
     // ======================================================
     // CARGAR DATOS
     // ======================================================
@@ -135,15 +137,37 @@ export default function VentasDashboard() {
             }}
         >
 
-            <h2>💰 Ventas del día</h2>
+            <button
+                onClick={() => setDesplegado(!desplegado)}
+                style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: "#f8f9fa",
+                    border: "1px solid #ddd",
+                    borderRadius: "10px",
+                    padding: "15px 20px",
+                    cursor: "pointer",
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: "#212529"
+                }}
+            >
+                <span>💰 Ventas del día</span>
+                <span>{desplegado ? "▲" : "▼"}</span>
+            </button>
+
+            {desplegado && (
+
+            <div style={{ marginTop: "20px" }}>
 
             <div
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
                     gap: "15px",
-                    marginBottom: "25px",
-                    marginTop: "20px"
+                    marginBottom: "25px"
                 }}
             >
 
@@ -295,6 +319,10 @@ export default function VentasDashboard() {
                     ))}
 
                 </div>
+
+            )}
+
+            </div>
 
             )}
 

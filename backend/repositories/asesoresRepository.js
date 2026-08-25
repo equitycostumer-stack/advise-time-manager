@@ -28,7 +28,7 @@ class AsesoresRepository {
                 id,
                 nombre
             FROM asesores
-            WHERE activo = true
+            WHERE activo = true OR activo = 1
             ORDER BY nombre ASC
         `;
 

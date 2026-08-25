@@ -1,21 +1,19 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
-// TIME MANAGER
-// API SERVICE
+// ADVISE SOLUTIONS SERVICES
+// TIME MANAGER - API SERVICE
 // ======================================================
 
 import axios from "axios";
 
+// Si la variable existe, le añade /api; si no, usa la URL de Render con /api
+const rawBaseURL = import.meta.env.VITE_API_URL || "https://advise-backend-nesp.onrender.com";
+const baseURL = rawBaseURL.endsWith("/api") ? rawBaseURL : `${rawBaseURL.replace(/\/$/, "")}/api`;
+
 const api = axios.create({
-
-    baseURL: import.meta.env.VITE_API_URL,
-
-    headers: {
-
-        "Content-Type": "application/json"
-
-    }
-
+  baseURL,
+  headers: {
+    "Content-Type": "application/json"
+  }
 });
 
 // ======================================================

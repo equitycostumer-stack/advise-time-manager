@@ -13,7 +13,6 @@ class VentasRepository {
     // ==================================================
 
     async ejecutar(sql, parametros = []) {
-        // Convertir signos '?' de MySQL a '$1, $2, $3...' de PostgreSQL
         let index = 1;
         const sqlPostgres = sql.replace(/\?/g, () => `$${index++}`);
 
@@ -211,7 +210,7 @@ class VentasRepository {
                 AND v.fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
                 AND v.fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
             WHERE
-                a.activo = true
+                a.activo = 1
             GROUP BY
                 a.id,
                 a.nombre
@@ -224,9 +223,5 @@ class VentasRepository {
     }
 
 }
-
-// ======================================================
-// EXPORTAR
-// ======================================================
 
 module.exports = new VentasRepository();

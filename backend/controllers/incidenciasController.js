@@ -33,7 +33,7 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
       FROM incidencias
       WHERE asesor_id = $1
         AND tipo = $2
-        AND revisada = false
+        AND revisada = 0
         AND DATE(fecha_hora) = DATE($3)
       LIMIT 1
     `;

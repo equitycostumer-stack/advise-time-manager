@@ -3,14 +3,14 @@ const movimientosRepository = require("../repositories/movimientosRepository");
 const { registrarIncidencia } = require("../controllers/incidenciasController");
 
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
-// RESUMEN DE JORNADA SERVICE
+// ADVISE SOLUTIONS SERVICES
+// RESUMEN DE JORNADA SERVICE (PostgreSQL / Supabase)
 // ======================================================
 
 class ResumenJornadaService {
 
     /**
-     * Convierte una fecha MySQL (o string ISO/Date) al instante de tiempo real en Colombia (UTC-5).
+     * Convierte una fecha MySQL/PostgreSQL (o string ISO/Date) al instante de tiempo real en Colombia (UTC-5).
      */
     convertirFechaColombia(fecha) {
         if (!fecha) return null;
@@ -28,7 +28,7 @@ class ResumenJornadaService {
             return Number.isNaN(fechaConvertida.getTime()) ? null : fechaConvertida;
         }
 
-        // Formato DateTime de MySQL (YYYY-MM-DD HH:mm:ss -> UTC-05:00)
+        // Formato DateTime (YYYY-MM-DD HH:mm:ss -> UTC-05:00)
         const fechaTexto = valor.replace(" ", "T") + "-05:00";
         const fechaConvertida = new Date(fechaTexto);
 

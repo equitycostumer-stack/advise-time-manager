@@ -5,7 +5,7 @@
 // ======================================================
 
 const db = require("../config/db");
-const ResumenJornadaService = require('../services/ResumenJornadaService');
+const ResumenJornadaService = require("../services/resumenJornadaService");
 
 // ======================================================
 // DASHBOARD

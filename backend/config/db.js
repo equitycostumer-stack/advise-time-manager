@@ -31,33 +31,35 @@ pool.on("connect", async (client) => {
 });
 
 // ======================================================
-// VERIFICAR CONEXIÓN Y DIAGNÓSTICO
+// VERIFICAR CONEXIÓN Y DIAGNÓSTICO (Solo en desarrollo/producción)
 // ======================================================
 
-(async () => {
-  try {
-    const client = await pool.connect();
-    console.log("✅ Conexión exitosa a PostgreSQL (Supabase)");
+if (process.env.NODE_ENV !== "test") {
+  (async () => {
+    try {
+      const client = await pool.connect();
+      console.log("✅ Conexión exitosa a PostgreSQL (Supabase)");
 
-    const res = await client.query(`
-      SELECT 
-        current_database() AS base,
-        inet_server_addr() AS servidor,
-        inet_server_port() AS puerto,
-        current_user AS usuario,
-        current_setting('TIMEZONE') AS zona_sesion,
-        NOW() AS fecha_postgres,
-        NOW() AT TIME ZONE 'UTC' AS fecha_utc,
-        CURRENT_TIMESTAMP AS timestamp_postgres
-    `);
+      const res = await client.query(`
+        SELECT 
+          current_database() AS base,
+          inet_server_addr() AS servidor,
+          inet_server_port() AS puerto,
+          current_user AS usuario,
+          current_setting('TIMEZONE') AS zona_sesion,
+          NOW() AS fecha_postgres,
+          NOW() AT TIME ZONE 'UTC' AS fecha_utc,
+          CURRENT_TIMESTAMP AS timestamp_postgres
+      `);
 
-    console.log("📊 Diagnóstico de conexión:", res.rows[0]);
-    client.release();
-  } catch (err) {
-    console.error("❌ ERROR POSTGRESQL (SUPABASE):");
-    console.error(err);
-  }
-})();
+      console.log("📊 Diagnóstico de conexión:", res.rows[0]);
+      client.release();
+    } catch (err) {
+      console.error("❌ ERROR POSTGRESQL (SUPABASE):");
+      console.error(err);
+    }
+  })();
+}
 
 // ======================================================
 // EXPORTAR MÉTODO QUERY Y POOL

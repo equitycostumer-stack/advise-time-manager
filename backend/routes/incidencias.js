@@ -1,150 +1,94 @@
+// ======================================================
+// ADVISE SOLUTIONS SERVICES - TIME MANAGER
+// RUTAS DE INCIDENCIAS (POSTGRESQL / SUPABASE)
+// ======================================================
+
 const express = require("express");
 const router = express.Router();
 
 const db = require("../config/db");
 
 const {
-    revisarIncidencia
+  revisarIncidencia
 } = require("../controllers/incidenciasController");
 
 // ======================================================
 // INCIDENCIAS PENDIENTES (Dashboard)
 // ======================================================
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+  const sql = `
+    SELECT
+      i.id,
+      i.asesor_id,
+      i.tipo,
+      i.nivel,
+      i.detalle,
+      i.fecha_hora,
+      i.revisada,
+      i.revisada_por,
+      i.comentario,
+      i.fecha_revision,
+      a.nombre
+    FROM incidencias i
+    INNER JOIN asesores a
+      ON a.id = i.asesor_id
+    WHERE
+      i.revisada = false
+      AND DATE(i.fecha_hora) = CURRENT_DATE
+    ORDER BY
+      i.fecha_hora DESC
+  `;
 
-    const sql = `
-
-        SELECT
-
-            i.id,
-            i.asesor_id,
-            i.tipo,
-            i.nivel,
-            i.detalle,
-            i.fecha_hora,
-            i.revisada,
-            i.revisada_por,
-            i.comentario,
-            i.fecha_revision,
-
-            a.nombre
-
-        FROM incidencias i
-
-        INNER JOIN asesores a
-            ON a.id = i.asesor_id
-
-        WHERE
-
-            i.revisada = 0
-
-            AND DATE(i.fecha_hora) = CURDATE()
-
-        ORDER BY
-
-            i.fecha_hora DESC
-
-    `;
-
-    db.query(sql, (err, rows) => {
-
-        if (err) {
-
-            console.error(err);
-
-            return res.status(500).json({
-
-                ok: false,
-
-                mensaje: "Error obteniendo incidencias."
-
-            });
-
-        }
-
-        res.json(rows);
-
+  try {
+    const { rows } = await db.query(sql);
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error obteniendo incidencias pendientes:", err);
+    return res.status(500).json({
+      ok: false,
+      mensaje: "Error obteniendo incidencias."
     });
-
+  }
 });
 
 // ======================================================
 // HISTORIAL COMPLETO DE INCIDENCIAS DEL DÍA
 // ======================================================
 
-router.get("/asesor/:asesorId", (req, res) => {
+router.get("/asesor/:asesorId", async (req, res) => {
+  const sql = `
+    SELECT
+      id,
+      tipo,
+      nivel,
+      detalle AS descripcion,
+      fecha_hora,
+      revisada,
+      revisada_por,
+      comentario,
+      fecha_revision
+    FROM incidencias
+    WHERE
+      asesor_id = $1
+      AND DATE(fecha_hora) = CURRENT_DATE
+    ORDER BY
+      fecha_hora DESC
+  `;
 
-    const sql = `
-
-        SELECT
-
-            id,
-
-            tipo,
-
-            nivel,
-
-            detalle AS descripcion,
-
-            fecha_hora,
-
-            revisada,
-
-            revisada_por,
-
-            comentario,
-
-            fecha_revision
-
-        FROM incidencias
-
-        WHERE
-
-            asesor_id = ?
-
-            AND DATE(fecha_hora) = CURDATE()
-
-        ORDER BY
-
-            fecha_hora DESC
-
-    `;
-
-    db.query(
-
-        sql,
-
-        [req.params.asesorId],
-
-        (err, rows) => {
-
-            if (err) {
-
-                console.error(err);
-
-                return res.status(500).json({
-
-                    ok: false,
-
-                    mensaje: "Error obteniendo historial."
-
-                });
-
-            }
-
-            res.json({
-
-                ok: true,
-
-                incidencias: rows
-
-            });
-
-        }
-
-    );
-
+  try {
+    const { rows } = await db.query(sql, [req.params.asesorId]);
+    res.json({
+      ok: true,
+      incidencias: rows
+    });
+  } catch (err) {
+    console.error("❌ Error obteniendo historial por asesor:", err);
+    return res.status(500).json({
+      ok: false,
+      mensaje: "Error obteniendo historial."
+    });
+  }
 });
 
 // ======================================================
@@ -152,11 +96,8 @@ router.get("/asesor/:asesorId", (req, res) => {
 // ======================================================
 
 router.put(
-
-    "/:id/revisar",
-
-    revisarIncidencia
-
+  "/:id/revisar",
+  revisarIncidencia
 );
 
 module.exports = router;

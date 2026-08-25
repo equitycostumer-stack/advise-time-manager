@@ -1,200 +1,103 @@
 const db = require("../config/db");
 
 // ==============================================
-// REGISTRAR INCIDENCIA
-// ==============================================
-
-// ==============================================
 // GENERAR FECHA EN HORA COLOMBIA
-// (mismo patrón ya validado en insertarMovimiento()
-// y en ventasService.generarFechaColombia())
 // ==============================================
 
 function generarFechaColombia() {
-
-    return new Intl.DateTimeFormat(
-        "sv-SE",
-        {
-            timeZone: "America/Bogota",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false
-        }
-    )
-        .format(new Date())
-        .replace(",", "");
-
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  })
+    .format(new Date())
+    .replace(",", "");
 }
 
-const registrarIncidencia = (
-    asesorId,
-    tipo,
-    nivel,
-    detalle
-) => {
+// ==============================================
+// REGISTRAR INCIDENCIA
+// ==============================================
 
+const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
+  try {
     const fechaHora = generarFechaColombia();
 
-    // Primero revisar si ya existe una incidencia igual SIN revisar
-    // (comparamos contra la fecha de HOY en Colombia, no CURDATE()
-    // del servidor, que está en UTC)
-
+    // Revisa si ya existe una incidencia igual SIN revisar hoy (Sintaxis PostgreSQL)
     const verificar = `
-    SELECT id
-    FROM incidencias
-    WHERE asesor_id = ?
-    AND tipo = ?
-    AND revisada = 0
-    AND DATE(fecha_hora) = DATE(?)
-    LIMIT 1
-`;
+      SELECT id
+      FROM incidencias
+      WHERE asesor_id = $1
+        AND tipo = $2
+        AND revisada = false
+        AND DATE(fecha_hora) = DATE($3)
+      LIMIT 1
+    `;
 
-    db.query(
-    verificar,
-    [asesorId, tipo, fechaHora],
-    (err, rows) => {
+    const { rows } = await db.query(verificar, [asesorId, tipo, fechaHora]);
 
-        if (err) {
+    // Si ya existe la incidencia, se ignora
+    if (rows && rows.length > 0) {
+      return;
+    }
 
-            console.error(err);
+    // Insertar registro
+    const sql = `
+      INSERT INTO incidencias (
+        asesor_id,
+        tipo,
+        nivel,
+        detalle,
+        fecha_hora
+      )
+      VALUES ($1, $2, $3, $4, $5)
+    `;
 
-            return;
-
-        }
-
-        // Ya existe
-
-        if (rows.length > 0) {
-
-            return;
-
-        }
-
-        // Registrar
-
-        const sql = `
-            INSERT INTO incidencias
-            (
-                asesor_id,
-                tipo,
-                nivel,
-                detalle,
-                fecha_hora
-            )
-            VALUES (?, ?, ?, ?, ?)
-        `;
-
-        db.query(
-
-            sql,
-
-            [
-                asesorId,
-                tipo,
-                nivel,
-                detalle,
-                fechaHora
-            ],
-
-            (err) => {
-
-                if (err) {
-
-                    console.error(err);
-
-                }
-
-            }
-
-        );
-
-    });
-
+    await db.query(sql, [asesorId, tipo, nivel, detalle, fechaHora]);
+  } catch (err) {
+    console.error("❌ Error en registrarIncidencia:", err);
+  }
 };
 
 // ==============================================
 // REVISAR INCIDENCIA
 // ==============================================
 
-const revisarIncidencia = (req, res) => {
+const revisarIncidencia = async (req, res) => {
+  const { id } = req.params;
+  const { coach, comentario } = req.body;
 
-    const { id } = req.params;
-
-    const {
-
-        coach,
-
-        comentario
-
-    } = req.body;
-
+  try {
     const sql = `
-        UPDATE incidencias
-        SET
-
-            revisada = 1,
-
-            revisada_por = ?,
-
-            comentario = ?,
-
-            fecha_revision = NOW()
-
-        WHERE id = ?
+      UPDATE incidencias
+      SET
+        revisada = true,
+        revisada_por = $1,
+        comentario = $2,
+        fecha_revision = NOW()
+      WHERE id = $3
     `;
 
-    db.query(
+    await db.query(sql, [coach, comentario, id]);
 
-        sql,
-
-        [
-
-            coach,
-
-            comentario,
-
-            id
-
-        ],
-
-        (err) => {
-
-            if (err) {
-
-                console.error(err);
-
-                return res.status(500).json({
-
-                    ok: false,
-
-                    error: "No fue posible revisar la incidencia."
-
-                });
-
-            }
-
-            res.json({
-
-                ok: true,
-
-                mensaje: "Incidencia revisada correctamente."
-
-            });
-
-        }
-
-    );
-
+    return res.json({
+      ok: true,
+      mensaje: "Incidencia revisada correctamente."
+    });
+  } catch (err) {
+    console.error("❌ Error en revisarIncidencia:", err);
+    return res.status(500).json({
+      ok: false,
+      error: "No fue posible revisar la incidencia."
+    });
+  }
 };
 
 module.exports = {
-
-    registrarIncidencia,
-
-    revisarIncidencia
-
+  registrarIncidencia,
+  revisarIncidencia
 };

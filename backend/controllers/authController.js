@@ -1,5 +1,5 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
+// ADVISE SOLUTIONS SERVICES
 // TIME MANAGER
 // Auth Controller
 // ======================================================
@@ -16,14 +16,22 @@ class AuthController {
         console.log("====================================");
 
         try {
+            // Acepta flexibilización de campos (usuario, email o username)
+            const usuarioParam = req.body.usuario || req.body.email || req.body.username;
+            const passwordParam = req.body.password || req.body.contrasena;
 
-            const { usuario, password } = req.body;
+            if (!usuarioParam || !passwordParam) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: "El usuario/correo y la contraseña son requeridos."
+                });
+            }
 
-            console.log("Llamando AuthService...");
+            console.log("Llamando AuthService para:", usuarioParam);
 
             const resultado = await authService.login(
-                usuario,
-                password
+                usuarioParam,
+                passwordParam
             );
 
             console.log("Login correcto.");
@@ -40,7 +48,7 @@ class AuthController {
 
             return res.status(400).json({
                 ok: false,
-                mensaje: error.message
+                mensaje: error.message || "Error al iniciar sesión."
             });
 
         }
@@ -69,7 +77,7 @@ class AuthController {
 
             return res.status(400).json({
                 ok: false,
-                mensaje: error.message
+                mensaje: error.message || "Error al cambiar contraseña."
             });
 
         }

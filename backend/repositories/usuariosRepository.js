@@ -1,66 +1,54 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
+// ADVISE SOLUTIONS SERVICES
 // TIME MANAGER
-// Usuarios Repository
+// Usuarios Repository (PostgreSQL / Supabase)
 // ======================================================
 
 const db = require("../config/db");
 
 // ======================================================
 // GENERAR FECHA EN HORA COLOMBIA
-// (mismo patrón ya validado en el resto del proyecto)
 // ======================================================
 
 function generarFechaColombia() {
-
-    return new Intl.DateTimeFormat(
-        "sv-SE",
-        {
-            timeZone: "America/Bogota",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false
-        }
-    )
+    return new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    })
         .format(new Date())
         .replace(",", "");
-
 }
 
 class UsuariosRepository {
 
     // ======================================================
-    // EJECUTAR CONSULTA
+    // EJECUTAR CONSULTA POSTGRESQL
     // ======================================================
 
-    ejecutar(sql, parametros = []) {
+    async ejecutar(sql, parametros = []) {
+        // Convertir signos '?' de MySQL a '$1, $2, $3...' de PostgreSQL
+        let index = 1;
+        const sqlPostgres = sql.replace(/\?/g, () => `$${index++}`);
 
-        return new Promise((resolve, reject) => {
+        try {
+            const resultado = await db.query(sqlPostgres, parametros);
 
-            db.query(
+            // Si es un SELECT o consulta con RETURNING, devolver resultado.rows
+            if (resultado.rows) {
+                return resultado.rows;
+            }
 
-                sql,
-
-                parametros,
-
-                (error, resultado) => {
-
-                    if (error) {
-                        return reject(error);
-                    }
-
-                    resolve(resultado);
-
-                }
-
-            );
-
-        });
-
+            return resultado;
+        } catch (error) {
+            console.error("❌ Error ejecutando SQL en PostgreSQL (Usuarios):", error);
+            throw error;
+        }
     }
 
     // ======================================================
@@ -68,7 +56,6 @@ class UsuariosRepository {
     // ======================================================
 
     async obtenerPorUsuario(usuario) {
-
         const sql = `
             SELECT *
             FROM usuarios
@@ -79,7 +66,6 @@ class UsuariosRepository {
         const filas = await this.ejecutar(sql, [usuario]);
 
         return filas.length ? filas[0] : null;
-
     }
 
     // ======================================================
@@ -87,7 +73,6 @@ class UsuariosRepository {
     // ======================================================
 
     async obtenerPorId(id) {
-
         const sql = `
             SELECT *
             FROM usuarios
@@ -98,7 +83,6 @@ class UsuariosRepository {
         const filas = await this.ejecutar(sql, [id]);
 
         return filas.length ? filas[0] : null;
-
     }
 
     // ======================================================
@@ -106,7 +90,6 @@ class UsuariosRepository {
     // ======================================================
 
     async crear(datos) {
-
         const sql = `
             INSERT INTO usuarios
             (
@@ -117,41 +100,20 @@ class UsuariosRepository {
                 password,
                 rol
             )
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            RETURNING id
         `;
 
-        const resultado = await this.ejecutar(
+        const filas = await this.ejecutar(sql, [
+            datos.asesor_id,
+            datos.usuario,
+            datos.email,
+            datos.telefono,
+            datos.password,
+            datos.rol
+        ]);
 
-            sql,
-
-            [
-
-                datos.asesor_id,
-
-                datos.usuario,
-
-                datos.email,
-
-                datos.telefono,
-
-                datos.password,
-
-                datos.rol
-
-            ]
-
-        );
-
-        return resultado.insertId;
-
+        return filas[0].id;
     }
 
     // ======================================================
@@ -159,45 +121,27 @@ class UsuariosRepository {
     // ======================================================
 
     async listar() {
-
         const sql = `
             SELECT
-
                 u.id,
-
                 u.usuario,
-
                 u.email,
-
                 u.telefono,
-
                 u.rol,
-
                 u.activo,
-
                 u.debe_cambiar_password,
-
                 u.intentos_fallidos,
-
                 u.bloqueado_hasta,
-
                 u.ultimo_acceso,
-
                 u.created_at,
-
                 a.nombre AS asesor
-
             FROM usuarios u
-
             LEFT JOIN asesores a
                 ON a.id = u.asesor_id
-
-            ORDER BY
-                u.id ASC
+            ORDER BY u.id ASC
         `;
 
         return await this.ejecutar(sql);
-
     }
 
     // ======================================================
@@ -205,7 +149,6 @@ class UsuariosRepository {
     // ======================================================
 
     async existeUsuario(usuario) {
-
         const sql = `
             SELECT id
             FROM usuarios
@@ -213,16 +156,9 @@ class UsuariosRepository {
             LIMIT 1
         `;
 
-        const filas = await this.ejecutar(
-
-            sql,
-
-            [usuario]
-
-        );
+        const filas = await this.ejecutar(sql, [usuario]);
 
         return filas.length > 0;
-
     }
 
     // ======================================================
@@ -230,44 +166,25 @@ class UsuariosRepository {
     // ======================================================
 
     async actualizar(id, datos) {
-
         const sql = `
             UPDATE usuarios
             SET
-
                 email = ?,
-
                 telefono = ?,
-
                 rol = ?,
-
                 activo = ?
-
             WHERE id = ?
         `;
 
-        await this.ejecutar(
-
-            sql,
-
-            [
-
-                datos.email,
-
-                datos.telefono,
-
-                datos.rol,
-
-                datos.activo,
-
-                id
-
-            ]
-
-        );
+        await this.ejecutar(sql, [
+            datos.email,
+            datos.telefono,
+            datos.rol,
+            datos.activo,
+            id
+        ]);
 
         return true;
-
     }
 
     // ======================================================
@@ -275,107 +192,66 @@ class UsuariosRepository {
     // ======================================================
 
     async actualizarPassword(id, passwordHash) {
-
         const sql = `
             UPDATE usuarios
             SET
-
                 password = ?,
-
-                debe_cambiar_password = 1,
-
+                debe_cambiar_password = true,
                 ultimo_cambio_password = ?,
-
                 intentos_fallidos = 0,
-
                 bloqueado_hasta = NULL
-
             WHERE id = ?
         `;
 
-        await this.ejecutar(
-
-            sql,
-
-            [
-
-                passwordHash,
-
-                generarFechaColombia(),
-
-                id
-
-            ]
-
-        );
+        await this.ejecutar(sql, [
+            passwordHash,
+            generarFechaColombia(),
+            id
+        ]);
 
         return true;
-
     }
 
     // ======================================================
     // ACTUALIZAR PASSWORD (CAMBIO PROPIO DEL USUARIO)
-    //
-    // A diferencia de actualizarPassword() (usada por un
-    // administrador al resetear), esta marca
-    // debe_cambiar_password = 0, porque el usuario ya
-    // definió su contraseña definitiva.
     // ======================================================
 
     async actualizarPasswordPropia(id, passwordHash) {
-
         const sql = `
             UPDATE usuarios
             SET
-
                 password = ?,
-
-                debe_cambiar_password = 0,
-
+                debe_cambiar_password = false,
                 ultimo_cambio_password = ?,
-
                 intentos_fallidos = 0,
-
                 bloqueado_hasta = NULL
-
             WHERE id = ?
         `;
 
-        await this.ejecutar(
-
-            sql,
-
-            [
-
-                passwordHash,
-
-                generarFechaColombia(),
-
-                id
-
-            ]
-
-        );
+        await this.ejecutar(sql, [
+            passwordHash,
+            generarFechaColombia(),
+            id
+        ]);
 
         return true;
-
     }
 
-// ======================================================
-// ACTUALIZAR ÚLTIMO ACCESO
-// ======================================================
+    // ======================================================
+    // ACTUALIZAR ÚLTIMO ACCESO
+    // ======================================================
 
-async actualizarUltimoAcceso(id) {
+    async actualizarUltimoAcceso(id) {
+        const sql = `
+            UPDATE usuarios
+            SET ultimo_acceso = ?
+            WHERE id = ?
+        `;
 
-    const sql = `
-        UPDATE usuarios
-        SET ultimo_acceso = ?
-        WHERE id = ?
-    `;
+        await this.ejecutar(sql, [generarFechaColombia(), id]);
 
-    await this.ejecutar(sql, [generarFechaColombia(), id]);
-
-    return true;
+        return true;
+    }
 }
-}
+
 module.exports = new UsuariosRepository();

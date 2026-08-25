@@ -3,91 +3,56 @@ const db = require("../config/db");
 class MovimientosRepository {
 
     // ======================================================
-// EJECUTAR CONSULTAS MYSQL
-// ======================================================
+    // EJECUTAR CONSULTAS POSTGRESQL (SUPABASE)
+    // ======================================================
 
-ejecutar(sql, parametros = []) {
+    async ejecutar(sql, parametros = []) {
+        // Convertir signos '?' de MySQL a '$1, $2, $3...' de PostgreSQL
+        let index = 1;
+        const sqlPostgres = sql.replace(/\?/g, () => `$${index++}`);
 
-    return new Promise((resolve, reject) => {
+        try {
+            const resultado = await db.query(sqlPostgres, parametros);
 
-        db.query(sql, parametros, (error, resultado) => {
-
-            if (error) {
-                return reject(error);
+            // Si es un SELECT o consulta que retorna filas
+            if (resultado.rows) {
+                return resultado.rows;
             }
 
-            // ==========================================
-            // NORMALIZAR FECHAS MYSQL -> HORA COLOMBIA
-            // ==========================================
+            return resultado;
+        } catch (error) {
+            console.error("❌ Error ejecutando SQL en PostgreSQL:", error);
+            throw error;
+        }
+    }
 
-            const normalizar = (fila) => {
+    // ======================================================
+    // OBTENER CONFIGURACIÓN
+    // ======================================================
 
-                for (const campo in fila) {
+    async obtenerConfiguracion() {
+        const sql = `
+            SELECT
+                break_max,
+                almuerzo_max,
+                bano_max,
+                capacitacion_max,
+                reunion_max
+            FROM configuracion
+            WHERE id = 1
+            LIMIT 1
+        `;
 
-                    if (fila[campo] instanceof Date) {
+        const filas = await this.ejecutar(sql);
 
-                        const fecha = fila[campo];
-
-                        fecha.setHours(
-                            fecha.getHours() - 5
-                        );
-
-                    }
-
-                }
-
-                return fila;
-
-            };
-
-            if (Array.isArray(resultado)) {
-
-                resolve(resultado.map(normalizar));
-
-            } else {
-
-                resolve(resultado);
-
-            }
-
-        });
-
-    });
-
-}
-
-// ======================================================
-// OBTENER CONFIGURACIÓN
-// ======================================================
-
-async obtenerConfiguracion() {
-
-    const sql = `
-        SELECT
-            break_max,
-            almuerzo_max,
-            bano_max,
-            capacitacion_max,
-            reunion_max
-        FROM configuracion
-        WHERE id = 1
-        LIMIT 1
-    `;
-
-    const filas = await this.ejecutar(sql);
-
-    return filas.length
-        ? filas[0]
-        : null;
-
-}
+        return filas.length ? filas[0] : null;
+    }
 
     // ======================================================
     // OBTENER ASESOR
     // ======================================================
 
     async obtenerAsesor(id) {
-
         const sql = `
             SELECT
                 id,
@@ -100,10 +65,7 @@ async obtenerConfiguracion() {
 
         const filas = await this.ejecutar(sql, [id]);
 
-        return filas.length
-            ? filas[0]
-            : null;
-
+        return filas.length ? filas[0] : null;
     }
 
     // ======================================================
@@ -111,125 +73,46 @@ async obtenerConfiguracion() {
     // ======================================================
 
     async obtenerEstadoActual(asesorId) {
-
         const sql = `
             SELECT
-
                 asesor_id,
-
                 estado,
-
-                DATE_FORMAT(
-                    inicio_estado,
-                    '%Y-%m-%d %H:%i:%s'
-                ) AS inicio_estado,
-
-                DATE_FORMAT(
-                    inicio_jornada,
-                    '%Y-%m-%d %H:%i:%s'
-                ) AS inicio_jornada,
-
-                DATE_FORMAT(
-                    ultima_actualizacion,
-                    '%Y-%m-%d %H:%i:%s'
-                ) AS ultima_actualizacion
-
+                TO_CHAR(inicio_estado, 'YYYY-MM-DD HH24:MI:SS') AS inicio_estado,
+                TO_CHAR(inicio_jornada, 'YYYY-MM-DD HH24:MI:SS') AS inicio_jornada,
+                TO_CHAR(ultima_actualizacion, 'YYYY-MM-DD HH24:MI:SS') AS ultima_actualizacion
             FROM estados_actuales
-
             WHERE asesor_id = ?
-
             LIMIT 1
         `;
 
-        const filas = await this.ejecutar(
-            sql,
-            [asesorId]
-        );
+        const filas = await this.ejecutar(sql, [asesorId]);
 
-        return filas.length
-            ? filas[0]
-            : null;
-
+        return filas.length ? filas[0] : null;
     }
 
-// ======================================================
-// CREAR ESTADO ACTUAL
-// ======================================================
+    // ======================================================
+    // CREAR ESTADO ACTUAL
+    // ======================================================
 
-async crearEstadoActual(
+    async crearEstadoActual(asesorId, estado, inicioEstado, inicioJornada) {
+        if (!asesorId) throw new Error("El asesor es obligatorio para crear el estado actual.");
+        if (!estado) throw new Error("El estado es obligatorio para crear el estado actual.");
+        if (!inicioEstado) throw new Error("La fecha de inicio del estado es obligatoria.");
+        if (!inicioJornada) throw new Error("La fecha de inicio de jornada es obligatoria.");
 
-    asesorId,
-    estado,
-    inicioEstado,
-    inicioJornada
+        const sql = `
+            INSERT INTO estados_actuales (
+                asesor_id,
+                estado,
+                inicio_estado,
+                inicio_jornada,
+                ultima_actualizacion
+            )
+            VALUES (?, ?, ?, ?, ?)
+        `;
 
-) {
-
-    // --------------------------------------------------
-    // VALIDACIONES
-    // --------------------------------------------------
-
-    if (!asesorId) {
-
-        throw new Error(
-            "El asesor es obligatorio para crear el estado actual."
-        );
-
-    }
-
-    if (!estado) {
-
-        throw new Error(
-            "El estado es obligatorio para crear el estado actual."
-        );
-
-    }
-
-    if (!inicioEstado) {
-
-        throw new Error(
-            "La fecha de inicio del estado es obligatoria."
-        );
-
-    }
-
-    if (!inicioJornada) {
-
-        throw new Error(
-            "La fecha de inicio de jornada es obligatoria."
-        );
-
-    }
-
-    // --------------------------------------------------
-    // SQL
-    // --------------------------------------------------
-
-    const sql = `
-
-        INSERT INTO estados_actuales (
-
-            asesor_id,
-            estado,
-            inicio_estado,
-            inicio_jornada,
-            ultima_actualizacion
-
-        )
-
-        VALUES (?, ?, ?, ?, ?)
-
-    `;
-
-    // --------------------------------------------------
-    // EJECUTAR
-    // --------------------------------------------------
-
-     const formatearFecha = (fecha) => {
-
-        return new Intl.DateTimeFormat(
-            "sv-SE",
-            {
+        const formatearFecha = (fecha) => {
+            return new Intl.DateTimeFormat("sv-SE", {
                 timeZone: "America/Bogota",
                 year: "numeric",
                 month: "2-digit",
@@ -238,132 +121,67 @@ async crearEstadoActual(
                 minute: "2-digit",
                 second: "2-digit",
                 hour12: false
-            }
-        )
-            .format(fecha)
-            .replace(",", "");
+            }).format(fecha).replace(",", "");
+        };
 
-    };
+        const inicioEstadoMysql = formatearFecha(inicioEstado);
+        const inicioJornadaMysql = formatearFecha(inicioJornada);
 
-    const inicioEstadoMysql =
-        formatearFecha(inicioEstado);
-
-    const inicioJornadaMysql =
-        formatearFecha(inicioJornada);
-
-    return await this.ejecutar(
-
-        sql,
-
-        [
-
+        return await this.ejecutar(sql, [
             asesorId,
             estado,
             inicioEstadoMysql,
             inicioJornadaMysql,
             inicioEstadoMysql
-
-        ]
-
-    );
-
-}
-
-// ======================================================
-// CREAR RESUMEN DEL DÍA
-// ======================================================
-
-async crearResumenDia(asesorId, fechaHora) {
-
-    const sql = `
-        INSERT INTO resumen_jornada (
-
-            asesor_id,
-            fecha,
-            hora_entrada,
-
-            tiempo_trabajado,
-            tiempo_break,
-            tiempo_almuerzo,
-            tiempo_bano,
-            tiempo_capacitacion,
-            tiempo_reunion,
-            tiempo_productivo,
-
-            llego_tarde,
-            minutos_retraso
-
-        )
-
-        VALUES (
-
-            ?,
-            DATE(?),
-            ?,
-
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-
-            0,
-            0
-
-        )
-    `;
-
-    return await this.ejecutar(sql, [
-        asesorId,
-        fechaHora,
-        fechaHora
-    ]);
-
-}
-// ======================================================
-// ACTUALIZAR ESTADO ACTUAL
-// ======================================================
-
-async actualizarEstadoActual(
-    asesorId,
-    estado,
-    inicioEstado,
-    inicioJornada = null
-) {
-
-    // ===========================================
-    // VALIDACIONES
-    // ===========================================
-
-    if (!asesorId) {
-        throw new Error(
-            "El asesor es obligatorio para actualizar el estado."
-        );
+        ]);
     }
 
-    if (!estado) {
-        throw new Error(
-            "El estado es obligatorio."
-        );
+    // ======================================================
+    // CREAR RESUMEN DEL DÍA
+    // ======================================================
+
+    async crearResumenDia(asesorId, fechaHora) {
+        const sql = `
+            INSERT INTO resumen_jornada (
+                asesor_id,
+                fecha,
+                hora_entrada,
+                tiempo_trabajado,
+                tiempo_break,
+                tiempo_almuerzo,
+                tiempo_bano,
+                tiempo_capacitacion,
+                tiempo_reunion,
+                tiempo_productivo,
+                llego_tarde,
+                minutos_retraso
+            )
+            VALUES (
+                ?,
+                ?::date,
+                ?,
+                0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+        `;
+
+        return await this.ejecutar(sql, [
+            asesorId,
+            fechaHora,
+            fechaHora
+        ]);
     }
 
-    if (!inicioEstado) {
-        throw new Error(
-            "La fecha de inicio del estado es obligatoria."
-        );
-    }
+    // ======================================================
+    // ACTUALIZAR ESTADO ACTUAL
+    // ======================================================
 
-    // ===========================================
-    // FORMATEAR FECHAS PARA MYSQL
-    // ===========================================
+    async actualizarEstadoActual(asesorId, estado, inicioEstado, inicioJornada = null) {
+        if (!asesorId) throw new Error("El asesor es obligatorio para actualizar el estado.");
+        if (!estado) throw new Error("El estado es obligatorio.");
+        if (!inicioEstado) throw new Error("La fecha de inicio del estado es obligatoria.");
 
-     const formatearFecha = (fecha) => {
-
-        return new Intl.DateTimeFormat(
-            "sv-SE",
-            {
+        const formatearFecha = (fecha) => {
+            return new Intl.DateTimeFormat("sv-SE", {
                 timeZone: "America/Bogota",
                 year: "numeric",
                 month: "2-digit",
@@ -372,204 +190,137 @@ async actualizarEstadoActual(
                 minute: "2-digit",
                 second: "2-digit",
                 hour12: false
-            }
-        )
-            .format(fecha)
-            .replace(",", "");
+            }).format(fecha).replace(",", "");
+        };
 
-    };
+        const inicioEstadoMysql = formatearFecha(inicioEstado);
+        const inicioJornadaMysql = inicioJornada ? formatearFecha(inicioJornada) : null;
 
-    const inicioEstadoMysql =
-        formatearFecha(inicioEstado);
+        if (inicioJornadaMysql !== null) {
+            const sql = `
+                UPDATE estados_actuales
+                SET
+                    estado = ?,
+                    inicio_estado = ?,
+                    inicio_jornada = ?,
+                    ultima_actualizacion = ?
+                WHERE asesor_id = ?
+            `;
 
-    const inicioJornadaMysql =
-        inicioJornada
-            ? formatearFecha(inicioJornada)
-            : null;
-
-    // ===========================================
-    // NUEVA JORNADA
-    // ===========================================
-
-    if (inicioJornadaMysql !== null) {
-
-        console.log("=================================");
-        console.log("DEBUG ACTUALIZAR ESTADO ACTUAL");
-        console.log("asesorId:", asesorId);
-        console.log("estado:", estado);
-        console.log("inicioEstado recibido:", inicioEstado);
-        console.log("inicioJornada recibido:", inicioJornada);
-        console.log("inicioEstadoMysql:", inicioEstadoMysql);
-        console.log("inicioJornadaMysql:", inicioJornadaMysql);
-        console.log("=================================");
-
-        const sql = `
-
-            UPDATE estados_actuales
-
-            SET
-                estado = ?,
-                inicio_estado = ?,
-                inicio_jornada = ?,
-                ultima_actualizacion = ?
-
-            WHERE asesor_id = ?
-
-        `;
-
-        return await this.ejecutar(
-            sql,
-            [
+            return await this.ejecutar(sql, [
                 estado,
                 inicioEstadoMysql,
                 inicioJornadaMysql,
                 inicioEstadoMysql,
                 asesorId
-            ]
-        );
+            ]);
+        }
 
-    }
+        const sql = `
+            UPDATE estados_actuales
+            SET
+                estado = ?,
+                inicio_estado = ?,
+                ultima_actualizacion = ?
+            WHERE asesor_id = ?
+        `;
 
-    // ===========================================
-    // CAMBIO DE ESTADO
-    // ===========================================
-
-    const sql = `
-
-        UPDATE estados_actuales
-
-        SET
-            estado = ?,
-            inicio_estado = ?,
-            ultima_actualizacion = ?
-
-        WHERE asesor_id = ?
-
-    `;
-
-    return await this.ejecutar(
-        sql,
-        [
+        return await this.ejecutar(sql, [
             estado,
             inicioEstadoMysql,
             inicioEstadoMysql,
             asesorId
-        ]
-    );
-
-}
-
-// ======================================================
-// ACTUALIZAR RESUMEN DEL DÍA
-// ======================================================
-
-async actualizarResumenDia(id, datos) {
-
-    const sql = `
-        UPDATE resumen_jornada
-        SET
-
-            hora_entrada = ?,
-            hora_salida = ?,
-
-            tiempo_trabajado = ?,
-            tiempo_break = ?,
-            tiempo_almuerzo = ?,
-            tiempo_bano = ?,
-            tiempo_capacitacion = ?,
-            tiempo_reunion = ?,
-            tiempo_productivo = ?,
-
-            llego_tarde = ?,
-            minutos_retraso = ?
-
-        WHERE id = ?
-    `;
-
-    return await this.ejecutar(sql, [
-
-        datos.hora_entrada,
-        datos.hora_salida,
-
-        datos.tiempo_trabajado,
-        datos.tiempo_break,
-        datos.tiempo_almuerzo,
-        datos.tiempo_bano,
-        datos.tiempo_capacitacion,
-        datos.tiempo_reunion,
-        datos.tiempo_productivo,
-
-        datos.llego_tarde,
-        datos.minutos_retraso,
-
-        id
-
-    ]);
-
+        ]);
     }
-// ======================================================
-// ELIMINAR ESTADO ACTUAL
-// ======================================================
 
-async eliminarEstadoActual(asesorId) {
+    // ======================================================
+    // ACTUALIZAR RESUMEN DEL DÍA
+    // ======================================================
 
-    const sql = `
-        DELETE
-        FROM estados_actuales
-        WHERE asesor_id = ?
-    `;
+    async actualizarResumenDia(id, datos) {
+        const sql = `
+            UPDATE resumen_jornada
+            SET
+                hora_entrada = ?,
+                hora_salida = ?,
+                tiempo_trabajado = ?,
+                tiempo_break = ?,
+                tiempo_almuerzo = ?,
+                tiempo_bano = ?,
+                tiempo_capacitacion = ?,
+                tiempo_reunion = ?,
+                tiempo_productivo = ?,
+                llego_tarde = ?,
+                minutos_retraso = ?
+            WHERE id = ?
+        `;
 
-    return await this.ejecutar(sql, [
-        asesorId
-    ]);
+        return await this.ejecutar(sql, [
+            datos.hora_entrada,
+            datos.hora_salida,
+            datos.tiempo_trabajado,
+            datos.tiempo_break,
+            datos.tiempo_almuerzo,
+            datos.tiempo_bano,
+            datos.tiempo_capacitacion,
+            datos.tiempo_reunion,
+            datos.tiempo_productivo,
+            datos.llego_tarde,
+            datos.minutos_retraso,
+            id
+        ]);
+    }
 
-}
+    // ======================================================
+    // ELIMINAR ESTADO ACTUAL
+    // ======================================================
 
-// ======================================================
-// OBTENER HISTORIAL
-// ======================================================
+    async eliminarEstadoActual(asesorId) {
+        const sql = `
+            DELETE FROM estados_actuales
+            WHERE asesor_id = ?
+        `;
 
-async obtenerHistorial(asesorId) {
+        return await this.ejecutar(sql, [asesorId]);
+    }
 
-    const sql = `
-        SELECT
-            id,
-            tipo,
-            fecha_hora,
-            observacion
-        FROM movimientos
-        WHERE asesor_id = ?
-        ORDER BY fecha_hora DESC,id DESC
-    `;
+    // ======================================================
+    // OBTENER HISTORIAL
+    // ======================================================
 
-    return await this.ejecutar(sql, [
-        asesorId
-    ]);
+    async obtenerHistorial(asesorId) {
+        const sql = `
+            SELECT
+                id,
+                tipo,
+                TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
+                observacion
+            FROM movimientos
+            WHERE asesor_id = ?
+            ORDER BY fecha_hora DESC, id DESC
+        `;
 
-}
+        return await this.ejecutar(sql, [asesorId]);
+    }
 
-// ======================================================
-// OBTENER RESUMEN DE JORNADA
-// ======================================================
+    // ======================================================
+    // OBTENER RESUMEN DE JORNADA
+    // ======================================================
 
-async obtenerResumenJornada(asesorId) {
+    async obtenerResumenJornada(asesorId) {
+        return await this.obtenerResumenDia(asesorId);
+    }
 
-    return await this.obtenerResumenDia(
-        asesorId
-    );
-
-}
     // ======================================================
     // OBTENER ÚLTIMO MOVIMIENTO
     // ======================================================
 
     async obtenerUltimoMovimiento(asesorId) {
-
         const sql = `
             SELECT
                 id,
                 tipo,
-                fecha_hora,
+                TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
                 observacion
             FROM movimientos
             WHERE asesor_id = ?
@@ -580,446 +331,148 @@ async obtenerResumenJornada(asesorId) {
         const filas = await this.ejecutar(sql, [asesorId]);
 
         return filas.length ? filas[0] : null;
-
     }
-// ======================================================
-// INSERTAR MOVIMIENTO
-// ======================================================
 
-async insertarMovimiento(
-    asesorId,
-    tipo,
-    fechaHora = new Date(),
-    observacion = null
-) {
+    // ======================================================
+    // INSERTAR MOVIMIENTO
+    // ======================================================
 
-    // ==================================================
-    // CONVERTIR INSTANTE REAL -> HORA COLOMBIA
-    // PARA MYSQL DATETIME
-    // ==================================================
+    async insertarMovimiento(asesorId, tipo, fechaHora = new Date(), observacion = null) {
+        const fechaMysql = new Intl.DateTimeFormat("sv-SE", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        }).format(fechaHora).replace(",", "");
 
-    const fechaMysql =
-        new Intl.DateTimeFormat(
-            "sv-SE",
-            {
-                timeZone: "America/Bogota",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false
-            }
-        )
-        .format(fechaHora)
-        .replace(",", "");
+        const sql = `
+            INSERT INTO movimientos (
+                asesor_id,
+                tipo,
+                fecha_hora,
+                observacion
+            )
+            VALUES (?, ?, ?, ?)
+        `;
 
-
-    console.log(
-        "=========================================="
-    );
-
-    console.log(
-        "📝 INSERTANDO MOVIMIENTO"
-    );
-
-    console.log(
-        "ASESOR:",
-        asesorId
-    );
-
-    console.log(
-        "TIPO:",
-        tipo
-    );
-
-    console.log(
-        "DATE ORIGINAL:",
-        fechaHora
-    );
-
-    console.log(
-        "DATE ISO:",
-        fechaHora.toISOString()
-    );
-
-    console.log(
-        "HORA COLOMBIA MYSQL:",
-        fechaMysql
-    );
-
-    console.log(
-        "=========================================="
-    );
-
-
-    const sql = `
-
-        INSERT INTO movimientos (
-
-            asesor_id,
-
-            tipo,
-
-            fecha_hora,
-
-            observacion
-
-        )
-
-        VALUES (?, ?, ?, ?)
-
-    `;
-
-
-    return await this.ejecutar(
-        sql,
-        [
+        return await this.ejecutar(sql, [
             asesorId,
             tipo,
             fechaMysql,
             observacion
-        ]
-    );
-
-}
-// ======================================================
-// OBTENER MOVIMIENTOS DEL DÍA ACTUAL - COLOMBIA
-// ======================================================
-
-async obtenerMovimientosDelDia(asesorId) {
-
-    // --------------------------------------------------
-    // VALIDACIÓN
-    // --------------------------------------------------
-
-    if (!asesorId) {
-
-        throw new Error(
-            "El asesor es obligatorio."
-        );
-
+        ]);
     }
 
-    // --------------------------------------------------
-    // FECHA ACTUAL EN COLOMBIA
-    // --------------------------------------------------
+    // ======================================================
+    // OBTENER MOVIMIENTOS DEL DÍA ACTUAL - COLOMBIA
+    // ======================================================
 
-    const sql = `
+    async obtenerMovimientosDelDia(asesorId) {
+        if (!asesorId) throw new Error("El asesor es obligatorio.");
 
-        SELECT
+        const sql = `
+            SELECT
+                id,
+                tipo,
+                TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
+                observacion
+            FROM movimientos
+            WHERE
+                asesor_id = ?
+                AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+                AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
+                AND fecha_hora <= (NOW() AT TIME ZONE 'America/Bogota')
+            ORDER BY
+                fecha_hora ASC,
+                id ASC
+        `;
 
-            id,
-
-            tipo,
-
-            DATE_FORMAT(
-                fecha_hora,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS fecha_hora,
-
-            observacion
-
-        FROM movimientos
-
-        WHERE
-
-            asesor_id = ?
-
-            AND fecha_hora >= DATE(
-                CONVERT_TZ(
-                    UTC_TIMESTAMP(),
-                    '+00:00',
-                    '-05:00'
-                )
-            )
-
-            AND fecha_hora < DATE(
-                CONVERT_TZ(
-                    UTC_TIMESTAMP(),
-                    '+00:00',
-                    '-05:00'
-                )
-            ) + INTERVAL 1 DAY
-
-            -- ==========================================
-            -- IMPORTANTE:
-            -- NO PERMITIR MOVIMIENTOS FUTUROS
-            -- ==========================================
-
-            AND fecha_hora <= CONVERT_TZ(
-                UTC_TIMESTAMP(),
-                '+00:00',
-                '-05:00'
-            )
-
-        ORDER BY
-
-            fecha_hora ASC,
-
-            id ASC
-
-    `;
-
-    const movimientos =
-        await this.ejecutar(
-            sql,
-            [asesorId]
-        );
-
-    return movimientos;
-
-}
-
-// ======================================================
-// OBTENER RESUMEN DEL DÍA
-// ======================================================
-
-async obtenerResumenDia(asesorId) {
-
-    // --------------------------------------------------
-    // VALIDACIÓN
-    // --------------------------------------------------
-
-    if (!asesorId) {
-
-        throw new Error(
-            "El asesor es obligatorio."
-        );
-
+        return await this.ejecutar(sql, [asesorId]);
     }
 
-    // ==================================================
-    // RESUMEN DE LA JORNADA ACTUAL
-    // ==================================================
-
-    const resumenSQL = `
-
-        SELECT
-
-            id,
-
-            asesor_id,
-
-            DATE_FORMAT(
-                fecha,
-                '%Y-%m-%d'
-            ) AS fecha,
-
-            DATE_FORMAT(
-                hora_entrada,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS hora_entrada,
-
-            DATE_FORMAT(
-                hora_salida,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS hora_salida,
-
-            tiempo_trabajado,
-
-            tiempo_break,
-
-            tiempo_almuerzo,
-
-            tiempo_bano,
-
-            tiempo_capacitacion,
-
-            tiempo_reunion,
-
-            tiempo_productivo,
-
-            llego_tarde,
-
-            minutos_retraso,
-
-            created_at
-
-        FROM resumen_jornada
-
-        WHERE
-
-            asesor_id = ?
-
-            AND fecha = DATE(
-                CONVERT_TZ(
-                    UTC_TIMESTAMP(),
-                    '+00:00',
-                    '-05:00'
-                )
-            )
-
-        ORDER BY id DESC
-
-        LIMIT 1
-
-    `;
-
-
-    // ==================================================
-    // ASESOR
-    // ==================================================
-
-    const asesorSQL = `
-
-        SELECT
-
-            id,
-
-            nombre
-
-        FROM asesores
-
-        WHERE id = ?
-
-        LIMIT 1
-
-    `;
-
-
-    // ==================================================
-    // ESTADO ACTUAL
-    // ==================================================
-
-    const estadoSQL = `
-
-        SELECT
-
-            estado,
-
-            DATE_FORMAT(
-                inicio_estado,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS inicio_estado,
-
-            DATE_FORMAT(
-                inicio_jornada,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS inicio_jornada
-
-        FROM estados_actuales
-
-        WHERE asesor_id = ?
-
-        LIMIT 1
-
-    `;
-
-
-    // ==================================================
-    // MOVIMIENTOS DE LA JORNADA ACTUAL
-    //
-    // IMPORTANTE:
-    // Aquí también usamos explícitamente la fecha
-    // de Colombia para evitar que Railway/UTC mezcle
-    // movimientos de otro día.
-    // ==================================================
-
-    const movimientosSQL = `
-
-        SELECT
-
-            id,
-
-            tipo,
-
-            DATE_FORMAT(
-                fecha_hora,
-                '%Y-%m-%d %H:%i:%s'
-            ) AS fecha_hora,
-
-            observacion
-
-        FROM movimientos
-
-        WHERE
-
-            asesor_id = ?
-
-            AND fecha_hora >= DATE(
-                CONVERT_TZ(
-                    UTC_TIMESTAMP(),
-                    '+00:00',
-                    '-05:00'
-                )
-            )
-
-            AND fecha_hora < DATE(
-                CONVERT_TZ(
-                    UTC_TIMESTAMP(),
-                    '+00:00',
-                    '-05:00'
-                )
-            ) + INTERVAL 1 DAY
-
-        ORDER BY
-
-            fecha_hora ASC,
-
-            id ASC
-
-    `;
-
-
-    // ==================================================
-    // EJECUTAR CONSULTAS
-    // ==================================================
-
-    const resumen =
-        await this.ejecutar(
-            resumenSQL,
-            [asesorId]
-        );
-
-    if (!resumen.length) {
-
-        return null;
-
+    // ======================================================
+    // OBTENER RESUMEN DEL DÍA
+    // ======================================================
+
+    async obtenerResumenDia(asesorId) {
+        if (!asesorId) throw new Error("El asesor es obligatorio.");
+
+        const resumenSQL = `
+            SELECT
+                id,
+                asesor_id,
+                TO_CHAR(fecha, 'YYYY-MM-DD') AS fecha,
+                TO_CHAR(hora_entrada, 'YYYY-MM-DD HH24:MI:SS') AS hora_entrada,
+                TO_CHAR(hora_salida, 'YYYY-MM-DD HH24:MI:SS') AS hora_salida,
+                tiempo_trabajado,
+                tiempo_break,
+                tiempo_almuerzo,
+                tiempo_bano,
+                tiempo_capacitacion,
+                tiempo_reunion,
+                tiempo_productivo,
+                llego_tarde,
+                minutos_retraso,
+                created_at
+            FROM resumen_jornada
+            WHERE
+                asesor_id = ?
+                AND fecha = (NOW() AT TIME ZONE 'America/Bogota')::date
+            ORDER BY id DESC
+            LIMIT 1
+        `;
+
+        const asesorSQL = `
+            SELECT id, nombre
+            FROM asesores
+            WHERE id = ?
+            LIMIT 1
+        `;
+
+        const estadoSQL = `
+            SELECT
+                estado,
+                TO_CHAR(inicio_estado, 'YYYY-MM-DD HH24:MI:SS') AS inicio_estado,
+                TO_CHAR(inicio_jornada, 'YYYY-MM-DD HH24:MI:SS') AS inicio_jornada
+            FROM estados_actuales
+            WHERE asesor_id = ?
+            LIMIT 1
+        `;
+
+        const movimientosSQL = `
+            SELECT
+                id,
+                tipo,
+                TO_CHAR(fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
+                observacion
+            FROM movimientos
+            WHERE
+                asesor_id = ?
+                AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+                AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
+            ORDER BY
+                fecha_hora ASC,
+                id ASC
+        `;
+
+        const resumen = await this.ejecutar(resumenSQL, [asesorId]);
+        if (!resumen.length) return null;
+
+        const asesor = await this.ejecutar(asesorSQL, [asesorId]);
+        const estado = await this.ejecutar(estadoSQL, [asesorId]);
+        const movimientos = await this.ejecutar(movimientosSQL, [asesorId]);
+
+        return {
+            ...resumen[0],
+            asesor: asesor[0] || null,
+            jornada: estado[0] || null,
+            movimientos
+        };
     }
-
-
-    const asesor =
-        await this.ejecutar(
-            asesorSQL,
-            [asesorId]
-        );
-
-
-    const estado =
-        await this.ejecutar(
-            estadoSQL,
-            [asesorId]
-        );
-
-
-    const movimientos =
-        await this.ejecutar(
-            movimientosSQL,
-            [asesorId]
-        );
-
-
-    // ==================================================
-    // DEVOLVER INFORMACIÓN COMPLETA
-    // ==================================================
-
-    return {
-
-        ...resumen[0],
-
-        asesor:
-            asesor[0] || null,
-
-        jornada:
-            estado[0] || null,
-
-        movimientos
-
-    };
-
 }
 
-}
 module.exports = new MovimientosRepository();

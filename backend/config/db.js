@@ -1,127 +1,69 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
+// ADVISE SOLUTIONS SERVICES
 // TIME MANAGER
-// MYSQL CONNECTION
+// POSTGRESQL (SUPABASE) CONNECTION
 // ======================================================
 
-const mysql = require("mysql2");
+const { Pool } = require("pg");
+require("dotenv").config();
 
 // ======================================================
 // POOL DE CONEXIONES
 // ======================================================
 
-const pool = mysql.createPool({
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Requerido para Supabase
+  },
+  max: 10,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 30000
+});
 
-    host: process.env.DB_HOST,
-
-    port: Number(process.env.DB_PORT),
-
-    user: process.env.DB_USER,
-
-    password: process.env.DB_PASSWORD,
-
-    database: process.env.DB_NAME,
-
-    waitForConnections: true,
-
-    connectionLimit: 10,
-
-    maxIdle: 10,
-
-    idleTimeout: 60000,
-
-    queueLimit: 0,
-
-    enableKeepAlive: true,
-
-    keepAliveInitialDelay: 0,
-
-    connectTimeout: 30000,
-
-    charset: "utf8mb4",
-
-    timezone: "-05:00",
-
-    // Evita conversiones automáticas de fechas
-    dateStrings: true
-
+// Configurar zona horaria automáticamente en cada nueva conexión del pool
+pool.on("connect", async (client) => {
+  try {
+    await client.query("SET TIME ZONE 'America/Bogota';");
+  } catch (err) {
+    console.error("❌ Error configurando la zona horaria en el cliente PostgreSQL:", err);
+  }
 });
 
 // ======================================================
-// VERIFICAR CONEXIÓN
+// VERIFICAR CONEXIÓN Y DIAGNÓSTICO
 // ======================================================
 
-pool.getConnection((err, connection) => {
+(async () => {
+  try {
+    const client = await pool.connect();
+    console.log("✅ Conexión exitosa a PostgreSQL (Supabase)");
 
-    if (err) {
+    const res = await client.query(`
+      SELECT 
+        current_database() AS base,
+        inet_server_addr() AS servidor,
+        inet_server_port() AS puerto,
+        current_user AS usuario,
+        current_setting('TIMEZONE') AS zona_sesion,
+        NOW() AS fecha_postgres,
+        NOW() AT TIME ZONE 'UTC' AS fecha_utc,
+        CURRENT_TIMESTAMP AS timestamp_postgres
+    `);
 
-        console.error("❌ ERROR MYSQL");
-        console.error(err);
-        return;
-
-    }
-
-    connection.query(
-        "SET time_zone='-05:00'",
-        (e) => {
-
-            if (e) {
-
-                console.error("No fue posible cambiar la zona horaria");
-                console.error(e);
-
-            }
-
-            connection.query(
-
-                `
-                SELECT
-
-                    DATABASE() AS base,
-
-                    @@hostname AS servidor,
-
-                    @@port AS puerto,
-
-                    USER() AS usuario,
-
-                    @@system_time_zone AS zona_servidor,
-
-                    @@session.time_zone AS zona_sesion,
-
-                    NOW() AS fecha_mysql,
-
-                    UTC_TIMESTAMP() AS fecha_utc,
-
-                    CURRENT_TIMESTAMP() AS timestamp_mysql
-                `,
-
-                (error, rows) => {
-
-                    if (error) {
-
-                        console.error(error);
-
-                    } else {
-
-                        console.log(rows[0]);
-
-                    }
-
-                    connection.release();
-
-                }
-
-            );
-
-        }
-
-    );
-
-});
+    console.log("📊 Diagnóstico de conexión:", res.rows[0]);
+    client.release();
+  } catch (err) {
+    console.error("❌ ERROR POSTGRESQL (SUPABASE):");
+    console.error(err);
+  }
+})();
 
 // ======================================================
-// EXPORTAR
+// EXPORTAR MÉTODO QUERY Y POOL
 // ======================================================
 
-module.exports = pool;
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+  pool
+};

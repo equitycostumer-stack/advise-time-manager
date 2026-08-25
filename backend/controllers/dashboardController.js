@@ -3,9 +3,9 @@
 // TIME MANAGER
 // Dashboard Controller (PostgreSQL / Supabase)
 // ======================================================
-
+const resumenJornadaService = require("../services/resumenJornadaService");
 const db = require("../config/db");
-const ResumenJornadaService = require("../services/resumenJornadaService");
+
 
 // ======================================================
 // DASHBOARD

@@ -6,25 +6,6 @@
 
 const db = require("../config/db");
 
-// ======================================================
-// GENERAR FECHA EN HORA COLOMBIA
-// ======================================================
-
-function generarFechaColombia() {
-    return new Intl.DateTimeFormat("sv-SE", {
-        timeZone: "America/Bogota",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-    })
-        .format(new Date())
-        .replace(",", "");
-}
-
 class UsuariosRepository {
 
     // ======================================================
@@ -52,18 +33,18 @@ class UsuariosRepository {
     }
 
     // ======================================================
-    // BUSCAR USUARIO POR LOGIN
+    // BUSCAR USUARIO POR LOGIN (USUARIO O EMAIL)
     // ======================================================
 
-    async obtenerPorUsuario(usuario) {
+    async obtenerPorUsuario(usuarioOEmail) {
         const sql = `
             SELECT *
             FROM usuarios
-            WHERE usuario = ?
+            WHERE LOWER(usuario) = LOWER(?) OR LOWER(email) = LOWER(?)
             LIMIT 1
         `;
 
-        const filas = await this.ejecutar(sql, [usuario]);
+        const filas = await this.ejecutar(sql, [usuarioOEmail, usuarioOEmail]);
 
         return filas.length ? filas[0] : null;
     }
@@ -152,11 +133,11 @@ class UsuariosRepository {
         const sql = `
             SELECT id
             FROM usuarios
-            WHERE usuario = ?
+            WHERE LOWER(usuario) = LOWER(?) OR LOWER(email) = LOWER(?)
             LIMIT 1
         `;
 
-        const filas = await this.ejecutar(sql, [usuario]);
+        const filas = await this.ejecutar(sql, [usuario, usuario]);
 
         return filas.length > 0;
     }
@@ -197,7 +178,7 @@ class UsuariosRepository {
             SET
                 password = ?,
                 debe_cambiar_password = true,
-                ultimo_cambio_password = ?,
+                ultimo_cambio_password = NOW(),
                 intentos_fallidos = 0,
                 bloqueado_hasta = NULL
             WHERE id = ?
@@ -205,7 +186,6 @@ class UsuariosRepository {
 
         await this.ejecutar(sql, [
             passwordHash,
-            generarFechaColombia(),
             id
         ]);
 
@@ -222,7 +202,7 @@ class UsuariosRepository {
             SET
                 password = ?,
                 debe_cambiar_password = false,
-                ultimo_cambio_password = ?,
+                ultimo_cambio_password = NOW(),
                 intentos_fallidos = 0,
                 bloqueado_hasta = NULL
             WHERE id = ?
@@ -230,7 +210,6 @@ class UsuariosRepository {
 
         await this.ejecutar(sql, [
             passwordHash,
-            generarFechaColombia(),
             id
         ]);
 
@@ -244,11 +223,11 @@ class UsuariosRepository {
     async actualizarUltimoAcceso(id) {
         const sql = `
             UPDATE usuarios
-            SET ultimo_acceso = ?
+            SET ultimo_acceso = NOW()
             WHERE id = ?
         `;
 
-        await this.ejecutar(sql, [generarFechaColombia(), id]);
+        await this.ejecutar(sql, [id]);
 
         return true;
     }

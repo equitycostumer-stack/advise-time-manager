@@ -14,11 +14,13 @@ export function AuthProvider({ children }) {
     });
 
     async function login(usuarioLogin, password) {
+        // Enviar datos limpios de espacios
+        const bodyData = {
+            usuario: usuarioLogin.trim(), // Cambia 'usuario' por 'username' o 'email' si tu backend lo requiere
+            password: password
+        };
 
-        const { data } = await api.post("/auth/login", {
-            usuario: usuarioLogin,
-            password
-        });
+        const { data } = await api.post("/auth/login", bodyData);
 
         localStorage.setItem("token", data.token);
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
@@ -48,17 +50,11 @@ export function AuthProvider({ children }) {
                 actualizarUsuario
             }}
         >
-
             {children}
-
         </AuthContext.Provider>
-
     );
-
 }
 
 export function useAuth() {
-
     return useContext(AuthContext);
-
 }

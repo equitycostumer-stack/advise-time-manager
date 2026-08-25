@@ -17,15 +17,18 @@ class AuthController {
 
         try {
             // Acepta flexibilización de campos (usuario, email o username)
-            const usuarioParam = req.body.usuario || req.body.email || req.body.username;
+            const rawUsuario = req.body.usuario || req.body.email || req.body.username;
             const passwordParam = req.body.password || req.body.contrasena;
 
-            if (!usuarioParam || !passwordParam) {
+            if (!rawUsuario || !passwordParam) {
                 return res.status(400).json({
                     ok: false,
                     mensaje: "El usuario/correo y la contraseña son requeridos."
                 });
             }
+
+            // Sanitización del nombre de usuario / correo
+            const usuarioParam = String(rawUsuario).trim();
 
             console.log("Llamando AuthService para:", usuarioParam);
 
@@ -46,7 +49,18 @@ class AuthController {
             console.error(error.stack);
             console.error("====================================");
 
-            return res.status(400).json({
+            // Determinar si es un error de autenticación/credenciales o de servidor
+            const mensajeLower = (error.message || "").toLowerCase();
+            const esCredencialInvalida = 
+                mensajeLower.includes("incorrect") || 
+                mensajeLower.includes("inválid") || 
+                mensajeLower.includes("invalida") || 
+                mensajeLower.includes("no encontrado") || 
+                mensajeLower.includes("inactivo");
+
+            const statusCode = error.status || (esCredencialInvalida ? 401 : 500);
+
+            return res.status(statusCode).json({
                 ok: false,
                 mensaje: error.message || "Error al iniciar sesión."
             });
@@ -60,6 +74,13 @@ class AuthController {
         try {
 
             const { passwordActual, passwordNueva } = req.body;
+
+            if (!passwordActual || !passwordNueva) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: "La contraseña actual y la nueva son requeridas."
+                });
+            }
 
             const usuarioId = req.usuario.id;
 
@@ -75,7 +96,7 @@ class AuthController {
 
             console.error(error);
 
-            return res.status(400).json({
+            return res.status(500).json({
                 ok: false,
                 mensaje: error.message || "Error al cambiar contraseña."
             });

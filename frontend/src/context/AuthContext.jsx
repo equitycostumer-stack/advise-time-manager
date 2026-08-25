@@ -4,8 +4,14 @@ import api from "../services/api";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-
-    const [usuario, setUsuario] = useState(null);
+    const [usuario, setUsuario] = useState(() => {
+        try {
+            const guardado = localStorage.getItem("usuario");
+            return guardado ? JSON.parse(guardado) : null;
+        } catch {
+            return null;
+        }
+    });
 
     async function login(usuarioLogin, password) {
 
@@ -23,21 +29,23 @@ export function AuthProvider({ children }) {
     }
 
     function logout() {
-
         localStorage.removeItem("token");
         localStorage.removeItem("usuario");
-
         setUsuario(null);
+    }
 
+    function actualizarUsuario(nuevoUsuario) {
+        localStorage.setItem("usuario", JSON.stringify(nuevoUsuario));
+        setUsuario(nuevoUsuario);
     }
 
     return (
-
         <AuthContext.Provider
             value={{
                 usuario,
                 login,
-                logout
+                logout,
+                actualizarUsuario
             }}
         >
 

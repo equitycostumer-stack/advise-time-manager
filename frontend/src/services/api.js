@@ -62,6 +62,12 @@ api.interceptors.response.use(
 
             localStorage.removeItem("usuario");
 
+            // Forzar recarga para que App.jsx detecte que ya
+            // no hay token y muestre la pantalla de Login
+            // automáticamente, en vez de dejar la app
+            // "congelada" con una sesión inválida.
+            window.location.reload();
+
         }
 
         return Promise.reject(error);

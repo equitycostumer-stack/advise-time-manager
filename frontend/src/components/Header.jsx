@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/Logo.png";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
+
+    const { usuario, logout } = useAuth();
 
     const [fechaHora, setFechaHora] = useState(new Date());
 
@@ -72,6 +75,30 @@ export default function Header() {
                     })}
 
                 </div>
+
+                {usuario && (
+
+                    <button
+                        onClick={() => {
+                            logout();
+                            window.location.reload();
+                        }}
+                        style={{
+                            marginTop: "15px",
+                            padding: "8px 18px",
+                            background: "#dc3545",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            fontSize: "14px"
+                        }}
+                    >
+                        🚪 Cerrar sesión ({usuario.usuario})
+                    </button>
+
+                )}
 
             </div>
 

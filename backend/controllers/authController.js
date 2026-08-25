@@ -47,6 +47,35 @@ class AuthController {
 
     }
 
+    async cambiarPassword(req, res) {
+
+        try {
+
+            const { passwordActual, passwordNueva } = req.body;
+
+            const usuarioId = req.usuario.id;
+
+            const resultado = await authService.cambiarPassword(
+                usuarioId,
+                passwordActual,
+                passwordNueva
+            );
+
+            return res.status(200).json(resultado);
+
+        } catch (error) {
+
+            console.error(error);
+
+            return res.status(400).json({
+                ok: false,
+                mensaje: error.message
+            });
+
+        }
+
+    }
+
 }
 
 module.exports = new AuthController();

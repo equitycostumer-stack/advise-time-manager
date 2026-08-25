@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Login from "./pages/Login";
+import CambiarPassword from "./components/CambiarPassword";
 import { useAuth } from "./context/AuthContext";
 import "./styles/app.css";
 
@@ -75,6 +76,24 @@ function App() {
 
     if (!localStorage.getItem("token")) {
         return <Login />;
+    }
+
+    const usuarioGuardado = (() => {
+        try {
+            const guardado = localStorage.getItem("usuario");
+            return guardado ? JSON.parse(guardado) : null;
+        } catch {
+            return null;
+        }
+    })();
+
+    const debeCambiarPassword =
+        usuario?.debe_cambiar_password ??
+        usuarioGuardado?.debe_cambiar_password ??
+        false;
+
+    if (debeCambiarPassword) {
+        return <CambiarPassword />;
     }
 
     const [asesores, setAsesores] = useState([]);

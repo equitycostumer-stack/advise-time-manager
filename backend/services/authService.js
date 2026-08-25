@@ -4,7 +4,7 @@
 // Auth Service
 // ======================================================
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const usuariosRepository = require("../repositories/usuariosRepository");
@@ -198,6 +198,54 @@ if (!usuarioDB) {
 
             }
 
+        };
+
+    }
+
+    // ======================================================
+    // CAMBIAR CONTRASEÑA (el propio usuario autenticado)
+    // ======================================================
+
+    async cambiarPassword(usuarioId, passwordActual, passwordNueva) {
+
+        if (!passwordActual || !passwordActual.trim()) {
+            throw new Error("Debe ingresar su contraseña actual.");
+        }
+
+        if (!passwordNueva || passwordNueva.trim().length < 6) {
+            throw new Error(
+                "La nueva contraseña debe tener al menos 6 caracteres."
+            );
+        }
+
+        const usuarioDB =
+            await usuariosRepository.obtenerPorId(usuarioId);
+
+        if (!usuarioDB) {
+            throw new Error("El usuario no existe.");
+        }
+
+        const passwordCorrecto =
+            await bcrypt.compare(
+                passwordActual,
+                usuarioDB.password
+            );
+
+        if (!passwordCorrecto) {
+            throw new Error("La contraseña actual es incorrecta.");
+        }
+
+        const passwordHash =
+            await bcrypt.hash(passwordNueva, 10);
+
+        await usuariosRepository.actualizarPasswordPropia(
+            usuarioId,
+            passwordHash
+        );
+
+        return {
+            ok: true,
+            mensaje: "Contraseña actualizada correctamente."
         };
 
     }

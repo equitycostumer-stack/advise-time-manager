@@ -6,6 +6,31 @@
 
 const db = require("../config/db");
 
+// ======================================================
+// GENERAR FECHA EN HORA COLOMBIA
+// (mismo patrón ya validado en el resto del proyecto)
+// ======================================================
+
+function generarFechaColombia() {
+
+    return new Intl.DateTimeFormat(
+        "sv-SE",
+        {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        }
+    )
+        .format(new Date())
+        .replace(",", "");
+
+}
+
 class UsuariosRepository {
 
     // ======================================================
@@ -259,7 +284,7 @@ class UsuariosRepository {
 
                 debe_cambiar_password = 1,
 
-                ultimo_cambio_password = NOW(),
+                ultimo_cambio_password = ?,
 
                 intentos_fallidos = 0,
 
@@ -275,6 +300,56 @@ class UsuariosRepository {
             [
 
                 passwordHash,
+
+                generarFechaColombia(),
+
+                id
+
+            ]
+
+        );
+
+        return true;
+
+    }
+
+    // ======================================================
+    // ACTUALIZAR PASSWORD (CAMBIO PROPIO DEL USUARIO)
+    //
+    // A diferencia de actualizarPassword() (usada por un
+    // administrador al resetear), esta marca
+    // debe_cambiar_password = 0, porque el usuario ya
+    // definió su contraseña definitiva.
+    // ======================================================
+
+    async actualizarPasswordPropia(id, passwordHash) {
+
+        const sql = `
+            UPDATE usuarios
+            SET
+
+                password = ?,
+
+                debe_cambiar_password = 0,
+
+                ultimo_cambio_password = ?,
+
+                intentos_fallidos = 0,
+
+                bloqueado_hasta = NULL
+
+            WHERE id = ?
+        `;
+
+        await this.ejecutar(
+
+            sql,
+
+            [
+
+                passwordHash,
+
+                generarFechaColombia(),
 
                 id
 
@@ -294,11 +369,11 @@ async actualizarUltimoAcceso(id) {
 
     const sql = `
         UPDATE usuarios
-        SET ultimo_acceso = NOW()
+        SET ultimo_acceso = ?
         WHERE id = ?
     `;
 
-    await this.ejecutar(sql, [id]);
+    await this.ejecutar(sql, [generarFechaColombia(), id]);
 
     return true;
 }

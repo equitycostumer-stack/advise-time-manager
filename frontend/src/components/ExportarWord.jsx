@@ -150,12 +150,12 @@ export default function ExportarWord() {
                 dashboardRes,
                 incidenciasRes,
                 ventasDiaRes,
-                ventasAsesoresRes
+                ventasListaRes // Cambiado para obtener las ventas individuales con cliente_id
             ] = await Promise.all([
                 api.get("/dashboard"),
                 api.get("/incidencias"),
                 api.get("/ventas/resumen/dia"),
-                api.get("/ventas/resumen/asesores")
+                api.get("/ventas") // Endpoint que trae el listado detallado de ventas
             ]);
 
             const asesores =
@@ -170,8 +170,10 @@ export default function ExportarWord() {
                 ventasDiaRes.data?.data ||
                 { cantidad_ventas: 0, total_vendido: 0 };
 
-            const ventasPorAsesor =
-                ventasAsesoresRes.data?.data || [];
+            const listaVentas =
+                Array.isArray(ventasListaRes.data)
+                    ? ventasListaRes.data
+                    : (ventasListaRes.data?.data || []);
 
             const llegadasTarde =
                 asesores.filter(a => a.llego_tarde);
@@ -321,12 +323,12 @@ export default function ExportarWord() {
                 new Table({
                     width: { size: 100, type: WidthType.PERCENTAGE },
                     rows: [
-                        filaEncabezado(["Asesor", "Cantidad", "Total vendido"]),
-                        ...ventasPorAsesor.map(v =>
+                        filaEncabezado(["Asesor", "ID Cliente", "Total vendido"]),
+                        ...listaVentas.map(v =>
                             filaDatos([
-                                v.asesor_nombre,
-                                String(v.cantidad_ventas),
-                                formatearMoneda(v.total_vendido)
+                                v.asesor_nombre || v.nombre || "—",
+                                String(v.cliente_id || "—"),
+                                formatearMoneda(v.valor || v.total_vendido || 0)
                             ])
                         )
                     ]

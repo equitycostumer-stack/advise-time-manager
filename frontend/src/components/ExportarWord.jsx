@@ -150,12 +150,12 @@ export default function ExportarWord() {
                 dashboardRes,
                 incidenciasRes,
                 ventasDiaRes,
-                ventasListaRes // Cambiado para obtener las ventas individuales con cliente_id
+                ventasListaRes
             ] = await Promise.all([
                 api.get("/dashboard"),
                 api.get("/incidencias"),
                 api.get("/ventas/resumen/dia"),
-                api.get("/ventas") // Endpoint que trae el listado detallado de ventas
+                api.get("/ventas/dia")
             ]);
 
             const asesores =
@@ -170,10 +170,18 @@ export default function ExportarWord() {
                 ventasDiaRes.data?.data ||
                 { cantidad_ventas: 0, total_vendido: 0 };
 
-            const listaVentas =
-                Array.isArray(ventasListaRes.data)
-                    ? ventasListaRes.data
-                    : (ventasListaRes.data?.data || []);
+            // Extraer de forma segura el listado de ventas independientemente de cómo venga envuelto
+            let listaVentas = [];
+            const rawVentas = ventasListaRes.data;
+            if (Array.isArray(rawVentas)) {
+                listaVentas = rawVentas;
+            } else if (rawVentas?.data && Array.isArray(rawVentas.data)) {
+                listaVentas = rawVentas.data;
+            } else if (rawVentas?.ventas && Array.isArray(rawVentas.ventas)) {
+                listaVentas = rawVentas.ventas;
+            } else {
+                listaVentas = [rawVentas].filter(Boolean);
+            }
 
             const llegadasTarde =
                 asesores.filter(a => a.llego_tarde);
@@ -312,7 +320,7 @@ export default function ExportarWord() {
                 new Paragraph({
                     children: [
                         new TextRun({
-                            text: `Total de ventas: ${ventasDia.cantidad_ventas}   |   Total vendido: ${formatearMoneda(ventasDia.total_vendido)}`,
+                            text: `Total de ventas: ${ventasDia.cantidad_ventas ?? listaVentas.length}   |   Total vendido: ${formatearMoneda(ventasDia.total_vendido)}`,
                             bold: true
                         })
                     ]
@@ -327,8 +335,8 @@ export default function ExportarWord() {
                         ...listaVentas.map(v =>
                             filaDatos([
                                 v.asesor_nombre || v.nombre || "—",
-                                String(v.cliente_id || "—"),
-                                formatearMoneda(v.valor || v.total_vendido || 0)
+                                String(v.cliente_id || v.id_cliente || "—"),
+                                formatearMoneda(v.valor || v.total_vendido || v.monto || 0)
                             ])
                         )
                     ]
@@ -352,9 +360,9 @@ export default function ExportarWord() {
 
         } catch (error) {
 
-            console.error("Error generando Word:", error);
-
-            alert("No fue posible generar el documento Word.");
+            console.error("Error detallado al generar Word:", error.response || error);
+            const mensajeError = error.response?.data?.mensaje || error.response?.data?.error || error.message;
+            alert("No fue posible generar el documento Word. Detalle: " + mensajeError);
 
         } finally {
 

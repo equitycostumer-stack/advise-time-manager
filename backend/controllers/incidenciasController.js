@@ -33,7 +33,7 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
       FROM incidencias
       WHERE asesor_id = $1
         AND tipo = $2
-        AND revisada = 0
+        AND revisada = false
         AND DATE(fecha_hora) = DATE($3)
       LIMIT 1
     `;
@@ -75,7 +75,7 @@ const revisarIncidencia = async (req, res) => {
     const sql = `
   UPDATE incidencias
   SET
-    revisada = 1,
+    revisada = true,
     revisada_por = $1,
     comentario = $2,
     fecha_revision = NOW()

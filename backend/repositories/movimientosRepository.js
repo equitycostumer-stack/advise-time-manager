@@ -252,7 +252,7 @@ class MovimientosRepository {
                 tiempo_capacitacion = ?,
                 tiempo_reunion = ?,
                 tiempo_productivo = ?,
-                llego_tarde = ?,
+                llego_tarde = (?)::boolean,
                 minutos_retraso = ?
             WHERE id = ?
         `;

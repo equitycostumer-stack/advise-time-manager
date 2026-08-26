@@ -3,18 +3,14 @@ const db = require("../config/db");
 class AsesoresRepository {
 
     async ejecutar(sql, parametros = []) {
-        // Convertir signos '?' de MySQL a '$1, $2, $3...' de PostgreSQL
         let index = 1;
         const sqlPostgres = sql.replace(/\?/g, () => `$${index++}`);
 
         try {
             const resultado = await db.query(sqlPostgres, parametros);
-
-            // Retornar las filas si la consulta devuelve un conjunto de datos
             if (resultado.rows) {
                 return resultado.rows;
             }
-
             return resultado;
         } catch (error) {
             console.error("❌ Error ejecutando SQL en PostgreSQL (Asesores):", error);
@@ -23,16 +19,23 @@ class AsesoresRepository {
     }
 
     async obtenerActivos() {
+        // Consulta simplificada para evitar errores de columnas faltantes
         const sql = `
             SELECT
                 id,
-                nombre
+                nombre,
+                activo
             FROM asesores
             WHERE activo = true OR activo = 1
             ORDER BY nombre ASC
         `;
 
-        return await this.ejecutar(sql);
+        try {
+            return await this.ejecutar(sql);
+        } catch (error) {
+            console.error("❌ Detalle exacto en obtenerActivos:", error.message);
+            throw error;
+        }
     }
 
 }

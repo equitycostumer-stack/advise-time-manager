@@ -69,10 +69,10 @@ class ResumenJornadaService {
         // ----------------------------------------------
         let resumen = await movimientosRepository.obtenerResumenDia(asesorId);
 
-        if (!resumen) {
-            await movimientosRepository.crearResumenDia(asesorId);
-            resumen = await movimientosRepository.obtenerResumenDia(asesorId);
-        }
+if (!resumen) {
+    await movimientosRepository.crearResumenDia(asesorId, new Date());
+    resumen = await movimientosRepository.obtenerResumenDia(asesorId);
+}
 
         if (!resumen) {
             throw new Error("No fue posible crear u obtener el resumen de jornada.");

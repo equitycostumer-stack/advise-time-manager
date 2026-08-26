@@ -160,7 +160,7 @@ const anularVenta = async (req, res) => {
         const id = Number(req.params.id);
 
         const resultado =
-            await ventasService.anularVenta(id);
+            await ventasService.anularVenta(id, req.usuario);
 
         return res.status(200).json(resultado);
 
@@ -168,7 +168,9 @@ const anularVenta = async (req, res) => {
 
         console.error(error);
 
-        return res.status(400).json({
+        const statusCode = error.status || 400;
+
+        return res.status(statusCode).json({
             ok: false,
             mensaje: error.message
         });

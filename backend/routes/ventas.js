@@ -7,6 +7,14 @@ const express = require("express");
 const router = express.Router();
 
 const ventasController = require("../controllers/ventasController");
+const verificarToken = require("../middleware/authMiddleware");
+const verificarPropioAsesor = require("../middleware/verificarPropioAsesor");
+
+// ======================================================
+// TODAS LAS RUTAS REQUIEREN SESIÓN VÁLIDA
+// ======================================================
+
+router.use(verificarToken);
 
 // ======================================================
 // IMPORTANTE: las rutas específicas van ANTES que las
@@ -22,7 +30,7 @@ router.get("/resumen/asesores", ventasController.obtenerResumenVentasPorAsesor);
 
 router.get("/asesor/:asesorId", ventasController.obtenerVentasPorAsesor);
 
-router.post("/", ventasController.registrarVenta);
+router.post("/", verificarPropioAsesor, ventasController.registrarVenta);
 
 router.patch("/:id/anular", ventasController.anularVenta);
 

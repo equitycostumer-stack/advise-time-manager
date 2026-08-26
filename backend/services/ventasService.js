@@ -157,7 +157,7 @@ class VentasService {
     // ANULAR VENTA
     // ==================================================
 
-    async anularVenta(id) {
+    async anularVenta(id, usuario = null) {
 
         if (!id) {
             throw new Error("Debe indicar la venta a anular.");
@@ -172,6 +172,24 @@ class VentasService {
 
         if (venta.estado === "ANULADA") {
             throw new Error("La venta ya está anulada.");
+        }
+
+        // ------------------------------------------------
+        // Un ASESOR solo puede anular sus propias ventas.
+        // Un ADMINISTRADOR puede anular cualquiera.
+        // ------------------------------------------------
+        if (usuario && usuario.rol !== "ADMINISTRADOR") {
+
+            if (Number(venta.asesor_id) !== Number(usuario.asesor_id)) {
+
+                const error = new Error(
+                    "No tiene permiso para anular ventas de otro asesor."
+                );
+                error.status = 403;
+                throw error;
+
+            }
+
         }
 
         await ventasRepository.anularVenta(id);

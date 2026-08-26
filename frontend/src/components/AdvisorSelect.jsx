@@ -1,8 +1,32 @@
+import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+
 export default function AdvisorSelect({
     asesores,
     asesor,
     setAsesor
 }) {
+
+    const { usuario } = useAuth();
+
+    const esAsesorRestringido = usuario?.rol === "ASESOR";
+
+    // ======================================================
+    // Si el usuario logueado es un ASESOR, se autoselecciona
+    // y bloquea su propio asesor_id — no puede operar a
+    // nombre de otro compañero.
+    // ======================================================
+    useEffect(() => {
+
+        if (
+            esAsesorRestringido &&
+            usuario?.asesor_id &&
+            asesor !== String(usuario.asesor_id)
+        ) {
+            setAsesor(String(usuario.asesor_id));
+        }
+
+    }, [esAsesorRestringido, usuario, asesor, setAsesor]);
 
     return (
 
@@ -21,6 +45,7 @@ export default function AdvisorSelect({
             <select
                 className="select"
                 value={asesor}
+                disabled={esAsesorRestringido}
                 onChange={(e) => setAsesor(e.target.value)}
             >
 

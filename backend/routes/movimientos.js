@@ -8,13 +8,22 @@ const express = require("express");
 const router = express.Router();
 
 const movimientosController = require("../controllers/movimientosController");
+const verificarToken = require("../middleware/authMiddleware");
+const verificarPropioAsesor = require("../middleware/verificarPropioAsesor");
 
 // ======================================================
-// REGISTRAR MOVIMIENTO
+// TODAS LAS RUTAS REQUIEREN SESIÓN VÁLIDA
+// ======================================================
+
+router.use(verificarToken);
+
+// ======================================================
+// REGISTRAR MOVIMIENTO (protegido: solo tu propio asesor)
 // ======================================================
 
 router.post(
     "/",
+    verificarPropioAsesor,
     movimientosController.registrarMovimiento
 );
 

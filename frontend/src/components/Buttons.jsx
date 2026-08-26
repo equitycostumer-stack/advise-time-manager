@@ -149,41 +149,6 @@ export default function Buttons({
 
 
             // ==================================================
-            // ACTUALIZAR RESUMEN
-            // ==================================================
-
-            if (setResumen) {
-
-                if (
-                    tipo === "SALIDA"
-                ) {
-
-                    setResumen(
-
-                        data?.resumen ||
-
-                        data?.data?.resumen ||
-
-                        null
-
-                    );
-
-                }
-
-                else if (
-                    tipo === "ENTRADA"
-                ) {
-
-                    setResumen(
-                        null
-                    );
-
-                }
-
-            }
-
-
-            // ==================================================
             // ACTUALIZAR INFORMACIÓN
             // ==================================================
 

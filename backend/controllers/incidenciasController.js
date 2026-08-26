@@ -73,14 +73,14 @@ const revisarIncidencia = async (req, res) => {
 
   try {
     const sql = `
-      UPDATE incidencias
-      SET
-        revisada = true,
-        revisada_por = $1,
-        comentario = $2,
-        fecha_revision = NOW()
-      WHERE id = $3
-    `;
+  UPDATE incidencias
+  SET
+    revisada = 1,
+    revisada_por = $1,
+    comentario = $2,
+    fecha_revision = NOW()
+  WHERE id = $3
+`;
 
     await db.query(sql, [coach, comentario, id]);
 

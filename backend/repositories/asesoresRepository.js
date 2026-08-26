@@ -21,14 +21,14 @@ class AsesoresRepository {
     async obtenerActivos() {
         // Consulta simplificada para evitar errores de columnas faltantes
         const sql = `
-            SELECT
-                id,
-                nombre,
-                activo
-            FROM asesores
-            WHERE activo = true OR activo = 1
-            ORDER BY nombre ASC
-        `;
+    SELECT
+        id,
+        nombre,
+        activo
+    FROM asesores
+    WHERE activo = 1
+    ORDER BY nombre ASC
+`;
 
         try {
             return await this.ejecutar(sql);

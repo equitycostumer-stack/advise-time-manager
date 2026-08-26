@@ -42,13 +42,14 @@ class ReportesService {
     }
 
     // ==================================================
-    // VENTAS POR RANGO
+    // VENTAS POR RANGO (Incluye ID de cliente)
     // ==================================================
 
     async obtenerVentas(desde, hasta) {
 
         this.validarRango(desde, hasta);
 
+        // El repositorio ya trae integrado el campo v.cliente_id
         return await reportesRepository.obtenerVentasPorRango(desde, hasta);
 
     }

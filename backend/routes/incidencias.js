@@ -9,7 +9,7 @@ const router = express.Router();
 const db = require("../config/db");
 
 const {
-  revisarIncidencia
+    revisarIncidencia
 } = require("../controllers/incidenciasController");
 
 // ======================================================
@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
     INNER JOIN asesores a
       ON a.id = i.asesor_id
     WHERE
-      i.revisada = false
+      i.revisada = 0
       AND DATE(i.fecha_hora) = CURRENT_DATE
     ORDER BY
       i.fecha_hora DESC

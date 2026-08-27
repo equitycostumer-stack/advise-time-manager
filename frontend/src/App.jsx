@@ -164,9 +164,13 @@ function App() {
     [asesores, asesor]
   );
 
-  // Cargar asesores al montar
+    // Cargar asesores al montar (solo si hay sesión iniciada)
   useEffect(() => {
-    cargarAsesores();
+    if (localStorage.getItem("token")) {
+      cargarAsesores();
+    } else {
+      setCargando(false);
+    }
   }, []);
 
   // Actualizar estado al cambiar el asesor seleccionado

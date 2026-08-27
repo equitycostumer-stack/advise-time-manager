@@ -8,6 +8,10 @@ const router = express.Router();
 
 const reportesController = require("../controllers/reportesController");
 
+const verificarToken = require("../middleware/authMiddleware");
+
+router.use(verificarToken);
+
 router.get("/asistencia", reportesController.obtenerAsistencia);
 
 router.get("/ventas", reportesController.obtenerVentas);

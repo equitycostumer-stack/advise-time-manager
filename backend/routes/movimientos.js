@@ -33,6 +33,7 @@ router.post(
 
 router.get(
     "/estado/:asesorId",
+    verificarPropioAsesor,
     movimientosController.obtenerEstadoActual
 );
 
@@ -42,6 +43,7 @@ router.get(
 
 router.get(
     "/historial/:asesorId",
+    verificarPropioAsesor,
     movimientosController.obtenerHistorial
 );
 
@@ -51,6 +53,7 @@ router.get(
 
 router.get(
     "/resumen/:asesorId",
+    verificarPropioAsesor,
     movimientosController.obtenerResumen
 );
 

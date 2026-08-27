@@ -28,7 +28,7 @@ router.get("/resumen/dia", ventasController.obtenerResumenVentasDelDia);
 
 router.get("/resumen/asesores", ventasController.obtenerResumenVentasPorAsesor);
 
-router.get("/asesor/:asesorId", ventasController.obtenerVentasPorAsesor);
+router.get("/asesor/:asesorId", verificarPropioAsesor, ventasController.obtenerVentasPorAsesor);
 
 router.post("/", verificarPropioAsesor, ventasController.registrarVenta);
 

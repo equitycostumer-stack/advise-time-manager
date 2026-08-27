@@ -17,7 +17,9 @@ const verificarPropioAsesor = (req, res, next) => {
         return next();
     }
 
-    const asesorIdSolicitado = Number(req.body.asesor_id);
+    const asesorIdSolicitado = Number(
+        req.body.asesor_id ?? req.params.asesorId
+    );
     const asesorIdPropio = Number(req.usuario.asesor_id);
 
     if (!asesorIdPropio) {

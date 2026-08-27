@@ -140,6 +140,26 @@ class ResumenJornadaService {
             return { llego_tarde: 0, minutos_retraso: 0 };
         }
 
+        // Validar si la entrada corresponde estrictamente al día de hoy en Colombia
+        const hoyColombia = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(new Date());
+
+        const fechaEntradaColombia = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+        }).format(entrada);
+
+        // Si la entrada no es de hoy, no se considera retraso para el dashboard actual
+        if (fechaEntradaColombia !== hoyColombia) {
+            return { llego_tarde: 0, minutos_retraso: 0 };
+        }
+
         const nombreDia = new Intl.DateTimeFormat("en-US", {
             timeZone: "America/Bogota",
             weekday: "long"
@@ -161,13 +181,6 @@ class ResumenJornadaService {
         if (!horario) {
             return { llego_tarde: 0, minutos_retraso: 0 };
         }
-
-        const fechaEntradaColombia = new Intl.DateTimeFormat("en-CA", {
-            timeZone: "America/Bogota",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit"
-        }).format(entrada);
 
         const horaOficial = new Date(`${fechaEntradaColombia}T${horario.hora_entrada}-05:00`);
         const diferencia = entrada.getTime() - horaOficial.getTime();

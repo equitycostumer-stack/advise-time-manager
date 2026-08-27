@@ -477,8 +477,8 @@ class MovimientosRepository {
     }
 
     // ======================================================
-    // OBTENER MOVIMIENTOS DESDE LA ÚLTIMA ENTRADA
-    // (permite jornadas que cruzan la medianoche)
+    // OBTENER MOVIMIENTOS DESDE LA ÚLTIMA ENTRADA DEL DÍA
+    // (estrictamente de hoy para evitar arrastrar jornadas viejas)
     // ======================================================
 
     async obtenerMovimientosDesdeUltimaEntrada(asesorId) {
@@ -488,7 +488,11 @@ class MovimientosRepository {
             WITH ultima_entrada AS (
                 SELECT fecha_hora
                 FROM movimientos
-                WHERE asesor_id = ? AND tipo = 'ENTRADA'
+                WHERE 
+                    asesor_id = ? 
+                    AND tipo = 'ENTRADA'
+                    AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+                    AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
                 ORDER BY fecha_hora DESC, id DESC
                 LIMIT 1
             )

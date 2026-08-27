@@ -20,26 +20,27 @@ const obtenerDashboard = async (req, res) => {
 
     const sql = `
         SELECT
-    a.id,
-    a.nombre,
-    a.activo,
+            a.id,
+            a.nombre,
+            a.activo,
 
-    COALESCE(
-        e.estado,
-        'DISPONIBLE'
-    ) AS estado,
+            COALESCE(
+                e.estado,
+                'DISPONIBLE'
+            ) AS estado,
 
-    TO_CHAR(e.inicio_estado, 'YYYY-MM-DD HH24:MI:SS') AS inicio_estado,
+            TO_CHAR(e.inicio_estado, 'YYYY-MM-DD HH24:MI:SS') AS inicio_estado,
 
-    TO_CHAR(
-        COALESCE(e.inicio_jornada, j.inicio_jornada),
-        'YYYY-MM-DD HH24:MI:SS'
-    ) AS inicio_jornada
+            TO_CHAR(
+                COALESCE(e.inicio_jornada, j.inicio_jornada),
+                'YYYY-MM-DD HH24:MI:SS'
+            ) AS inicio_jornada
 
         FROM asesores a
 
         LEFT JOIN estados_actuales e
             ON a.id = e.asesor_id
+            AND e.inicio_jornada::date = (NOW() AT TIME ZONE 'America/Bogota')::date
 
         LEFT JOIN (
             SELECT

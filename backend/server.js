@@ -36,7 +36,7 @@ process.on("unhandledRejection", (reason) => {
 console.log("====================================");
 console.log("VARIABLES DE ENTORNO");
 console.log("====================================");
-console.log("JWT_SECRET:", process.env.JWT_SECRET || "NO DEFINIDA");
+console.log("JWT_SECRET:", process.env.JWT_SECRET ? "DEFINIDA ✅" : "NO DEFINIDA ❌");
 console.log("JWT_EXPIRES_IN:", process.env.JWT_EXPIRES_IN || "NO DEFINIDA");
 console.log("PORT:", process.env.PORT || 5000);
 console.log("====================================");

@@ -96,7 +96,7 @@ class AuthController {
 
             console.error(error);
 
-            return res.status(500).json({
+            return res.status(error.status || 500).json({
                 ok: false,
                 mensaje: error.message || "Error al cambiar contraseña."
             });

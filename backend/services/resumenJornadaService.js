@@ -43,36 +43,28 @@ class ResumenJornadaService {
             throw new Error("El asesor es obligatorio.");
         }
 
-        const movimientos = await movimientosRepository.obtenerMovimientosDelDia(asesorId);
+        const movimientos = await movimientosRepository.obtenerMovimientosDesdeUltimaEntrada(asesorId);
 
         if (!Array.isArray(movimientos) || movimientos.length === 0) {
             return;
         }
 
         // ----------------------------------------------
-        // Filtrar a partir de la última ENTRADA registrada
+        // La fecha real de la jornada es la de su ENTRADA,
+        // no la fecha de "hoy" (permite jornadas que cruzan
+        // la medianoche, ej. entra a las 11pm y sale a la 1am)
         // ----------------------------------------------
-        let ultimaEntrada = -1;
-        for (let i = movimientos.length - 1; i >= 0; i--) {
-            if (movimientos[i].tipo === "ENTRADA") {
-                ultimaEntrada = i;
-                break;
-            }
+        const fechaJornada = movimientos[0].fecha_hora;
+
+        // ----------------------------------------------
+        // Obtener o crear resumen de ESA jornada específica
+        // ----------------------------------------------
+        let resumen = await movimientosRepository.obtenerResumenPorFecha(asesorId, fechaJornada);
+
+        if (!resumen) {
+            await movimientosRepository.crearResumenDia(asesorId, fechaJornada);
+            resumen = await movimientosRepository.obtenerResumenPorFecha(asesorId, fechaJornada);
         }
-
-        if (ultimaEntrada > 0) {
-            movimientos.splice(0, ultimaEntrada);
-        }
-
-        // ----------------------------------------------
-        // Obtener o crear resumen activo
-        // ----------------------------------------------
-        let resumen = await movimientosRepository.obtenerResumenDia(asesorId);
-
-if (!resumen) {
-    await movimientosRepository.crearResumenDia(asesorId, new Date());
-    resumen = await movimientosRepository.obtenerResumenDia(asesorId);
-}
 
         if (!resumen) {
             throw new Error("No fue posible crear u obtener el resumen de jornada.");

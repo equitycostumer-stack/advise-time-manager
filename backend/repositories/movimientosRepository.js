@@ -475,6 +475,64 @@ class MovimientosRepository {
             movimientos
         };
     }
+
+    // ======================================================
+    // OBTENER MOVIMIENTOS DESDE LA ÚLTIMA ENTRADA
+    // (permite jornadas que cruzan la medianoche)
+    // ======================================================
+
+    async obtenerMovimientosDesdeUltimaEntrada(asesorId) {
+        if (!asesorId) throw new Error("El asesor es obligatorio.");
+
+        const sql = `
+            WITH ultima_entrada AS (
+                SELECT fecha_hora
+                FROM movimientos
+                WHERE asesor_id = ? AND tipo = 'ENTRADA'
+                ORDER BY fecha_hora DESC, id DESC
+                LIMIT 1
+            )
+            SELECT
+                m.id,
+                m.tipo,
+                TO_CHAR(m.fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
+                m.observacion
+            FROM movimientos m, ultima_entrada u
+            WHERE
+                m.asesor_id = ?
+                AND m.fecha_hora >= u.fecha_hora
+            ORDER BY m.fecha_hora ASC, m.id ASC
+        `;
+
+        return await this.ejecutar(sql, [asesorId, asesorId]);
+    }
+
+    // ======================================================
+    // OBTENER RESUMEN POR FECHA ESPECÍFICA
+    // (en vez de asumir que la jornada es "hoy")
+    // ======================================================
+
+    async obtenerResumenPorFecha(asesorId, fechaHora) {
+        if (!asesorId) throw new Error("El asesor es obligatorio.");
+
+        const sql = `
+            SELECT
+                id, asesor_id,
+                TO_CHAR(fecha, 'YYYY-MM-DD') AS fecha,
+                TO_CHAR(hora_entrada, 'YYYY-MM-DD HH24:MI:SS') AS hora_entrada,
+                TO_CHAR(hora_salida, 'YYYY-MM-DD HH24:MI:SS') AS hora_salida,
+                tiempo_trabajado, tiempo_break, tiempo_almuerzo, tiempo_bano,
+                tiempo_capacitacion, tiempo_reunion, tiempo_productivo,
+                llego_tarde, minutos_retraso, created_at
+            FROM resumen_jornada
+            WHERE asesor_id = ? AND fecha = ?::date
+            ORDER BY id DESC
+            LIMIT 1
+        `;
+
+        const filas = await this.ejecutar(sql, [asesorId, fechaHora]);
+        return filas.length ? filas[0] : null;
+    }
 }
 
 module.exports = new MovimientosRepository();

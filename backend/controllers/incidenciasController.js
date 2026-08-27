@@ -27,13 +27,13 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
   try {
     const fechaHora = generarFechaColombia();
 
-    // Revisa si ya existe una incidencia igual SIN revisar hoy (Sintaxis PostgreSQL)
+    // Revisa si ya existe una incidencia igual SIN revisar hoy (Usando 0 para falso en PostgreSQL)
     const verificar = `
       SELECT id
       FROM incidencias
       WHERE asesor_id = $1
         AND tipo = $2
-        AND revisada = false
+        AND revisada = 0
         AND DATE(fecha_hora) = DATE($3)
       LIMIT 1
     `;
@@ -45,16 +45,17 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
       return;
     }
 
-    // Insertar registro
+    // Insertar registro (por defecto revisada = 0)
     const sql = `
       INSERT INTO incidencias (
         asesor_id,
         tipo,
         nivel,
         detalle,
-        fecha_hora
+        fecha_hora,
+        revisada
       )
-      VALUES ($1, $2, $3, $4, $5)
+      VALUES ($1, $2, $3, $4, $5, 0)
     `;
 
     await db.query(sql, [asesorId, tipo, nivel, detalle, fechaHora]);
@@ -73,14 +74,14 @@ const revisarIncidencia = async (req, res) => {
 
   try {
     const sql = `
-  UPDATE incidencias
-  SET
-    revisada = true,
-    revisada_por = $1,
-    comentario = $2,
-    fecha_revision = NOW()
-  WHERE id = $3
-`;
+      UPDATE incidencias
+      SET
+        revisada = 1,
+        revisada_por = $1,
+        comentario = $2,
+        fecha_revision = NOW()
+      WHERE id = $3
+    `;
 
     await db.query(sql, [coach, comentario, id]);
 

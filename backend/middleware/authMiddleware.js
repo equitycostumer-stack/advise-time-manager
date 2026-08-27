@@ -37,10 +37,7 @@ const verificarToken = (req, res, next) => {
         }
 
         const token = authHeader.split(" ")[1];
-console.log("====================");
-console.log("Authorization:");
-console.log(req.headers.authorization);
-console.log("====================");
+
         const payload = jwt.verify(
             token,
             process.env.JWT_SECRET

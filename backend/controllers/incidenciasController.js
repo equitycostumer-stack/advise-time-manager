@@ -65,6 +65,53 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
 };
 
 // ==============================================
+// REGISTRAR PAUSA DE LLAMADAS (auto-declarada por el asesor)
+// ==============================================
+
+const registrarPausaLlamadas = async (req, res) => {
+  const { asesor_id, motivo, comentario } = req.body;
+
+  if (!asesor_id || !motivo) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "Falta el asesor o el motivo."
+    });
+  }
+
+  try {
+    const fechaHora = generarFechaColombia();
+
+    const sql = `
+      INSERT INTO incidencias (
+        asesor_id,
+        tipo,
+        nivel,
+        detalle,
+        fecha_hora,
+        revisada,
+        revisada_por,
+        comentario,
+        fecha_revision
+      )
+      VALUES ($1, 'PAUSA DE LLAMADAS', 'INFORMATIVA', $2, $3, 1, $4, $5, $3)
+    `;
+
+    await db.query(sql, [asesor_id, motivo, fechaHora, "Auto-registro (asesor)", comentario || null]);
+
+    return res.json({
+      ok: true,
+      mensaje: "Pausa registrada correctamente."
+    });
+  } catch (err) {
+    console.error("❌ Error en registrarPausaLlamadas:", err);
+    return res.status(500).json({
+      ok: false,
+      error: "No fue posible registrar la pausa."
+    });
+  }
+};
+
+// ==============================================
 // REVISAR INCIDENCIA
 // ==============================================
 
@@ -100,5 +147,6 @@ const revisarIncidencia = async (req, res) => {
 
 module.exports = {
   registrarIncidencia,
+  registrarPausaLlamadas,
   revisarIncidencia
 };

@@ -9,10 +9,12 @@ const router = express.Router();
 const db = require("../config/db");
 
 const {
-    revisarIncidencia
+    revisarIncidencia,
+    registrarPausaLlamadas
 } = require("../controllers/incidenciasController");
 
 const verificarToken = require("../middleware/authMiddleware");
+const verificarPropioAsesor = require("../middleware/verificarPropioAsesor");
 
 router.use(verificarToken);
 
@@ -103,6 +105,13 @@ router.put(
   "/:id/revisar",
   revisarIncidencia
 );
+
+router.post(
+  "/pausa",
+  verificarPropioAsesor,
+  registrarPausaLlamadas
+);
+
 // ======================================================
 // HISTORIAL DE INCIDENCIAS POR FECHA (Para el Modal)
 // ======================================================
@@ -144,4 +153,5 @@ router.get("/historial", async (req, res) => {
     });
   }
 });
+
 module.exports = router;

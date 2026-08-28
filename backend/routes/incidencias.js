@@ -10,7 +10,9 @@ const db = require("../config/db");
 
 const {
     revisarIncidencia,
-    registrarPausaLlamadas
+    registrarPausaLlamadas,
+    finalizarPausaLlamadas,
+    obtenerPausaActiva
 } = require("../controllers/incidenciasController");
 
 const verificarToken = require("../middleware/authMiddleware");
@@ -110,6 +112,17 @@ router.post(
   "/pausa",
   verificarPropioAsesor,
   registrarPausaLlamadas
+);
+
+router.put(
+  "/pausa/:id/fin",
+  finalizarPausaLlamadas
+);
+
+router.get(
+  "/pausa/activa/:asesorId",
+  verificarPropioAsesor,
+  obtenerPausaActiva
 );
 
 // ======================================================

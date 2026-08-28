@@ -81,26 +81,29 @@ const registrarPausaLlamadas = async (req, res) => {
   try {
     const fechaHora = generarFechaColombia();
 
-    const sql = `
+        const sql = `
       INSERT INTO incidencias (
         asesor_id,
         tipo,
         nivel,
         detalle,
         fecha_hora,
+        fecha_fin,
         revisada,
         revisada_por,
         comentario,
         fecha_revision
       )
-      VALUES ($1, 'PAUSA DE LLAMADAS', 'INFORMATIVA', $2, $3, 1, $4, $5, $3)
+      VALUES ($1, 'PAUSA DE LLAMADAS', 'INFORMATIVA', $2, $3, NULL, 1, $4, $5, $3)
+      RETURNING id
     `;
 
-    await db.query(sql, [asesor_id, motivo, fechaHora, "Auto-registro (asesor)", comentario || null]);
+    const { rows } = await db.query(sql, [asesor_id, motivo, fechaHora, "Auto-registro (asesor)", comentario || null]);
 
     return res.json({
       ok: true,
-      mensaje: "Pausa registrada correctamente."
+      mensaje: "Pausa registrada correctamente.",
+      id: rows[0].id
     });
   } catch (err) {
     console.error("❌ Error en registrarPausaLlamadas:", err);
@@ -145,8 +148,86 @@ const revisarIncidencia = async (req, res) => {
   }
 };
 
+// ==============================================
+// FINALIZAR PAUSA DE LLAMADAS
+// ==============================================
+
+const finalizarPausaLlamadas = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const consulta = await db.query(
+      `SELECT asesor_id FROM incidencias WHERE id = $1 AND tipo = 'PAUSA DE LLAMADAS'`,
+      [id]
+    );
+
+    if (!consulta.rows.length) {
+      return res.status(404).json({ ok: false, mensaje: "Pausa no encontrada." });
+    }
+
+    const esAdmin = req.usuario?.rol === "ADMINISTRADOR";
+    const esPropia = Number(consulta.rows[0].asesor_id) === Number(req.usuario?.asesor_id);
+
+    if (!esAdmin && !esPropia) {
+      return res.status(403).json({ ok: false, mensaje: "No tiene permiso sobre esta pausa." });
+    }
+
+    const fechaHora = generarFechaColombia();
+
+    await db.query(
+      `UPDATE incidencias SET fecha_fin = $1 WHERE id = $2 AND fecha_fin IS NULL`,
+      [fechaHora, id]
+    );
+
+    return res.json({ ok: true, mensaje: "Pausa finalizada correctamente." });
+  } catch (err) {
+    console.error("❌ Error en finalizarPausaLlamadas:", err);
+    return res.status(500).json({ ok: false, error: "No fue posible finalizar la pausa." });
+  }
+};
+
+// ==============================================
+// OBTENER PAUSA ACTIVA (si el asesor tiene una sin cerrar hoy)
+// ==============================================
+
+const obtenerPausaActiva = async (req, res) => {
+  const { asesorId } = req.params;
+
+  try {
+    const sql = `
+      SELECT id, motivo:detalle AS motivo, detalle, fecha_hora
+      FROM incidencias
+      WHERE asesor_id = $1
+        AND tipo = 'PAUSA DE LLAMADAS'
+        AND fecha_fin IS NULL
+        AND DATE(fecha_hora) = CURRENT_DATE
+      ORDER BY fecha_hora DESC
+      LIMIT 1
+    `;
+
+    const { rows } = await db.query(
+      `SELECT id, detalle, fecha_hora
+       FROM incidencias
+       WHERE asesor_id = $1
+         AND tipo = 'PAUSA DE LLAMADAS'
+         AND fecha_fin IS NULL
+         AND DATE(fecha_hora) = CURRENT_DATE
+       ORDER BY fecha_hora DESC
+       LIMIT 1`,
+      [asesorId]
+    );
+
+    return res.json({ ok: true, pausa: rows[0] || null });
+  } catch (err) {
+    console.error("❌ Error en obtenerPausaActiva:", err);
+    return res.status(500).json({ ok: false, error: "No fue posible consultar la pausa activa." });
+  }
+};
+
 module.exports = {
   registrarIncidencia,
   registrarPausaLlamadas,
+  finalizarPausaLlamadas,
+  obtenerPausaActiva,
   revisarIncidencia
 };

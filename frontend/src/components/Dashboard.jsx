@@ -39,6 +39,30 @@ function convertirFechaColombia(fecha) {
 }
 
 // =====================================================
+// DURACIÓN ENTRE DOS FECHAS
+// =====================================================
+
+function calcularDuracion(inicio, fin) {
+    if (!inicio || !fin) return null;
+
+    const fechaInicio = convertirFechaColombia(inicio);
+    const fechaFin = convertirFechaColombia(fin);
+
+    if (!fechaInicio || !fechaFin) return null;
+
+    const minutos = Math.max(0, Math.round((fechaFin.getTime() - fechaInicio.getTime()) / 60000));
+
+    const horas = Math.floor(minutos / 60);
+    const minutosRestantes = minutos % 60;
+
+    if (horas > 0) {
+        return `${horas}h ${minutosRestantes}min`;
+    }
+
+    return `${minutosRestantes} min`;
+}
+
+// =====================================================
 // FORMATO DE HORA COLOMBIA
 // =====================================================
 
@@ -477,7 +501,24 @@ export default function Dashboard() {
                                             </div>
                                             <p style={{ margin: "4px 0" }}><strong>Tipo:</strong> {inc.tipo} ({inc.nivel})</p>
                                             <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {inc.detalle}</p>
-                                            <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}><strong>Hora:</strong> {inc.fecha_hora}</p>
+
+                                            {inc.tipo === "PAUSA DE LLAMADAS" ? (
+                                                <>
+                                                    <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}>
+                                                        <strong>Inicio:</strong> {formatearHoraColombia(inc.fecha_hora)}
+                                                    </p>
+                                                    <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}>
+                                                        <strong>Fin:</strong> {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "⏳ En curso"}
+                                                    </p>
+                                                    {inc.fecha_fin && (
+                                                        <p style={{ margin: "4px 0", fontSize: "13px", fontWeight: "bold", color: "#dc3545" }}>
+                                                            Duración: {calcularDuracion(inc.fecha_hora, inc.fecha_fin)}
+                                                        </p>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}><strong>Hora:</strong> {inc.fecha_hora}</p>
+                                            )}
 
                                             {revisada && (
                                                 <div style={{ marginTop: "8px", background: "#e2f0d9", padding: "8px", borderRadius: "6px", fontSize: "13px" }}>

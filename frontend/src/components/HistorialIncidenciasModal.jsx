@@ -103,8 +103,25 @@ export default function HistorialIncidenciasModal({ onClose }) {
                   </span>
                 </div>
                 <p style={{ margin: "4px 0" }}><strong>Tipo:</strong> {i.tipo} ({i.nivel})</p>
-                <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {i.detalle}</p>
-                <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}><strong>Hora:</strong> {i.fecha_hora}</p>
+                                <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {i.detalle}</p>
+
+                {i.tipo === "PAUSA DE LLAMADAS" ? (
+                  <>
+                    <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}>
+                      <strong>Inicio:</strong> {formatearHoraColombia(i.fecha_hora)}
+                    </p>
+                    <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}>
+                      <strong>Fin:</strong> {i.fecha_fin ? formatearHoraColombia(i.fecha_fin) : "⏳ En curso"}
+                    </p>
+                    {i.fecha_fin && (
+                      <p style={{ margin: "4px 0", fontSize: "13px", fontWeight: "bold", color: "#dc3545" }}>
+                        Duración: {calcularDuracion(i.fecha_hora, i.fecha_fin)}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}><strong>Hora:</strong> {i.fecha_hora}</p>
+                )}
 
                 {(i.revisada === 1 || i.revisada === true) && (
                   <div style={{ marginTop: "8px", background: "#e2f0d9", padding: "8px", borderRadius: "6px", fontSize: "13px" }}>

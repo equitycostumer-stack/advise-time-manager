@@ -37,6 +37,7 @@ router.get("/", async (req, res) => {
       i.revisada_por,
       i.comentario,
       i.fecha_revision,
+      i.fecha_fin,
       a.nombre
     FROM incidencias i
     INNER JOIN asesores a
@@ -75,7 +76,8 @@ router.get("/asesor/:asesorId", async (req, res) => {
       revisada,
       revisada_por,
       comentario,
-      fecha_revision
+      fecha_revision,
+      fecha_fin
     FROM incidencias
     WHERE
       asesor_id = $1
@@ -144,6 +146,7 @@ router.get("/historial", async (req, res) => {
       i.revisada_por,
       i.comentario,
       i.fecha_revision,
+      i.fecha_fin,
       a.nombre
     FROM incidencias i
     INNER JOIN asesores a

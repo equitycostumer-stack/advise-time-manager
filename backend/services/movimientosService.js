@@ -2,6 +2,8 @@ const movimientosRepository = require("../repositories/movimientosRepository");
 const resumenJornadaService = require("./resumenJornadaService");
 const { registrarIncidencia } = require("../controllers/incidenciasController");
 const emailService = require("./emailService");
+const notificacionesRepository = require("../repositories/notificacionesRepository");
+
 const {
     TIPOS,
     ESTADOS
@@ -422,6 +424,15 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
             "MEDIA",
             `Duración real: ${duracionMinutos} min (límite: ${limiteMinutos} min)`
         );
+
+        notificacionesRepository.crear(
+            asesor.id,
+            `⏱ Excediste el tiempo de ${estadoEsperado}`,
+            `Tu ${estadoEsperado.toLowerCase()} duró ${duracionMinutos} min (límite: ${limiteMinutos} min).`,
+            "EXCESO_PAUSA"
+        ).catch((error) => {
+            console.error("Error creando notificación para el asesor:", error);
+        });
 
         emailService.enviarAlertaExceso({
             asesorNombre: asesor.nombre,

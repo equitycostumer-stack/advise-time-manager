@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/Logo.png";
 import { useAuth } from "../context/AuthContext";
+import NotificacionesBell from "./NotificacionesBell";
 
 export default function Header() {
 
@@ -75,6 +76,8 @@ export default function Header() {
                     })}
 
                 </div>
+
+                <NotificacionesBell />
 
                 {usuario && (
 

@@ -141,6 +141,8 @@ console.log("✓ reportes");
 app.use("/api/usuarios", require("./routes/usuariosRoutes"));
 console.log("✓ usuarios");
 
+app.use("/api/notificaciones", require("./routes/notificaciones"));
+
 // ======================================================
 // RUTA PRINCIPAL
 // ======================================================

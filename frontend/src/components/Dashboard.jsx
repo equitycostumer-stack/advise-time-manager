@@ -168,17 +168,18 @@ export default function Dashboard() {
             return;
         }
 
-        try {
+                try {
             setCargandoHistorialGeneral(true);
-            // CORREGIDO: Se agregó "/api" antes de incidencias para que coincida con el server.js
-            const response = await api.get(`/api/incidencias/fecha?fecha=${fecha}`);
-            
+            const response = await api.get(`/incidencias/historial?fecha=${fecha}`);
+
             setListaHistorialGeneral(
-                response.data?.data || 
-                response.data || 
+                response.data?.incidencias ||
+                response.data ||
                 []
             );
+
         } catch (error) {
+
             console.error("Error al cargar incidencias por fecha", error);
             setListaHistorialGeneral([]);
         } finally {
@@ -441,19 +442,52 @@ export default function Dashboard() {
                             />
                         </div>
 
-                        {cargandoHistorialGeneral ? (
+                                                {cargandoHistorialGeneral ? (
                             <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
                                 Cargando incidencias...
                             </div>
                         ) : listaHistorialGeneral.length > 0 ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                {listaHistorialGeneral.map((inc, index) => (
-                                    <div key={index} style={{ padding: "10px", background: "#fff", borderRadius: "6px", border: "1px solid #ccc" }}>
-                                        <strong>{inc.asesor_nombre || inc.nombre || "Asesor"}</strong> - <span style={{ color: "#dc3545" }}>{inc.tipo || inc.motivo}</span>
-                                        <br />
-                                        <small style={{ color: "#666" }}>Hora: {inc.hora || inc.fecha_hora || "--:--"}</small>
-                                    </div>
-                                ))}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {listaHistorialGeneral.map((inc) => {
+                                    const revisada = inc.revisada === 1 || inc.revisada === true;
+                                    return (
+                                        <div
+                                            key={inc.id}
+                                            style={{
+                                                border: "1px solid #ddd",
+                                                borderRadius: "8px",
+                                                padding: "15px",
+                                                background: revisada ? "#f8f9fa" : "#fff3cd"
+                                            }}
+                                        >
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                                                <strong>👤 {inc.nombre || inc.asesor_nombre || "Asesor"}</strong>
+                                                <span
+                                                    style={{
+                                                        padding: "3px 8px",
+                                                        borderRadius: "4px",
+                                                        fontSize: "12px",
+                                                        fontWeight: "bold",
+                                                        background: revisada ? "#d1e7dd" : "#ffeeba",
+                                                        color: revisada ? "#0f5132" : "#856404"
+                                                    }}
+                                                >
+                                                    {revisada ? "✅ Revisada" : "⏳ Pendiente"}
+                                                </span>
+                                            </div>
+                                            <p style={{ margin: "4px 0" }}><strong>Tipo:</strong> {inc.tipo} ({inc.nivel})</p>
+                                            <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {inc.detalle}</p>
+                                            <p style={{ margin: "4px 0", fontSize: "13px", color: "#555" }}><strong>Hora:</strong> {inc.fecha_hora}</p>
+
+                                            {revisada && (
+                                                <div style={{ marginTop: "8px", background: "#e2f0d9", padding: "8px", borderRadius: "6px", fontSize: "13px" }}>
+                                                    <p style={{ margin: "2px 0" }}><strong>Coach revisor:</strong> {inc.revisada_por}</p>
+                                                    <p style={{ margin: "2px 0" }}><strong>Comentario:</strong> {inc.comentario}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div style={{ padding: "20px", textAlign: "center", color: "#666", background: "#fff", borderRadius: "6px", border: "1px dashed #ccc" }}>

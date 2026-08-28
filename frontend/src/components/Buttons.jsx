@@ -21,8 +21,33 @@ export default function Buttons({
     // EFECTO VISUAL DE PRESIÓN DEL BOTÓN
     // ======================================================
 
-    const [botonPresionado, setBotonPresionado] =
+        const [botonPresionado, setBotonPresionado] =
         useState(null);
+
+    // ======================================================
+    // PAUSA DE LLAMADAS (registro informativo)
+    // ======================================================
+
+        const [mostrarModalPausa, setMostrarModalPausa] = useState(false);
+    const [motivoPausa, setMotivoPausa] = useState("");
+    const [comentarioPausa, setComentarioPausa] = useState("");
+    const [enviandoPausa, setEnviandoPausa] = useState(false);
+    const [pausaActivaId, setPausaActivaId] = useState(null);
+
+    useEffect(() => {
+        if (!asesor) {
+            setPausaActivaId(null);
+            return;
+        }
+
+        api.get(`/incidencias/pausa/activa/${asesor}`)
+            .then(({ data }) => {
+                setPausaActivaId(data?.pausa?.id || null);
+            })
+            .catch((error) => {
+                console.error("Error consultando pausa activa:", error);
+            });
+    }, [asesor]);
 
 
     // ======================================================
@@ -215,7 +240,85 @@ export default function Buttons({
 
         }
 
+        }
+
+    // ======================================================
+    // REGISTRAR PAUSA DE LLAMADAS
+    // ======================================================
+
+    async function registrarPausaLlamadas() {
+
+        if (!asesor) {
+            alert("Seleccione un asesor.");
+            return;
+        }
+
+        if (!motivoPausa) {
+            alert("Seleccione un motivo.");
+            return;
+        }
+
+        setEnviandoPausa(true);
+
+        try {
+
+            await api.post("/incidencias/pausa", {
+                asesor_id: Number(asesor),
+                motivo: motivoPausa,
+                comentario: comentarioPausa
+            });
+
+            alert("✅ Pausa registrada.");
+
+            setMostrarModalPausa(false);
+            setMotivoPausa("");
+            setComentarioPausa("");
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.mensaje ||
+                error.response?.data?.error ||
+                "No fue posible registrar la pausa."
+            );
+
+        } finally {
+            setEnviandoPausa(false);
+        }
+
     }
+
+        // ======================================================
+    // FINALIZAR PAUSA DE LLAMADAS
+    // ======================================================
+
+    async function finalizarPausaLlamadas() {
+
+        if (!pausaActivaId) return;
+
+        try {
+
+            await api.put(`/incidencias/pausa/${pausaActivaId}/fin`);
+
+            alert("✅ Llamadas reanudadas.");
+
+            setPausaActivaId(null);
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.mensaje ||
+                "No fue posible cerrar la pausa."
+            );
+
+        }
+
+    }
+
     // ======================================================
     // ESTILOS
     // ======================================================
@@ -385,8 +488,8 @@ console.log("enBreak:", enBreak);
 console.log("enAlmuerzo:", enAlmuerzo);
 console.log("================================");
 
-    return (
-
+        return (
+        <>
         <div className="grid">
 
             {/* ====================================== */}
@@ -587,7 +690,7 @@ console.log("================================");
             {/* SALIDA */}
             {/* ====================================== */}
 
-            <button
+                        <button
                 style={estilo(
                     "#C0392B",
                     "SALIDA"
@@ -603,8 +706,128 @@ console.log("================================");
                 🔴 SALIDA
             </button>
 
+            {/* ====================================== */}
+            {/* PAUSA DE LLAMADAS */}
+            {/* ====================================== */}
+
+                        <button
+                style={estilo("#6C757D", "PAUSA")}
+                disabled={!trabajando && !pausaActivaId}
+                onClick={() =>
+                    pausaActivaId
+                        ? finalizarPausaLlamadas()
+                        : setMostrarModalPausa(true)
+                }
+            >
+                {pausaActivaId ? "▶ REANUDÉ LLAMADAS" : "📵 PAUSA DE LLAMADAS"}
+            </button>
 
         </div>
+
+        {mostrarModalPausa && (
+            <div
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0,0,0,.5)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 9999
+                }}
+            >
+                <div
+                    style={{
+                        background: "white",
+                        width: "420px",
+                        padding: "25px",
+                        borderRadius: "12px"
+                    }}
+                >
+                    <h2>📵 Pausa de llamadas</h2>
+                    <p style={{ color: "#666", fontSize: "14px" }}>
+                        Indica por qué vas a dejar de hacer llamadas. Este registro queda guardado como informativo.
+                    </p>
+
+                    <label style={{ fontWeight: "bold" }}>Motivo</label>
+                    <select
+                        value={motivoPausa}
+                        onChange={(e) => setMotivoPausa(e.target.value)}
+                        style={{
+                            width: "100%",
+                            padding: "10px",
+                            marginTop: "5px",
+                            marginBottom: "15px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc"
+                        }}
+                    >
+                        <option value="">-- Seleccione --</option>
+                        <option value="Falla técnica">Falla técnica</option>
+                        <option value="Atención a cliente presencial">Atención a cliente presencial</option>
+                        <option value="Gestión administrativa">Gestión administrativa</option>
+                        <option value="Indicación de coach/supervisor">Indicación de coach/supervisor</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+
+                    <label style={{ fontWeight: "bold" }}>Comentario (opcional)</label>
+                    <textarea
+                        value={comentarioPausa}
+                        onChange={(e) => setComentarioPausa(e.target.value)}
+                        rows={4}
+                        style={{
+                            width: "100%",
+                            padding: "10px",
+                            marginTop: "5px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc"
+                        }}
+                    />
+
+                    <div
+                        style={{
+                            marginTop: "20px",
+                            display: "flex",
+                            justifyContent: "space-between"
+                        }}
+                    >
+                        <button
+                            onClick={() => setMostrarModalPausa(false)}
+                            style={{
+                                padding: "10px 16px",
+                                background: "#6c757d",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            onClick={registrarPausaLlamadas}
+                            disabled={enviandoPausa}
+                            style={{
+                                padding: "10px 16px",
+                                background: "#198754",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "bold"
+                            }}
+                        >
+                            {enviandoPausa ? "Guardando..." : "Guardar"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
 
     );
 

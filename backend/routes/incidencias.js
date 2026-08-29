@@ -110,6 +110,10 @@ router.put(
   revisarIncidencia
 );
 
+// ======================================================
+// PAUSA DE LLAMADAS
+// ======================================================
+
 router.post(
   "/pausa",
   verificarPropioAsesor,

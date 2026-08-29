@@ -1,6 +1,55 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
+function convertirFechaColombia(fecha) {
+    if (!fecha) return null;
+
+    if (fecha instanceof Date) return fecha;
+
+    const valor = String(fecha).trim();
+    if (!valor) return null;
+
+    if (valor.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(valor)) {
+        const fechaConvertida = new Date(valor);
+        return Number.isNaN(fechaConvertida.getTime()) ? null : fechaConvertida;
+    }
+
+    const fechaConvertida = new Date(valor.replace(" ", "T") + "-05:00");
+    return Number.isNaN(fechaConvertida.getTime()) ? null : fechaConvertida;
+}
+
+function formatearHoraColombia(fecha) {
+    const fechaConvertida = convertirFechaColombia(fecha);
+    if (!fechaConvertida) return "--:--:--";
+
+    return fechaConvertida.toLocaleTimeString("es-CO", {
+        timeZone: "America/Bogota",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+    });
+}
+
+function calcularDuracion(inicio, fin) {
+    if (!inicio || !fin) return null;
+
+    const fechaInicio = convertirFechaColombia(inicio);
+    const fechaFin = convertirFechaColombia(fin);
+
+    if (!fechaInicio || !fechaFin) return null;
+
+    const minutos = Math.max(0, Math.round((fechaFin.getTime() - fechaInicio.getTime()) / 60000));
+    const horas = Math.floor(minutos / 60);
+    const minutosRestantes = minutos % 60;
+
+    if (horas > 0) {
+        return `${horas}h ${minutosRestantes}min`;
+    }
+
+    return `${minutosRestantes} min`;
+}
+
 export default function HistorialIncidenciasModal({ onClose }) {
   const [fecha, setFecha] = useState(
     new Date().toISOString().split("T")[0]
@@ -103,7 +152,7 @@ export default function HistorialIncidenciasModal({ onClose }) {
                   </span>
                 </div>
                 <p style={{ margin: "4px 0" }}><strong>Tipo:</strong> {i.tipo} ({i.nivel})</p>
-                                <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {i.detalle}</p>
+                <p style={{ margin: "4px 0" }}><strong>Detalle:</strong> {i.detalle}</p>
 
                 {i.tipo === "PAUSA DE LLAMADAS" ? (
                   <>

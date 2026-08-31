@@ -151,6 +151,23 @@ class VentasRepository {
         return await this.ejecutar(sql, [asesorId]);
     }
 
+    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta) {
+        const sql = `
+            SELECT a.id AS asesor_id, a.nombre AS asesor_nombre,
+                   COUNT(v.id) AS cantidad_ventas,
+                   COALESCE(SUM(v.valor), 0) AS total_vendido
+            FROM asesores a
+            LEFT JOIN ventas v ON v.asesor_id = a.id
+                AND v.estado = 'ACTIVA'
+                AND v.fecha_hora >= ?::date
+                AND v.fecha_hora < (?::date + INTERVAL '1 day')
+            WHERE a.activo = 1
+            GROUP BY a.id, a.nombre
+            ORDER BY total_vendido DESC, cantidad_ventas DESC, a.nombre ASC
+        `;
+        return await this.ejecutar(sql, [fechaDesde, fechaHasta]);
+    }
+
     // ==================================================
     // ANULAR VENTA
     // ==================================================

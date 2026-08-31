@@ -175,11 +175,33 @@ async registrarEntrada(datos) {
     // SOLO SE INSERTA SI LA VALIDACIÓN YA PASÓ
     // ==================================================
 
+    const fechaColombia = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Bogota",
+        weekday: "long", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+    }).formatToParts(ahora);
+    const partes = Object.fromEntries(fechaColombia.map(({ type, value }) => [type, value]));
+    const dias = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+    const diaSemana = dias[partes.weekday.toLowerCase()];
+    const horario = await movimientosRepository.obtenerHorarioDelDia(diaSemana);
+
+    if (!horario || !horario.activo || !horario.hora_entrada) {
+        throw new Error("Hoy no es un día laboral configurado.");
+    }
+
+    const horaActual = `${partes.hour}:${partes.minute}:${partes.second}`;
+    const [h, m, sec = "0"] = horario.hora_entrada.split(":");
+    const tolerancia = Number(horario.tolerancia_minutos || 0);
+    const entradaSegundos = Number(h) * 3600 + Number(m) * 60 + Number(sec);
+    const actualSegundos = Number(partes.hour) * 3600 + Number(partes.minute) * 60 + Number(partes.second);
+    const diferenciaSegundos = actualSegundos - entradaSegundos;
+    const minutosRetraso = diferenciaSegundos > tolerancia * 60
+        ? Math.ceil(diferenciaSegundos / 60)
+        : 0;
+    const llegoTarde = minutosRetraso > 0;
+
     await movimientosRepository.insertarMovimiento(
-        asesor.id,
-        TIPOS.ENTRADA,
-        ahora,
-        datos.observacion || null
+        asesor.id, TIPOS.ENTRADA, ahora, datos.observacion || null
     );
 
     if (!estadoActual) {
@@ -192,8 +214,7 @@ async registrarEntrada(datos) {
         );
 
         await movimientosRepository.crearResumenDia(
-            asesor.id,
-            ahora
+            asesor.id, ahora, llegoTarde, minutosRetraso
         );
 
     } else {
@@ -216,8 +237,7 @@ async registrarEntrada(datos) {
         );
 
         await movimientosRepository.crearResumenDia(
-            asesor.id,
-            ahora
+            asesor.id, ahora, llegoTarde, minutosRetraso
         );
 
     }
@@ -233,7 +253,9 @@ async registrarEntrada(datos) {
         estado: ESTADOS.TRABAJANDO,
 
         fecha: ahora,
-
+        llego_tarde: llegoTarde,
+        minutos_retraso: minutosRetraso,
+        horario,
         asesor
 
     };
@@ -372,13 +394,21 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
 
     const configuracion =
         await movimientosRepository.obtenerConfiguracion();
+    const partesAhora = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Bogota", weekday: "long"
+    }).formatToParts(ahora).map(({ type, value }) => [type, value]));
+    const diasAhora = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+    const horarioDelDia = await movimientosRepository.obtenerHorarioDelDia(
+        diasAhora[partesAhora.weekday.toLowerCase()]
+    );
+    const limitesFuente = horarioDelDia || configuracion;
 
     const limitesPorEstado = {
-        [ESTADOS.BREAK]: configuracion?.break_max,
-        [ESTADOS.ALMUERZO]: configuracion?.almuerzo_max,
-        [ESTADOS.BANO]: configuracion?.bano_max,
-        [ESTADOS.CAPACITACION]: configuracion?.capacitacion_max,
-        [ESTADOS.REUNION]: configuracion?.reunion_max
+        [ESTADOS.BREAK]: limitesFuente?.break_max,
+        [ESTADOS.ALMUERZO]: limitesFuente?.almuerzo_max,
+        [ESTADOS.BANO]: limitesFuente?.bano_max,
+        [ESTADOS.CAPACITACION]: limitesFuente?.capacitacion_max,
+        [ESTADOS.REUNION]: limitesFuente?.reunion_max
     };
 
     const limiteMinutos =

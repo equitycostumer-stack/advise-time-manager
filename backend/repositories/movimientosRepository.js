@@ -48,6 +48,52 @@ class MovimientosRepository {
         return filas.length ? filas[0] : null;
     }
 
+    async obtenerHorarioDelDia(diaSemana) {
+        const sql = `
+            SELECT id, dia_semana, nombre_dia, activo,
+                   TO_CHAR(hora_entrada, 'HH24:MI:SS') AS hora_entrada,
+                   TO_CHAR(hora_salida, 'HH24:MI:SS') AS hora_salida,
+                   tolerancia_minutos, break_max, bano_max, almuerzo_max
+            FROM configuracion_horarios
+            WHERE dia_semana = ?
+            LIMIT 1
+        `;
+        const filas = await this.ejecutar(sql, [diaSemana]);
+        return filas.length ? filas[0] : null;
+    }
+
+    async obtenerHorarios() {
+        return await this.ejecutar(`
+            SELECT id, dia_semana, nombre_dia, activo,
+                   TO_CHAR(hora_entrada, 'HH24:MI') AS hora_entrada,
+                   TO_CHAR(hora_salida, 'HH24:MI') AS hora_salida,
+                   tolerancia_minutos, break_max, bano_max, almuerzo_max,
+                   actualizado_por, actualizado_en
+            FROM configuracion_horarios
+            ORDER BY dia_semana
+        `);
+    }
+
+    async actualizarHorarios(horarios, usuarioId) {
+        const sql = `
+            UPDATE configuracion_horarios
+            SET activo = ?, hora_entrada = NULLIF(?, '')::time,
+                hora_salida = NULLIF(?, '')::time, tolerancia_minutos = ?,
+                break_max = ?, bano_max = ?, almuerzo_max = ?,
+                actualizado_por = ?, actualizado_en = NOW()
+            WHERE dia_semana = ?
+        `;
+        for (const horario of horarios) {
+            await this.ejecutar(sql, [
+                Boolean(horario.activo), horario.hora_entrada || '', horario.hora_salida || '',
+                Number(horario.tolerancia_minutos), Number(horario.break_max),
+                Number(horario.bano_max), Number(horario.almuerzo_max),
+                usuarioId || null, Number(horario.dia_semana)
+            ]);
+        }
+        return await this.obtenerHorarios();
+    }
+
     // ======================================================
     // OBTENER ASESOR
     // ======================================================
@@ -140,7 +186,7 @@ class MovimientosRepository {
     // CREAR RESUMEN DEL DÍA
     // ======================================================
 
-    async crearResumenDia(asesorId, fechaHora) {
+    async crearResumenDia(asesorId, fechaHora, llegoTarde = false, minutosRetraso = 0) {
         const sql = `
             INSERT INTO resumen_jornada (
                 asesor_id,
@@ -169,7 +215,9 @@ class MovimientosRepository {
         return await this.ejecutar(sql, [
             asesorId,
             fechaHora,
-            fechaHora
+            fechaHora,
+            llegoTarde,
+            minutosRetraso
         ]);
     }
 

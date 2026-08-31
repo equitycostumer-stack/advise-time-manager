@@ -127,6 +127,7 @@ app.use("/api/asesores", require("./routes/asesores"));
 console.log("✓ asesores");
 
 app.use("/api/movimientos", require("./routes/movimientos"));
+app.use("/api/horarios", require("./routes/horarios"));
 console.log("✓ movimientos");
 
 app.use("/api/incidencias", require("./routes/incidencias"));

@@ -19,6 +19,7 @@ import WorkTimer from "./components/WorkTimer";
 import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
+import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -378,6 +379,8 @@ function App() {
             <Dashboard />
 
             <VentasDashboard />
+
+            {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
           </>
         )}
       </div>

@@ -124,6 +124,20 @@ const obtenerResumenVentasDelDia = async (req, res) => {
 // RESUMEN POR ASESOR
 // ======================================================
 
+const obtenerResumenVentasPorAsesorPeriodo = async (req, res) => {
+    try {
+        const { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } = req.query;
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaDesde || "") || !/^\d{4}-\d{2}-\d{2}$/.test(fechaHasta || "") || fechaDesde > fechaHasta) {
+            return res.status(400).json({ ok: false, mensaje: "El rango de fechas no es válido." });
+        }
+        const resumen = await ventasService.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta);
+        return res.status(200).json({ ok: true, data: resumen });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ ok: false, mensaje: error.message });
+    }
+};
+
 const obtenerResumenVentasPorAsesor = async (req, res) => {
 
     try {
@@ -189,5 +203,6 @@ module.exports = {
     obtenerVentasPorAsesor,
     obtenerResumenVentasDelDia,
     obtenerResumenVentasPorAsesor,
+    obtenerResumenVentasPorAsesorPeriodo,
     anularVenta
 };

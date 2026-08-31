@@ -148,9 +148,11 @@ class VentasService {
     // ==================================================
 
     async obtenerResumenVentasPorAsesor() {
-
         return await ventasRepository.obtenerResumenVentasPorAsesor();
+    }
 
+    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta) {
+        return await ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta);
     }
 
     // ==================================================

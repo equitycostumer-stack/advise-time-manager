@@ -95,6 +95,13 @@ export default function Dashboard() {
     const [listaHistorialGeneral, setListaHistorialGeneral] = useState([]);
     const [cargandoHistorialGeneral, setCargandoHistorialGeneral] = useState(false);
     const [mostrarHistorialGeneral, setMostrarHistorialGeneral] = useState(false);
+    const [filtrosHistorialGeneral, setFiltrosHistorialGeneral] = useState({
+        fechaDesde: "",
+        fechaHasta: "",
+        asesorId: "",
+        tipo: "",
+        nivel: ""
+    });
 
     // =====================================================
     // CARGAR DASHBOARD
@@ -185,30 +192,50 @@ export default function Dashboard() {
     // BUSCAR HISTORIAL DE INCIDENCIAS GENERAL
     // =====================================================
 
-    async function buscarHistorialIncidenciasGeneral(fecha) {
-        setFechaHistorialGeneral(fecha);
-        if (!fecha) {
+    async function buscarHistorialIncidenciasGeneral(filtros = filtrosHistorialGeneral) {
+        const params = new URLSearchParams();
+        if (filtros.fechaDesde) params.set("fecha_desde", filtros.fechaDesde);
+        if (filtros.fechaHasta) params.set("fecha_hasta", filtros.fechaHasta);
+        if (filtros.asesorId) params.set("asesor_id", filtros.asesorId);
+        if (filtros.tipo) params.set("tipo", filtros.tipo);
+        if (filtros.nivel) params.set("nivel", filtros.nivel);
+
+        if (![...params].length) {
             setListaHistorialGeneral([]);
             return;
         }
 
-                try {
+        try {
             setCargandoHistorialGeneral(true);
-            const response = await api.get(`/incidencias/historial?fecha=${fecha}`);
-
+            const response = await api.get(`/incidencias/historial?${params.toString()}`);
             setListaHistorialGeneral(
-                response.data?.incidencias ||
-                response.data ||
-                []
+                response.data?.incidencias || response.data || []
             );
-
         } catch (error) {
-
-            console.error("Error al cargar incidencias por fecha", error);
+            console.error("Error al cargar incidencias filtradas", error);
             setListaHistorialGeneral([]);
         } finally {
             setCargandoHistorialGeneral(false);
         }
+    }
+
+    function actualizarFiltroHistorial(campo, valor) {
+        setFiltrosHistorialGeneral((anterior) => ({
+            ...anterior,
+            [campo]: valor
+        }));
+    }
+
+    function limpiarFiltrosHistorial() {
+        setFiltrosHistorialGeneral({
+            fechaDesde: "",
+            fechaHasta: "",
+            asesorId: "",
+            tipo: "",
+            nivel: ""
+        });
+        setFechaHistorialGeneral("");
+        setListaHistorialGeneral([]);
     }
 
     // =====================================================
@@ -456,14 +483,89 @@ export default function Dashboard() {
                     <div style={{ marginTop: "15px", padding: "15px", background: "#f8f9fa", borderRadius: "8px", border: "1px solid #ddd" }}>
                         <h3 style={{ marginTop: 0 }}>📊 Historial de Incidencias</h3>
                         
-                        <div style={{ marginBottom: "15px" }}>
-                            <label style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>Seleccionar fecha:</label>
-                            <input 
-                                type="date"
-                                value={fechaHistorialGeneral}
-                                onChange={(e) => buscarHistorialIncidenciasGeneral(e.target.value)}
-                                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                            />
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                                gap: "12px",
+                                marginBottom: "15px"
+                            }}
+                        >
+                            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontWeight: "bold" }}>
+                                Desde
+                                <input
+                                    type="date"
+                                    value={filtrosHistorialGeneral.fechaDesde}
+                                    onChange={(e) => actualizarFiltroHistorial("fechaDesde", e.target.value)}
+                                    style={{ padding: "8px", borderRadius: "6px", border: "1px solid #555" }}
+                                />
+                            </label>
+                            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontWeight: "bold" }}>
+                                Hasta
+                                <input
+                                    type="date"
+                                    value={filtrosHistorialGeneral.fechaHasta}
+                                    onChange={(e) => actualizarFiltroHistorial("fechaHasta", e.target.value)}
+                                    style={{ padding: "8px", borderRadius: "6px", border: "1px solid #555" }}
+                                />
+                            </label>
+                            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontWeight: "bold" }}>
+                                Asesor
+                                <select
+                                    value={filtrosHistorialGeneral.asesorId}
+                                    onChange={(e) => actualizarFiltroHistorial("asesorId", e.target.value)}
+                                    style={{ padding: "9px", borderRadius: "6px", border: "1px solid #555" }}
+                                >
+                                    <option value="">Todos los asesores</option>
+                                    {asesores.map((asesor) => (
+                                        <option key={asesor.id} value={asesor.id}>{asesor.nombre}</option>
+                                    ))}
+                                </select>
+                            </label>
+                            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontWeight: "bold" }}>
+                                Tipo
+                                <select
+                                    value={filtrosHistorialGeneral.tipo}
+                                    onChange={(e) => actualizarFiltroHistorial("tipo", e.target.value)}
+                                    style={{ padding: "9px", borderRadius: "6px", border: "1px solid #555" }}
+                                >
+                                    <option value="">Todos los tipos</option>
+                                    <option value="BREAK">BREAK</option>
+                                    <option value="ALMUERZO">ALMUERZO</option>
+                                    <option value="BAÑO">BAÑO</option>
+                                    <option value="CAPACITACIÓN">CAPACITACIÓN</option>
+                                    <option value="REUNIÓN">REUNIÓN</option>
+                                    <option value="PAUSA DE LLAMADAS">PAUSA DE LLAMADAS</option>
+                                </select>
+                            </label>
+                            <label style={{ display: "flex", flexDirection: "column", gap: "5px", fontWeight: "bold" }}>
+                                Nivel
+                                <select
+                                    value={filtrosHistorialGeneral.nivel}
+                                    onChange={(e) => actualizarFiltroHistorial("nivel", e.target.value)}
+                                    style={{ padding: "9px", borderRadius: "6px", border: "1px solid #555" }}
+                                >
+                                    <option value="">Todos los niveles</option>
+                                    <option value="BAJO">BAJO</option>
+                                    <option value="MEDIO">MEDIO</option>
+                                    <option value="ALTO">ALTO</option>
+                                    <option value="INFORMATIVA">INFORMATIVA</option>
+                                </select>
+                            </label>
+                            <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
+                                <button
+                                    onClick={() => buscarHistorialIncidenciasGeneral()}
+                                    style={{ flex: 1, padding: "9px", border: "none", borderRadius: "6px", background: "#D4AF37", color: "#111", fontWeight: "bold", cursor: "pointer" }}
+                                >
+                                    🔍 Consultar
+                                </button>
+                                <button
+                                    onClick={limpiarFiltrosHistorial}
+                                    style={{ padding: "9px", border: "1px solid #777", borderRadius: "6px", background: "#222", color: "#F4F4F4", cursor: "pointer" }}
+                                >
+                                    Limpiar
+                                </button>
+                            </div>
                         </div>
 
                                                 {cargandoHistorialGeneral ? (

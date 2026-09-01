@@ -241,6 +241,18 @@ export default function Dashboard() {
     const trabajando = asesores.filter((a) => a.estado === "TRABAJANDO").length;
     const pausas = asesores.filter((a) => ["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION"].includes(a.estado)).length;
     const llegadasTarde = asesores.filter((a) => a.llego_tarde).length;
+    const asesoresConJornada = asesores.filter((a) => Number(a.tiempo_trabajado) > 0);
+    const tiempoPromedio = asesoresConJornada.length > 0
+        ? productividad.tiempo_trabajado / asesoresConJornada.length
+        : 0;
+    const iniciosJornada = asesores
+        .map((a) => convertirFechaColombia(a.inicio_jornada))
+        .filter(Boolean)
+        .map((fecha) => fecha.getTime());
+    const inicioOperacion = iniciosJornada.length ? Math.min(...iniciosJornada) : null;
+    const jornadaTranscurrida = inicioOperacion
+        ? Math.max(0, ahora - inicioOperacion)
+        : 0;
     const asesoresVisibles = useMemo(() => filtroEstado ? asesores.filter((a) => a.estado === filtroEstado) : asesores, [asesores, filtroEstado]);
 
     const inputStyle = { padding: "9px", borderRadius: "7px", border: "1px solid #555", background: palette.surface2, color: palette.black, width: "100%", boxSizing: "border-box" };
@@ -265,7 +277,9 @@ export default function Dashboard() {
 
             <Modulo title="📊 Productividad del día" defaultOpen={true}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: "12px" }}>
-                    <KpiCard icon="⏱" label="Tiempo trabajado" value={formatearDuracion(productividad.tiempo_trabajado)} accent="#198754" />
+                    <KpiCard icon="⏱" label="Tiempo trabajado del equipo" value={formatearDuracion(productividad.tiempo_trabajado)} accent="#198754" />
+                    <KpiCard icon="🕒" label="Jornada transcurrida" value={formatearDuracion(jornadaTranscurrida)} accent="#0d6efd" />
+                    <KpiCard icon="👥" label="Promedio por asesor" value={formatearDuracion(tiempoPromedio)} accent="#6f42c1" />
                     <KpiCard icon="📈" label="Tiempo productivo" value={formatearDuracion(productividad.tiempo_productivo)} accent="#20c997" />
                     <KpiCard icon="✅" label="Productividad" value={`${productividad.porcentaje || 0}%`} accent="#0d6efd" />
                     <KpiCard icon="☕" label="Break utilizado" value={formatearDuracion(productividad.tiempo_break)} accent="#fd7e14" />

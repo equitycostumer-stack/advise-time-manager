@@ -101,8 +101,8 @@ function KpiCard({ icon, label, value, accent = palette.gold }) {
             background: "rgba(255,255,255,.96)",
             border: "1px solid #dcebe2",
             borderRadius: "16px",
-            padding: "17px 18px",
-            minHeight: "116px",
+            padding: "14px 16px",
+            minHeight: "104px",
             boxSizing: "border-box",
             boxShadow: "0 8px 22px rgba(36,90,62,.09)"
         }}>
@@ -111,8 +111,8 @@ function KpiCard({ icon, label, value, accent = palette.gold }) {
                 <div style={{ color: "#789184", fontSize: "11px", fontWeight: "800", letterSpacing: ".6px", textTransform: "uppercase", lineHeight: 1.3 }}>{label}</div>
                 <div style={{ width: "38px", height: "38px", display: "grid", placeItems: "center", flexShrink: 0, borderRadius: "12px", background: fondos[accent] || "#eef5ff", color: accent, fontSize: "19px" }}>{icon}</div>
             </div>
-            <div style={{ color: "#214f35", fontSize: "27px", fontWeight: "850", lineHeight: 1.15, marginTop: "13px", fontVariantNumeric: "tabular-nums", letterSpacing: "-.4px" }}>{value}</div>
-            <div style={{ width: "34px", height: "3px", background: accent, borderRadius: "99px", marginTop: "11px", opacity: ".75" }} />
+            <div style={{ color: "#214f35", fontSize: "22px", fontWeight: "800", lineHeight: 1.15, marginTop: "10px", fontVariantNumeric: "tabular-nums", letterSpacing: "-.25px" }}>{value}</div>
+            <div style={{ width: "30px", height: "3px", background: accent, borderRadius: "99px", marginTop: "8px", opacity: ".75" }} />
         </div>
     );
 }
@@ -191,8 +191,13 @@ export default function Dashboard() {
 
     useEffect(() => {
         cargarDashboard();
+        const actualizar = () => cargarDashboard();
+        window.addEventListener("datos-actualizados", actualizar);
         const intervalo = setInterval(cargarDashboard, 5000);
-        return () => clearInterval(intervalo);
+        return () => {
+            window.removeEventListener("datos-actualizados", actualizar);
+            clearInterval(intervalo);
+        };
     }, []);
 
     useEffect(() => {

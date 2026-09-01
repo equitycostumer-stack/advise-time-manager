@@ -86,19 +86,33 @@ function Modulo({ title, count, children, defaultOpen = true }) {
 }
 
 function KpiCard({ icon, label, value, accent = palette.gold }) {
-    const colorTexto = ["#ffc107", "#fd7e14"].includes(accent) ? "#212529" : "#ffffff";
+    const fondos = {
+        "#198754": "#eaf7ef",
+        "#20c997": "#e8fbf5",
+        "#0d6efd": "#edf4ff",
+        "#6f42c1": "#f3eeff",
+        "#fd7e14": "#fff3e8",
+        "#dc3545": "#fff0f1"
+    };
     return (
         <div style={{
-            background: accent,
-            border: `1px solid ${accent}`,
-            borderTop: `4px solid ${accent}`,
-            borderRadius: "12px",
-            padding: "16px",
-            minHeight: "92px",
-            boxSizing: "border-box"
+            position: "relative",
+            overflow: "hidden",
+            background: "rgba(255,255,255,.96)",
+            border: "1px solid #dcebe2",
+            borderRadius: "16px",
+            padding: "17px 18px",
+            minHeight: "116px",
+            boxSizing: "border-box",
+            boxShadow: "0 8px 22px rgba(36,90,62,.09)"
         }}>
-            <div style={{ color: colorTexto, fontSize: "13px", fontWeight: "bold" }}>{icon} {label}</div>
-            <div style={{ color: colorTexto, fontSize: "30px", fontWeight: "800", lineHeight: 1.2, marginTop: "8px" }}>{value}</div>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: `linear-gradient(90deg, ${accent}, transparent)` }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                <div style={{ color: "#789184", fontSize: "11px", fontWeight: "800", letterSpacing: ".6px", textTransform: "uppercase", lineHeight: 1.3 }}>{label}</div>
+                <div style={{ width: "38px", height: "38px", display: "grid", placeItems: "center", flexShrink: 0, borderRadius: "12px", background: fondos[accent] || "#eef5ff", color: accent, fontSize: "19px" }}>{icon}</div>
+            </div>
+            <div style={{ color: "#214f35", fontSize: "27px", fontWeight: "850", lineHeight: 1.15, marginTop: "13px", fontVariantNumeric: "tabular-nums", letterSpacing: "-.4px" }}>{value}</div>
+            <div style={{ width: "34px", height: "3px", background: accent, borderRadius: "99px", marginTop: "11px", opacity: ".75" }} />
         </div>
     );
 }
@@ -321,7 +335,7 @@ export default function Dashboard() {
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "16px" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
                                         <div style={{ width: "40px", height: "40px", borderRadius: "12px", display: "grid", placeItems: "center", background: estadoConfig.fondo, color: estadoConfig.color, fontSize: "18px", flexShrink: 0 }}>{estadoConfig.icono}</div>
-                                        <div style={{ minWidth: 0 }}><h3 style={{ color: "#245b3a", margin: 0, fontSize: "17px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.nombre}</h3><span style={{ color: "#789184", fontSize: "12px" }}>Asesor operativo</span></div>
+                                        <div style={{ minWidth: 0, flex: 1 }}><h3 style={{ color: "#245b3a", margin: 0, fontSize: "17px", lineHeight: 1.2, whiteSpace: "normal", overflowWrap: "anywhere" }}>{a.nombre}</h3><span style={{ color: "#789184", fontSize: "12px" }}>Asesor operativo</span></div>
                                     </div>
                                     <span style={{ background: estadoConfig.fondo, color: estadoConfig.color, borderRadius: "999px", padding: "5px 9px", fontSize: "11px", fontWeight: "800", whiteSpace: "nowrap" }}>{estado}</span>
                                 </div>

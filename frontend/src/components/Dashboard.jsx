@@ -86,19 +86,33 @@ function Modulo({ title, count, children, defaultOpen = true }) {
 }
 
 function KpiCard({ icon, label, value, accent = palette.gold }) {
-    const colorTexto = ["#ffc107", "#fd7e14"].includes(accent) ? "#212529" : "#ffffff";
+    const fondos = {
+        "#198754": "#eaf7ef",
+        "#20c997": "#e8fbf5",
+        "#0d6efd": "#edf4ff",
+        "#6f42c1": "#f3eeff",
+        "#fd7e14": "#fff3e8",
+        "#dc3545": "#fff0f1"
+    };
     return (
         <div style={{
-            background: accent,
-            border: `1px solid ${accent}`,
-            borderTop: `4px solid ${accent}`,
-            borderRadius: "12px",
-            padding: "16px",
-            minHeight: "92px",
-            boxSizing: "border-box"
+            position: "relative",
+            overflow: "hidden",
+            background: "rgba(255,255,255,.96)",
+            border: "1px solid #dcebe2",
+            borderRadius: "16px",
+            padding: "17px 18px",
+            minHeight: "116px",
+            boxSizing: "border-box",
+            boxShadow: "0 8px 22px rgba(36,90,62,.09)"
         }}>
-            <div style={{ color: colorTexto, fontSize: "13px", fontWeight: "bold" }}>{icon} {label}</div>
-            <div style={{ color: colorTexto, fontSize: "30px", fontWeight: "800", lineHeight: 1.2, marginTop: "8px" }}>{value}</div>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: `linear-gradient(90deg, ${accent}, transparent)` }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                <div style={{ color: "#789184", fontSize: "11px", fontWeight: "800", letterSpacing: ".6px", textTransform: "uppercase", lineHeight: 1.3 }}>{label}</div>
+                <div style={{ width: "38px", height: "38px", display: "grid", placeItems: "center", flexShrink: 0, borderRadius: "12px", background: fondos[accent] || "#eef5ff", color: accent, fontSize: "19px" }}>{icon}</div>
+            </div>
+            <div style={{ color: "#214f35", fontSize: "27px", fontWeight: "850", lineHeight: 1.15, marginTop: "13px", fontVariantNumeric: "tabular-nums", letterSpacing: "-.4px" }}>{value}</div>
+            <div style={{ width: "34px", height: "3px", background: accent, borderRadius: "99px", marginTop: "11px", opacity: ".75" }} />
         </div>
     );
 }
@@ -122,12 +136,12 @@ function IncidenciaCard({ inc }) {
             <p style={{ margin: "7px 0" }}><strong>Detalle:</strong> {inc.detalle}</p>
             {inc.tipo === "PAUSA DE LLAMADAS" ? (
                 <>
-                    <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Inicio:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
-                    <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Fin:</strong> {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "⏳ En curso"}</p>
+                    <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Inicio:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
+                    <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Fin:</strong> {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "⏳ En curso"}</p>
                     {inc.fecha_fin && <p style={{ margin: "5px 0", color: palette.gold, fontWeight: "bold", fontSize: "13px" }}>Duración: {calcularDuracion(inc.fecha_hora, inc.fecha_fin)}</p>}
                 </>
             ) : (
-                <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Hora:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
+                <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Hora:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
             )}
             {revisada && (
                 <div style={{ marginTop: "9px", padding: "9px", borderRadius: "6px", background: "#e2f0d9", fontSize: "13px" }}>
@@ -241,6 +255,18 @@ export default function Dashboard() {
     const trabajando = asesores.filter((a) => a.estado === "TRABAJANDO").length;
     const pausas = asesores.filter((a) => ["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION"].includes(a.estado)).length;
     const llegadasTarde = asesores.filter((a) => a.llego_tarde).length;
+    const asesoresConJornada = asesores.filter((a) => Number(a.tiempo_trabajado) > 0);
+    const tiempoPromedio = asesoresConJornada.length > 0
+        ? productividad.tiempo_trabajado / asesoresConJornada.length
+        : 0;
+    const iniciosJornada = asesores
+        .map((a) => convertirFechaColombia(a.inicio_jornada))
+        .filter(Boolean)
+        .map((fecha) => fecha.getTime());
+    const inicioOperacion = iniciosJornada.length ? Math.min(...iniciosJornada) : null;
+    const jornadaTranscurrida = inicioOperacion
+        ? Math.max(0, ahora - inicioOperacion)
+        : 0;
     const asesoresVisibles = useMemo(() => filtroEstado ? asesores.filter((a) => a.estado === filtroEstado) : asesores, [asesores, filtroEstado]);
 
     const inputStyle = { padding: "9px", borderRadius: "7px", border: "1px solid #555", background: palette.surface2, color: palette.black, width: "100%", boxSizing: "border-box" };
@@ -257,7 +283,6 @@ export default function Dashboard() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px", marginTop: "20px" }}>
                 <KpiCard icon="👥" label="Asesores" value={asesores.length} accent="#0d6efd" />
-                <KpiCard icon="🟢" label="Trabajando" value={trabajando} accent="#198754" />
                 <KpiCard icon="☕" label="En pausa" value={pausas} accent="#fd7e14" />
                 <KpiCard icon="🚨" label="Llegadas tarde" value={llegadasTarde} accent="#dc3545" />
                 <KpiCard icon="📌" label="Incidencias pendientes" value={incidencias.length} accent="#6f42c1" />
@@ -265,7 +290,9 @@ export default function Dashboard() {
 
             <Modulo title="📊 Productividad del día" defaultOpen={true}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: "12px" }}>
-                    <KpiCard icon="⏱" label="Tiempo trabajado" value={formatearDuracion(productividad.tiempo_trabajado)} accent="#198754" />
+                    <KpiCard icon="⏱" label="Tiempo trabajado del equipo" value={formatearDuracion(productividad.tiempo_trabajado)} accent="#198754" />
+                    <KpiCard icon="🕒" label="Jornada transcurrida" value={formatearDuracion(jornadaTranscurrida)} accent="#0d6efd" />
+                    <KpiCard icon="👥" label="Promedio por asesor" value={formatearDuracion(tiempoPromedio)} accent="#6f42c1" />
                     <KpiCard icon="📈" label="Tiempo productivo" value={formatearDuracion(productividad.tiempo_productivo)} accent="#20c997" />
                     <KpiCard icon="✅" label="Productividad" value={`${productividad.porcentaje || 0}%`} accent="#0d6efd" />
                     <KpiCard icon="☕" label="Break utilizado" value={formatearDuracion(productividad.tiempo_break)} accent="#fd7e14" />
@@ -287,20 +314,37 @@ export default function Dashboard() {
                         <option value="DISPONIBLE">Disponible</option>
                     </select>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(255px, 1fr))", gap: "16px" }}>
                     {asesoresVisibles.map((a) => {
                         const inicio = convertirFechaColombia(a.inicio_estado);
                         const segundos = inicio && a.estado !== "SALIDA" ? Math.max(0, Math.floor((ahora - inicio.getTime()) / 1000)) : 0;
                         const tiempo = `${String(Math.floor(segundos / 3600)).padStart(2, "0")}:${String(Math.floor((segundos % 3600) / 60)).padStart(2, "0")}:${String(segundos % 60).padStart(2, "0")}`;
+                        const estado = a.estado || "DISPONIBLE";
+                        const estadoConfig = {
+                            TRABAJANDO: { color: "#198754", fondo: "#e8f7ee", icono: "●" },
+                            BREAK: { color: "#fd7e14", fondo: "#fff2e6", icono: "☕" },
+                            ALMUERZO: { color: "#b7791f", fondo: "#fff8df", icono: "🍽" },
+                            BANO: { color: "#6f42c1", fondo: "#f1ebff", icono: "🚻" },
+                            CAPACITACION: { color: "#0d6efd", fondo: "#eaf2ff", icono: "📚" },
+                            REUNION: { color: "#0891b2", fondo: "#e6f8fb", icono: "👥" },
+                            SALIDA: { color: "#6c757d", fondo: "#f1f3f5", icono: "○" },
+                            DISPONIBLE: { color: "#6c757d", fondo: "#f1f3f5", icono: "○" }
+                        }[estado] || { color: palette.gold, fondo: "#eef5ff", icono: "●" };
                         return (
-                            <div key={a.id} style={{ background: palette.surface, border: `1px solid ${a.llego_tarde ? palette.red : palette.border}`, borderLeft: `5px solid ${a.estado === "TRABAJANDO" ? "#7CCB8A" : palette.gold}`, borderRadius: "10px", padding: "14px" }}>
-                                <h3 style={{ color: palette.gold, margin: "0 0 10px", fontSize: "17px" }}>👤 {a.nombre}</h3>
-                                <p><strong>Estado:</strong> {a.estado || "DISPONIBLE"}</p>
-                                <p><strong>Inicio:</strong> {a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</p>
-                                <p><strong>Tiempo:</strong> {a.inicio_estado && a.estado !== "SALIDA" ? tiempo : "--:--:--"}</p>
-                                <p><strong>Retraso:</strong> {a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min` : "🟢 Puntual"}</p>
-                                <p><strong>Productivo:</strong> {formatearDuracion(a.tiempo_productivo)}</p>
-                                <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>📋 Ver historial</button>
+                            <div key={a.id} style={{ background: "linear-gradient(145deg, #ffffff 0%, #f7fbf8 100%)", border: `1px solid ${a.llego_tarde ? "#f1aeb5" : "#d9ebe0"}`, borderTop: `4px solid ${estadoConfig.color}`, borderRadius: "16px", padding: "18px", boxShadow: "0 8px 20px rgba(35, 90, 62, .08)", transition: "transform .2s ease, box-shadow .2s ease" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                                        <div style={{ width: "40px", height: "40px", borderRadius: "12px", display: "grid", placeItems: "center", background: estadoConfig.fondo, color: estadoConfig.color, fontSize: "18px", flexShrink: 0 }}>{estadoConfig.icono}</div>
+                                        <div style={{ minWidth: 0, flex: 1 }}><h3 style={{ color: "#245b3a", margin: 0, fontSize: "17px", lineHeight: 1.2, whiteSpace: "normal", overflowWrap: "anywhere" }}>{a.nombre}</h3><span style={{ color: "#789184", fontSize: "12px" }}>Asesor operativo</span></div>
+                                    </div>
+                                    <span style={{ background: estadoConfig.fondo, color: estadoConfig.color, borderRadius: "999px", padding: "5px 9px", fontSize: "11px", fontWeight: "800", whiteSpace: "nowrap" }}>{estado}</span>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "9px", marginBottom: "14px" }}>
+                                    <div style={{ background: "#f3f8f4", borderRadius: "10px", padding: "10px" }}><div style={{ color: "#789184", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>Inicio</div><strong style={{ color: "#245b3a", fontSize: "14px" }}>{a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</strong></div>
+                                    <div style={{ background: "#f3f8f4", borderRadius: "10px", padding: "10px" }}><div style={{ color: "#789184", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>En estado</div><strong style={{ color: "#245b3a", fontSize: "14px", fontVariantNumeric: "tabular-nums" }}>{a.inicio_estado && estado !== "SALIDA" ? tiempo : "--:--:--"}</strong></div>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 14px", borderTop: "1px solid #e4efe7" }}><span style={{ color: "#789184", fontSize: "13px", fontWeight: "700" }}>Puntualidad</span><span style={{ color: a.llego_tarde ? "#dc3545" : "#198754", fontWeight: "800", fontSize: "13px" }}>{a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min tarde` : "🟢 Puntual"}</span></div>
+                                <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "11px 14px", background: "#245b3a", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer", boxShadow: "0 5px 12px rgba(36,91,58,.18)" }}>📋 Abrir historial</button>
                             </div>
                         );
                     })}
@@ -344,4 +388,3 @@ export default function Dashboard() {
         </div>
     );
 }
-

@@ -317,10 +317,10 @@ export default function VentasDashboard() {
                     <p style={{ color: "#666", margin: 0 }}>No hay ventas activas en la quincena seleccionada.</p>
                 ) : (
                     <div style={{ overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "420px" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "560px" }}>
                             <thead>
                                 <tr>
-                                    {["Posición", "Asesor", "Ventas", "Total vendido"].map((encabezado) => (
+                                    {["Posición", "Asesor", "Ventas", "Total vendido", "Recaudo quincenal"].map((encabezado) => (
                                         <th key={encabezado} style={{ textAlign: "left", padding: "9px", color: "#666666", borderBottom: "1px solid #dddddd" }}>{encabezado}</th>
                                     ))}
                                 </tr>
@@ -332,6 +332,7 @@ export default function VentasDashboard() {
                                         <td style={{ padding: "9px", color: "#0d6efd", fontWeight: "bold" }}>{a.asesor_nombre}</td>
                                         <td style={{ padding: "9px" }}>{a.cantidad_ventas || 0}</td>
                                         <td style={{ padding: "9px" }}>{formatearMoneda(a.total_vendido)}</td>
+                                        <td style={{ padding: "9px", color: "#198754", fontWeight: "bold" }}>{formatearMoneda(a.total_recaudo)}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -1,11 +1,13 @@
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import { useState } from "react";
 
 export default function ExportarHistorial({ historial, asesor }) {
 
-    function exportar() {
+    async function exportar() {
 
         if (!historial.length) return;
+
+        const XLSX = await import("xlsx");
+        const { saveAs } = await import("file-saver");
 
         const datos = historial.map((m) => ({
 

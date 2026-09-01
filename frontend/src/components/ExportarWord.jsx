@@ -1,19 +1,7 @@
 import { useState } from "react";
-import {
-    Document,
-    Packer,
-    Paragraph,
-    TextRun,
-    Table,
-    TableRow,
-    TableCell,
-    HeadingLevel,
-    WidthType,
-    AlignmentType,
-    ShadingType
-} from "docx";
-import { saveAs } from "file-saver";
 import api from "../services/api";
+
+let docxLib = null;
 
 // ======================================================
 // CONVERTIR FECHA MYSQL -> COLOMBIA (mismo patrón
@@ -90,16 +78,16 @@ function formatearFechaLarga() {
 
 function celda(texto, { encabezado = false } = {}) {
 
-    return new TableCell({
+    return new docxLib.TableCell({
 
         shading: encabezado
-            ? { type: ShadingType.CLEAR, fill: "0D6EFD" }
+            ? { type: docxLib.ShadingType.CLEAR, fill: "0D6EFD" }
             : undefined,
 
         children: [
-            new Paragraph({
+            new docxLib.Paragraph({
                 children: [
-                    new TextRun({
+                    new docxLib.TextRun({
                         text: String(texto ?? ""),
                         bold: encabezado,
                         color: encabezado ? "FFFFFF" : "000000"
@@ -114,7 +102,7 @@ function celda(texto, { encabezado = false } = {}) {
 
 function filaEncabezado(columnas) {
 
-    return new TableRow({
+    return new docxLib.TableRow({
         children: columnas.map(c => celda(c, { encabezado: true }))
     });
 
@@ -122,7 +110,7 @@ function filaEncabezado(columnas) {
 
 function filaDatos(columnas) {
 
-    return new TableRow({
+    return new docxLib.TableRow({
         children: columnas.map(c => celda(c))
     });
 
@@ -141,6 +129,11 @@ export default function ExportarWord() {
         setGenerando(true);
 
         try {
+
+            docxLib = await import("docx");
+            const docx = docxLib;
+            const { saveAs } = await import("file-saver");
+            const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, WidthType, AlignmentType, ShadingType } = docx;
 
             // ==========================================
             // OBTENER DATOS FRESCOS

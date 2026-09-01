@@ -1,14 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Vite 8 utiliza Rolldown. Estos grupos separan dependencias estables
-// del código de la aplicación para mejorar caché y carga incremental.
+// Vite 8 utiliza Rolldown. Separamos dependencias estables
+// para mejorar caché y reducir el bundle principal.
 export default defineConfig({
     plugins: [react()],
     build: {
         rolldownOptions: {
             output: {
-                advancedChunks: {
+                codeSplitting: {
                     groups: [
                         {
                             name: "react-vendor",

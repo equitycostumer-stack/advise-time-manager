@@ -1,4 +1,3 @@
-const horariosRepository = require("../repositories/horariosRepository");
 const movimientosRepository = require("../repositories/movimientosRepository");
 const { registrarIncidencia } = require("../controllers/incidenciasController");
 
@@ -160,31 +159,21 @@ class ResumenJornadaService {
             return { llego_tarde: 0, minutos_retraso: 0 };
         }
 
-        const nombreDia = new Intl.DateTimeFormat("en-US", {
-            timeZone: "America/Bogota",
-            weekday: "long"
-        }).format(entrada);
+        // Usar el mismo repositorio y la misma numeración que registrarEntrada:
+        // domingo=0, lunes=1, ..., martes=2.
+        const diaSemana = new Date(`${fechaEntradaColombia}T12:00:00-05:00`).getUTCDay();
+        const horario = await movimientosRepository.obtenerHorarioDelDia(diaSemana);
 
-        const diasSemana = {
-            Sunday: "DOMINGO",
-            Monday: "LUNES",
-            Tuesday: "MARTES",
-            Wednesday: "MIERCOLES",
-            Thursday: "JUEVES",
-            Friday: "VIERNES",
-            Saturday: "SABADO"
-        };
-
-        const diaSemana = diasSemana[nombreDia];
-        const horario = await horariosRepository.obtenerHorarioDia(diaSemana);
-
-        if (!horario) {
+        if (!horario || !horario.hora_entrada) {
             return { llego_tarde: 0, minutos_retraso: 0 };
         }
 
         const horaOficial = new Date(`${fechaEntradaColombia}T${horario.hora_entrada}-05:00`);
-        const diferencia = entrada.getTime() - horaOficial.getTime();
-        const minutos = Math.max(0, Math.floor(diferencia / 60000));
+        const diferenciaSegundos = Math.floor((entrada.getTime() - horaOficial.getTime()) / 1000);
+        const toleranciaSegundos = Number(horario.tolerancia_minutos || 0) * 60;
+        const minutos = diferenciaSegundos > toleranciaSegundos
+            ? Math.ceil(diferenciaSegundos / 60)
+            : 0;
 
         return {
             llego_tarde: minutos > 0 ? 1 : 0,

@@ -58,6 +58,13 @@ class VentasService {
                 ? String(datos.cliente_id).trim()
                 : null;
 
+        const recaudo = datos.recaudo === "" || datos.recaudo == null
+            ? 0
+            : Number(datos.recaudo);
+        if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > valor) {
+            throw new Error("El recaudo debe ser mayor o igual a cero y no puede superar el valor de la venta.");
+        }
+
         // ----------------------------------------------
         // VALIDAR ASESOR (reutiliza la validación ya
         // probada del módulo de movimientos)
@@ -84,6 +91,7 @@ class VentasService {
             asesorId,
             clienteId,
             valor,
+            recaudo,
             fechaHora,
             observacion
         );

@@ -38,6 +38,7 @@ class VentasRepository {
         asesorId,
         clienteId,
         valor,
+        recaudo,
         fechaHora,
         observacion = null
     ) {
@@ -46,11 +47,12 @@ class VentasRepository {
                 asesor_id,
                 cliente_id,
                 valor,
+                recaudo,
                 fecha_hora,
                 observacion,
                 estado
             )
-            VALUES (?, ?, ?, ?, ?, 'ACTIVA')
+            VALUES (?, ?, ?, ?, ?, ?, 'ACTIVA')
             RETURNING id
         `;
 
@@ -58,6 +60,7 @@ class VentasRepository {
             asesorId,
             clienteId,
             valor,
+            recaudo,
             fechaHora,
             observacion
         ]);
@@ -76,6 +79,7 @@ class VentasRepository {
                 v.asesor_id,
                 v.cliente_id,
                 v.valor,
+                v.recaudo,
                 TO_CHAR(v.fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
                 v.observacion,
                 v.estado,
@@ -105,6 +109,7 @@ class VentasRepository {
                 v.asesor_id,
                 v.cliente_id,
                 v.valor,
+                v.recaudo,
                 TO_CHAR(v.fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
                 v.observacion,
                 v.estado,
@@ -134,6 +139,7 @@ class VentasRepository {
                 v.asesor_id,
                 v.cliente_id,
                 v.valor,
+                v.recaudo,
                 TO_CHAR(v.fecha_hora, 'YYYY-MM-DD HH24:MI:SS') AS fecha_hora,
                 v.observacion,
                 v.estado,
@@ -155,7 +161,8 @@ class VentasRepository {
         const sql = `
             SELECT a.id AS asesor_id, a.nombre AS asesor_nombre,
                    COUNT(v.id) AS cantidad_ventas,
-                   COALESCE(SUM(v.valor), 0) AS total_vendido
+                   COALESCE(SUM(v.valor), 0) AS total_vendido,
+                COALESCE(SUM(v.recaudo), 0) AS total_recaudo
             FROM asesores a
             LEFT JOIN ventas v ON v.asesor_id = a.id
                 AND v.estado = 'ACTIVA'
@@ -193,7 +200,8 @@ class VentasRepository {
         const sql = `
             SELECT
                 COUNT(*) AS cantidad_ventas,
-                COALESCE(SUM(valor), 0) AS total_vendido
+                COALESCE(SUM(valor), 0) AS total_vendido,
+                COALESCE(SUM(recaudo), 0) AS total_recaudo
             FROM ventas
             WHERE
                 estado = 'ACTIVA'
@@ -205,7 +213,8 @@ class VentasRepository {
 
         return resultado[0] || {
             cantidad_ventas: 0,
-            total_vendido: 0
+            total_vendido: 0,
+            total_recaudo: 0
         };
     }
 
@@ -219,7 +228,8 @@ class VentasRepository {
                 a.id AS asesor_id,
                 a.nombre AS asesor_nombre,
                 COUNT(v.id) AS cantidad_ventas,
-                COALESCE(SUM(v.valor), 0) AS total_vendido
+                COALESCE(SUM(v.valor), 0) AS total_vendido,
+                COALESCE(SUM(v.recaudo), 0) AS total_recaudo
             FROM asesores a
             LEFT JOIN ventas v
                 ON v.asesor_id = a.id

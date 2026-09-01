@@ -48,6 +48,7 @@ export default function RegistrarVenta({
 
     const [abierto, setAbierto] = useState(false);
     const [valor, setValor] = useState("");
+    const [recaudo, setRecaudo] = useState("");
     const [clienteId, setClienteId] = useState("");
     const [observacion, setObservacion] = useState("");
     const [enviando, setEnviando] = useState(false);
@@ -65,6 +66,7 @@ export default function RegistrarVenta({
         }
 
         setValor("");
+        setRecaudo("");
         setClienteId("");
         setObservacion("");
         setAbierto(true);
@@ -100,6 +102,7 @@ export default function RegistrarVenta({
                 asesor_id: Number(asesor),
                 cliente_id: clienteId || null,
                 valor: valorNumerico,
+                recaudo: recaudo === "" ? 0 : Number(recaudo),
                 observacion: observacion || null
             });
 
@@ -239,6 +242,30 @@ export default function RegistrarVenta({
                             value={valor}
                             onChange={(e) => setValor(e.target.value)}
                             placeholder="$ 0"
+                            style={{
+                                width: "100%",
+                                padding: "10px",
+                                borderRadius: "8px",
+                                border: "1px solid #555",
+                                fontSize: "16px",
+                                background: "#1b1b1b",
+                                color: "#F4F4F4",
+                                marginBottom: "15px",
+                                boxSizing: "border-box"
+                            }}
+                        />
+
+                        <p style={{ marginBottom: "4px" }}>
+                            <strong>Recaudo de esta quincena</strong>
+                        </p>
+                        <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            max={valor || undefined}
+                            value={recaudo}
+                            onChange={(e) => setRecaudo(e.target.value)}
+                            placeholder="$ 0 (opcional)"
                             style={{
                                 width: "100%",
                                 padding: "10px",

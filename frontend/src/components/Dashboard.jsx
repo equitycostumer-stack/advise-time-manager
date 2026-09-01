@@ -78,6 +78,7 @@ function Modulo({ title, count, children, defaultOpen = true }) {
 }
 
 function KpiCard({ icon, label, value, accent = palette.gold }) {
+    const colorTexto = ["#ffc107", "#fd7e14"].includes(accent) ? "#212529" : "#ffffff";
     return (
         <div style={{
             background: accent,
@@ -88,8 +89,8 @@ function KpiCard({ icon, label, value, accent = palette.gold }) {
             minHeight: "92px",
             boxSizing: "border-box"
         }}>
-            <div style={{ color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px", fontWeight: "bold" }}>{icon} {label}</div>
-            <div style={{ color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "30px", fontWeight: "800", lineHeight: 1.2, marginTop: "8px" }}>{value}</div>
+            <div style={{ color: colorTexto, fontSize: "13px", fontWeight: "bold" }}>{icon} {label}</div>
+            <div style={{ color: colorTexto, fontSize: "30px", fontWeight: "800", lineHeight: 1.2, marginTop: "8px" }}>{value}</div>
         </div>
     );
 }
@@ -238,11 +239,11 @@ export default function Dashboard() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px", marginTop: "20px" }}>
-                <KpiCard icon="👥" label="Asesores" value={asesores.length} />
+                <KpiCard icon="👥" label="Asesores" value={asesores.length} accent="#0d6efd" />
                 <KpiCard icon="🟢" label="Trabajando" value={trabajando} accent="#198754" />
-                <KpiCard icon="☕" label="En pausa" value={pausas} accent="#ffc107" />
-                <KpiCard icon="🚨" label="Llegadas tarde" value={llegadasTarde} accent={llegadasTarde ? "#dc3545" : "#198754"} />
-                <KpiCard icon="📌" label="Incidencias pendientes" value={incidencias.length} accent={incidencias.length ? "#dc3545" : "#198754"} />
+                <KpiCard icon="☕" label="En pausa" value={pausas} accent="#fd7e14" />
+                <KpiCard icon="🚨" label="Llegadas tarde" value={llegadasTarde} accent="#dc3545" />
+                <KpiCard icon="📌" label="Incidencias pendientes" value={incidencias.length} accent="#6f42c1" />
             </div>
 
             <Modulo title="👥 Asesores" count={`${asesoresVisibles.length}/${asesores.length}`}>

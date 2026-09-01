@@ -30,6 +30,14 @@ function formatearHoraColombia(fecha) {
     });
 }
 
+function formatearDuracion(ms) {
+    const total = Math.max(0, Math.floor(Number(ms || 0) / 1000));
+    const horas = Math.floor(total / 3600);
+    const minutos = Math.floor((total % 3600) / 60);
+    const segundos = total % 60;
+    return `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+}
+
 function calcularDuracion(inicio, fin) {
     if (!inicio || !fin) return null;
     const fechaInicio = convertirFechaColombia(inicio);
@@ -134,6 +142,14 @@ function IncidenciaCard({ inc }) {
 export default function Dashboard() {
     const [asesores, setAsesores] = useState([]);
     const [incidencias, setIncidencias] = useState([]);
+    const [productividad, setProductividad] = useState({
+        tiempo_trabajado: 0,
+        tiempo_productivo: 0,
+        tiempo_break: 0,
+        tiempo_almuerzo: 0,
+        tiempo_bano: 0,
+        porcentaje: 0
+    });
     const [historial, setHistorial] = useState([]);
     const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
     const [resumenJornada, setResumenJornada] = useState(null);
@@ -152,7 +168,8 @@ export default function Dashboard() {
                 api.get("/incidencias")
             ]);
             setAsesores(dashboard.data.asesores || []);
-            setIncidencias(incidenciasRes.data || []);
+            setProductividad(dashboard.data.productividad || {});
+            setIncidencias(incidenciasRes.data?.incidencias || incidenciasRes.data || []);
         } catch (error) {
             console.error("ERROR DASHBOARD", error);
         }
@@ -246,6 +263,16 @@ export default function Dashboard() {
                 <KpiCard icon="📌" label="Incidencias pendientes" value={incidencias.length} accent="#6f42c1" />
             </div>
 
+            <Modulo title="📊 Productividad del día" defaultOpen={true}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: "12px" }}>
+                    <KpiCard icon="⏱" label="Tiempo trabajado" value={formatearDuracion(productividad.tiempo_trabajado)} accent="#198754" />
+                    <KpiCard icon="📈" label="Tiempo productivo" value={formatearDuracion(productividad.tiempo_productivo)} accent="#20c997" />
+                    <KpiCard icon="✅" label="Productividad" value={`${productividad.porcentaje || 0}%`} accent="#0d6efd" />
+                    <KpiCard icon="☕" label="Break utilizado" value={formatearDuracion(productividad.tiempo_break)} accent="#fd7e14" />
+                    <KpiCard icon="🚻" label="Baño utilizado" value={formatearDuracion(productividad.tiempo_bano)} accent="#6f42c1" />
+                </div>
+            </Modulo>
+
             <Modulo title="👥 Asesores" count={`${asesoresVisibles.length}/${asesores.length}`}>
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
                     <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} style={{ ...inputStyle, maxWidth: "220px" }}>
@@ -272,6 +299,7 @@ export default function Dashboard() {
                                 <p><strong>Inicio:</strong> {a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</p>
                                 <p><strong>Tiempo:</strong> {a.inicio_estado && a.estado !== "SALIDA" ? tiempo : "--:--:--"}</p>
                                 <p><strong>Retraso:</strong> {a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min` : "🟢 Puntual"}</p>
+                                <p><strong>Productivo:</strong> {formatearDuracion(a.tiempo_productivo)}</p>
                                 <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>📋 Ver historial</button>
                             </div>
                         );
@@ -316,3 +344,4 @@ export default function Dashboard() {
         </div>
     );
 }
+

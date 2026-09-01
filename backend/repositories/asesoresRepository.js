@@ -38,6 +38,17 @@ class AsesoresRepository {
         }
     }
 
+    async actualizarNombre(id, nombre) {
+        const sql = `
+            UPDATE asesores
+            SET nombre = ?
+            WHERE id = ?
+            RETURNING id, nombre, activo
+        `;
+        const filas = await this.ejecutar(sql, [nombre, id]);
+        return filas[0] || null;
+    }
+
 }
 
 module.exports = new AsesoresRepository();

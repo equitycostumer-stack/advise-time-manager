@@ -30,18 +30,23 @@ export default function ConfiguracionHorarios() {
     const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState("");
     const [abierto, setAbierto] = useState(false);
+    const [asesores, setAsesores] = useState([]);
+    const [guardandoAsesores, setGuardandoAsesores] = useState(false);
+    const [mensajeAsesores, setMensajeAsesores] = useState("");
 
     useEffect(() => {
         if (usuario?.rol !== "ADMINISTRADOR") return;
 
-        api.get("/horarios")
-            .then(({ data }) => {
+        Promise.all([api.get("/horarios"), api.get("/asesores")])
+            .then(([horariosRes, asesoresRes]) => {
+                const data = horariosRes.data;
+                setAsesores(Array.isArray(asesoresRes.data) ? asesoresRes.data : asesoresRes.data?.asesores || []);
                 if (Array.isArray(data.horarios)) {
                     setHorarios(data.horarios);
                 }
             })
             .catch((error) => {
-                console.error("Error cargando horarios", error);
+                console.error("Error cargando horarios o asesores", error);
                 setMensaje("No fue posible cargar la configuración.");
             })
             .finally(() => setCargando(false));
@@ -68,6 +73,30 @@ export default function ConfiguracionHorarios() {
             setMensaje(error.response?.data?.mensaje || "No fue posible guardar la configuración.");
         } finally {
             setGuardando(false);
+        }
+    }
+
+    function cambiarNombreAsesor(id, nombre) {
+        setAsesores((actuales) => actuales.map((a) => a.id === id ? { ...a, nombre } : a));
+    }
+
+    async function guardarNombreAsesor(asesor) {
+        const nombre = String(asesor.nombre || "").trim();
+        if (nombre.length < 2) {
+            setMensajeAsesores("El nombre debe tener al menos 2 caracteres.");
+            return;
+        }
+        setGuardandoAsesores(true);
+        setMensajeAsesores("");
+        try {
+            const { data } = await api.put(`/asesores/${asesor.id}/nombre`, { nombre });
+            setAsesores((actuales) => actuales.map((a) => a.id === asesor.id ? { ...a, nombre: data.asesor?.nombre || nombre } : a));
+            setMensajeAsesores("Nombre actualizado correctamente.");
+            window.dispatchEvent(new Event("datos-actualizados"));
+        } catch (error) {
+            setMensajeAsesores(error.response?.data?.mensaje || "No fue posible actualizar el nombre.");
+        } finally {
+            setGuardandoAsesores(false);
         }
     }
 
@@ -131,6 +160,21 @@ export default function ConfiguracionHorarios() {
                             </table>
                         </div>
                     )}
+
+                    <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #dcebe2" }}>
+                        <h3 style={{ color: "#245b3a", margin: "0 0 6px" }}>👥 Administrar nombres de asesores</h3>
+                        <p style={{ color: "#666", marginTop: 0 }}>Solo el administrador puede modificar estos nombres. El cambio se reflejará en el Dashboard, ventas e incidencias.</p>
+                        <div style={{ display: "grid", gap: "10px" }}>
+                            {asesores.map((asesor) => (
+                                <div key={asesor.id} style={{ display: "grid", gridTemplateColumns: "minmax(150px, .7fr) minmax(180px, 1.4fr) auto", gap: "10px", alignItems: "center", padding: "10px", background: "#f7fbf8", border: "1px solid #dcebe2", borderRadius: "9px" }}>
+                                    <strong style={{ color: "#245b3a" }}>ID {asesor.id}</strong>
+                                    <input value={asesor.nombre || ""} onChange={(e) => cambiarNombreAsesor(asesor.id, e.target.value)} style={input} aria-label={`Nombre del asesor ${asesor.id}`} />
+                                    <button type="button" onClick={() => guardarNombreAsesor(asesor)} disabled={guardandoAsesores} style={{ padding: "9px 13px", background: "#245b3a", color: "#fff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>Guardar</button>
+                                </div>
+                            ))}
+                        </div>
+                        {mensajeAsesores && <p style={{ color: mensajeAsesores.startsWith("Nombre") ? "#198754" : "#dc3545", fontWeight: "bold" }}>{mensajeAsesores}</p>}
+                    </div>
 
                     <button type="button" onClick={guardar} disabled={cargando || guardando} style={{ marginTop: "18px", padding: "11px 18px", background: "#0d6efd", color: "#fff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>
                         {guardando ? "Guardando..." : "Guardar configuración"}

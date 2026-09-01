@@ -17,4 +17,6 @@ router.get(
     controller.obtenerAsesores
 );
 
+router.put("/:id/nombre", controller.actualizarNombre);
+
 module.exports = router;

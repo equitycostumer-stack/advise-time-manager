@@ -122,12 +122,12 @@ function IncidenciaCard({ inc }) {
             <p style={{ margin: "7px 0" }}><strong>Detalle:</strong> {inc.detalle}</p>
             {inc.tipo === "PAUSA DE LLAMADAS" ? (
                 <>
-                    <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Inicio:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
-                    <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Fin:</strong> {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "⏳ En curso"}</p>
+                    <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Inicio:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
+                    <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Fin:</strong> {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "⏳ En curso"}</p>
                     {inc.fecha_fin && <p style={{ margin: "5px 0", color: palette.gold, fontWeight: "bold", fontSize: "13px" }}>Duración: {calcularDuracion(inc.fecha_hora, inc.fecha_fin)}</p>}
                 </>
             ) : (
-                <p style={{ margin: "5px 0", color: accent === "#ffc107" ? "#212529" : "#ffffff", fontSize: "13px" }}><strong>Hora:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
+                <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Hora:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
             )}
             {revisada && (
                 <div style={{ marginTop: "9px", padding: "9px", borderRadius: "6px", background: "#e2f0d9", fontSize: "13px" }}>
@@ -269,7 +269,6 @@ export default function Dashboard() {
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px", marginTop: "20px" }}>
                 <KpiCard icon="👥" label="Asesores" value={asesores.length} accent="#0d6efd" />
-                <KpiCard icon="🟢" label="Trabajando" value={trabajando} accent="#198754" />
                 <KpiCard icon="☕" label="En pausa" value={pausas} accent="#fd7e14" />
                 <KpiCard icon="🚨" label="Llegadas tarde" value={llegadasTarde} accent="#dc3545" />
                 <KpiCard icon="📌" label="Incidencias pendientes" value={incidencias.length} accent="#6f42c1" />

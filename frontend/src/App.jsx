@@ -353,6 +353,7 @@ function App() {
               onMovimientoRegistrado={async () => {
                 await cargarEstado();
                 await cargarResumen();
+                window.dispatchEvent(new Event("datos-actualizados"));
               }}
             />
 
@@ -360,7 +361,8 @@ function App() {
               asesor={asesor}
               asesorNombre={asesorSeleccionado?.nombre}
               onVentaRegistrada={async () => {
-                // Callback reservado para futuras actualizaciones
+                window.dispatchEvent(new Event("venta-registrada"));
+                window.dispatchEvent(new Event("datos-actualizados"));
               }}
             />
 

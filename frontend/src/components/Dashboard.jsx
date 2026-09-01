@@ -191,8 +191,13 @@ export default function Dashboard() {
 
     useEffect(() => {
         cargarDashboard();
+        const actualizar = () => cargarDashboard();
+        window.addEventListener("datos-actualizados", actualizar);
         const intervalo = setInterval(cargarDashboard, 5000);
-        return () => clearInterval(intervalo);
+        return () => {
+            window.removeEventListener("datos-actualizados", actualizar);
+            clearInterval(intervalo);
+        };
     }, []);
 
     useEffect(() => {

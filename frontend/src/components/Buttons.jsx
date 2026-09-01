@@ -188,6 +188,7 @@ export default function Buttons({
 
 
                 await onMovimientoRegistrado();
+                window.dispatchEvent(new Event("datos-actualizados"));
 
             }
 
@@ -269,6 +270,7 @@ export default function Buttons({
             });
 
             alert("✅ Pausa registrada.");
+            window.dispatchEvent(new Event("datos-actualizados"));
 
             setMostrarModalPausa(false);
             setMotivoPausa("");
@@ -303,6 +305,7 @@ export default function Buttons({
             await api.put(`/incidencias/pausa/${pausaActivaId}/fin`);
 
             alert("✅ Llamadas reanudadas.");
+            window.dispatchEvent(new Event("datos-actualizados"));
 
             setPausaActivaId(null);
 

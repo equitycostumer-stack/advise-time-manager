@@ -313,7 +313,6 @@ export default function Dashboard() {
                                 <p><strong>Inicio:</strong> {a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</p>
                                 <p><strong>Tiempo:</strong> {a.inicio_estado && a.estado !== "SALIDA" ? tiempo : "--:--:--"}</p>
                                 <p><strong>Retraso:</strong> {a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min` : "🟢 Puntual"}</p>
-                                <p><strong>Productivo:</strong> {formatearDuracion(a.tiempo_productivo)}</p>
                                 <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>📋 Ver historial</button>
                             </div>
                         );
@@ -358,4 +357,3 @@ export default function Dashboard() {
         </div>
     );
 }
-

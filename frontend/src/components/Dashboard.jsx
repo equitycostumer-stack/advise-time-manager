@@ -300,19 +300,37 @@ export default function Dashboard() {
                         <option value="DISPONIBLE">Disponible</option>
                     </select>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(255px, 1fr))", gap: "16px" }}>
                     {asesoresVisibles.map((a) => {
                         const inicio = convertirFechaColombia(a.inicio_estado);
                         const segundos = inicio && a.estado !== "SALIDA" ? Math.max(0, Math.floor((ahora - inicio.getTime()) / 1000)) : 0;
                         const tiempo = `${String(Math.floor(segundos / 3600)).padStart(2, "0")}:${String(Math.floor((segundos % 3600) / 60)).padStart(2, "0")}:${String(segundos % 60).padStart(2, "0")}`;
+                        const estado = a.estado || "DISPONIBLE";
+                        const estadoConfig = {
+                            TRABAJANDO: { color: "#198754", fondo: "#e8f7ee", icono: "●" },
+                            BREAK: { color: "#fd7e14", fondo: "#fff2e6", icono: "☕" },
+                            ALMUERZO: { color: "#b7791f", fondo: "#fff8df", icono: "🍽" },
+                            BANO: { color: "#6f42c1", fondo: "#f1ebff", icono: "🚻" },
+                            CAPACITACION: { color: "#0d6efd", fondo: "#eaf2ff", icono: "📚" },
+                            REUNION: { color: "#0891b2", fondo: "#e6f8fb", icono: "👥" },
+                            SALIDA: { color: "#6c757d", fondo: "#f1f3f5", icono: "○" },
+                            DISPONIBLE: { color: "#6c757d", fondo: "#f1f3f5", icono: "○" }
+                        }[estado] || { color: palette.gold, fondo: "#eef5ff", icono: "●" };
                         return (
-                            <div key={a.id} style={{ background: palette.surface, border: `1px solid ${a.llego_tarde ? palette.red : palette.border}`, borderLeft: `5px solid ${a.estado === "TRABAJANDO" ? "#7CCB8A" : palette.gold}`, borderRadius: "10px", padding: "14px" }}>
-                                <h3 style={{ color: palette.gold, margin: "0 0 10px", fontSize: "17px" }}>👤 {a.nombre}</h3>
-                                <p><strong>Estado:</strong> {a.estado || "DISPONIBLE"}</p>
-                                <p><strong>Inicio:</strong> {a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</p>
-                                <p><strong>Tiempo:</strong> {a.inicio_estado && a.estado !== "SALIDA" ? tiempo : "--:--:--"}</p>
-                                <p><strong>Retraso:</strong> {a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min` : "🟢 Puntual"}</p>
-                                <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>📋 Ver historial</button>
+                            <div key={a.id} style={{ background: "linear-gradient(145deg, #ffffff 0%, #f7fbf8 100%)", border: `1px solid ${a.llego_tarde ? "#f1aeb5" : "#d9ebe0"}`, borderTop: `4px solid ${estadoConfig.color}`, borderRadius: "16px", padding: "18px", boxShadow: "0 8px 20px rgba(35, 90, 62, .08)", transition: "transform .2s ease, box-shadow .2s ease" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                                        <div style={{ width: "40px", height: "40px", borderRadius: "12px", display: "grid", placeItems: "center", background: estadoConfig.fondo, color: estadoConfig.color, fontSize: "18px", flexShrink: 0 }}>{estadoConfig.icono}</div>
+                                        <div style={{ minWidth: 0 }}><h3 style={{ color: "#245b3a", margin: 0, fontSize: "17px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{a.nombre}</h3><span style={{ color: "#789184", fontSize: "12px" }}>Asesor operativo</span></div>
+                                    </div>
+                                    <span style={{ background: estadoConfig.fondo, color: estadoConfig.color, borderRadius: "999px", padding: "5px 9px", fontSize: "11px", fontWeight: "800", whiteSpace: "nowrap" }}>{estado}</span>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "9px", marginBottom: "14px" }}>
+                                    <div style={{ background: "#f3f8f4", borderRadius: "10px", padding: "10px" }}><div style={{ color: "#789184", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>Inicio</div><strong style={{ color: "#245b3a", fontSize: "14px" }}>{a.inicio_estado ? formatearHoraColombia(a.inicio_estado) : "--:--"}</strong></div>
+                                    <div style={{ background: "#f3f8f4", borderRadius: "10px", padding: "10px" }}><div style={{ color: "#789184", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>En estado</div><strong style={{ color: "#245b3a", fontSize: "14px", fontVariantNumeric: "tabular-nums" }}>{a.inicio_estado && estado !== "SALIDA" ? tiempo : "--:--:--"}</strong></div>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 14px", borderTop: "1px solid #e4efe7" }}><span style={{ color: "#789184", fontSize: "13px", fontWeight: "700" }}>Puntualidad</span><span style={{ color: a.llego_tarde ? "#dc3545" : "#198754", fontWeight: "800", fontSize: "13px" }}>{a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min tarde` : "🟢 Puntual"}</span></div>
+                                <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "11px 14px", background: "#245b3a", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer", boxShadow: "0 5px 12px rgba(36,91,58,.18)" }}>📋 Abrir historial</button>
                             </div>
                         );
                     })}

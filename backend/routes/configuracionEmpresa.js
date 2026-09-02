@@ -4,9 +4,10 @@ const controller = require("../controllers/configuracionEmpresaController");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarRol = require("../middleware/rolesMiddleware");
 
-router.use(verificarToken);
-router.use(verificarRol("ADMINISTRADOR"));
-router.get("/", controller.obtener);
-router.put("/", controller.actualizar);
+// La información institucional puede ser consultada por cualquier usuario autenticado.
+router.get("/", verificarToken, controller.obtener);
+
+// Las modificaciones continúan restringidas al rol ADMINISTRADOR.
+router.put("/", verificarToken, verificarRol("ADMINISTRADOR"), controller.actualizar);
 
 module.exports = router;

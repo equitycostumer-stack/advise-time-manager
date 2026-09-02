@@ -38,6 +38,10 @@ export default function ConfiguracionHorarios() {
     const [cargandoEmpresa, setCargandoEmpresa] = useState(false);
     const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
     const [mensajeEmpresa, setMensajeEmpresa] = useState("");
+    const [ventasConfig, setVentasConfig] = useState({ moneda: "USD", simbolo_moneda: "$", permitir_recaudo: true, permitir_recaudo_cero: true, recaudo_no_supera_venta: true, ranking_activo: true, ranking_visible_asesores: true, criterio_ranking: "RECAUDO" });
+    const [cargandoVentas, setCargandoVentas] = useState(false);
+    const [guardandoVentas, setGuardandoVentas] = useState(false);
+    const [mensajeVentas, setMensajeVentas] = useState("");
 
     useEffect(() => {
         if (usuario?.rol !== "ADMINISTRADOR") return;
@@ -124,6 +128,22 @@ export default function ConfiguracionHorarios() {
     }
 
     function cambiarEmpresa(campo, valor) { setEmpresa((actual) => ({ ...actual, [campo]: valor })); }
+
+    async function cargarVentasConfig() {
+        setCargandoVentas(true); setMensajeVentas("");
+        try { const { data } = await api.get("/configuracion-ventas"); if (data?.data) setVentasConfig((actual) => ({ ...actual, ...data.data })); }
+        catch (error) { setMensajeVentas(error.response?.data?.mensaje || "No fue posible cargar la configuración de ventas."); }
+        finally { setCargandoVentas(false); }
+    }
+
+    async function guardarVentasConfig() {
+        setGuardandoVentas(true); setMensajeVentas("");
+        try { const { data } = await api.put("/configuracion-ventas", ventasConfig); if (!data?.ok) throw new Error(data?.mensaje || "No fue posible guardar la configuración."); setVentasConfig((actual) => ({ ...actual, ...(data.data || {}) })); setMensajeVentas("Configuración de ventas guardada correctamente."); }
+        catch (error) { setMensajeVentas(error.response?.data?.mensaje || error.message || "No fue posible guardar la configuración."); }
+        finally { setGuardandoVentas(false); }
+    }
+
+    function cambiarVentas(campo, valor) { setVentasConfig((actual) => ({ ...actual, [campo]: valor })); }
 
     function cambiarUsuario(id, campo, valor) {
         setUsuarios((actuales) => actuales.map((item) => item.id === id ? { ...item, [campo]: valor } : item));
@@ -252,9 +272,16 @@ export default function ConfiguracionHorarios() {
                             </div>}
                         </details>
 
-                        <details style={{ marginTop: "8px" }}>
+                        <details style={{ marginTop: "8px" }} onToggle={(e) => { if (e.currentTarget.open && !mensajeVentas && !cargandoVentas) cargarVentasConfig(); }}>
                             <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>💰 Ventas y recaudos</summary>
-                            <p style={{ color: "#4b5563", marginBottom: 0 }}>El registro de recaudo y el ranking quincenal permanecen activos. Sus reglas editables se agregarán después de crear la tabla de configuración correspondiente.</p>
+                            {cargandoVentas ? <p>Cargando configuración...</p> : <div style={{ display: "grid", gap: "10px" }}>
+                                <label style={{ color: "#245b3a", fontWeight: "bold" }}>Moneda<select value={ventasConfig.moneda} onChange={(e) => cambiarVentas("moneda", e.target.value)} style={input}><option value="USD">USD</option><option value="COP">COP</option><option value="EUR">EUR</option></select></label>
+                                <label style={{ color: "#245b3a", fontWeight: "bold" }}>Símbolo de moneda<input value={ventasConfig.simbolo_moneda} onChange={(e) => cambiarVentas("simbolo_moneda", e.target.value)} maxLength="5" style={input} /></label>
+                                {[['permitir_recaudo','Permitir registrar recaudo'],['permitir_recaudo_cero','Permitir recaudo en cero'],['recaudo_no_supera_venta','Impedir recaudo mayor al valor de venta'],['ranking_activo','Activar ranking quincenal'],['ranking_visible_asesores','Mostrar ranking a asesores']].map(([campo, etiqueta]) => <label key={campo} style={{ color: "#4b5563" }}><input type="checkbox" checked={Boolean(ventasConfig[campo])} onChange={(e) => cambiarVentas(campo, e.target.checked)} /> {etiqueta}</label>)}
+                                <label style={{ color: "#245b3a", fontWeight: "bold" }}>Criterio del ranking<select value={ventasConfig.criterio_ranking} onChange={(e) => cambiarVentas("criterio_ranking", e.target.value)} style={input}><option value="RECAUDO">Mayor recaudo</option><option value="VALOR_VENDIDO">Mayor valor vendido</option><option value="CANTIDAD_VENTAS">Mayor cantidad de ventas</option></select></label>
+                                <button type="button" onClick={guardarVentasConfig} disabled={guardandoVentas} style={{ justifySelf: "start", padding: "10px 16px", background: "#245b3a", color: "#fff", border: 0, borderRadius: "7px", fontWeight: "bold" }}>{guardandoVentas ? "Guardando..." : "Guardar ventas y recaudos"}</button>
+                                {mensajeVentas && <p style={{ color: mensajeVentas.includes("correctamente") ? "#198754" : "#c0392b", fontWeight: "bold" }}>{mensajeVentas}</p>}
+                            </div>}
                         </details>
                 </div>
             )}

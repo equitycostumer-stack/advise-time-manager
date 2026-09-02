@@ -6,6 +6,19 @@
 const db = require("../config/db");
 
 const obtenerDashboard = async (req, res) => {
+    const esAdministrador = req.usuario?.rol === "ADMINISTRADOR";
+    const asesorIdPropio = Number(req.usuario?.asesor_id);
+
+    if (!esAdministrador && (!Number.isInteger(asesorIdPropio) || asesorIdPropio <= 0)) {
+        return res.status(403).json({
+            ok: false,
+            mensaje: "Este usuario no tiene un asesor vinculado."
+        });
+    }
+
+    const parametros = esAdministrador ? [] : [asesorIdPropio];
+    const filtroAsesor = esAdministrador ? "" : "AND a.id = $1";
+
     const sql = `
         SELECT
             a.id,
@@ -36,11 +49,12 @@ const obtenerDashboard = async (req, res) => {
             GROUP BY asesor_id
         ) j ON j.asesor_id = a.id
         WHERE a.activo = 1
+          ${filtroAsesor}
         ORDER BY a.nombre ASC
     `;
 
     try {
-        const resultado = await db.query(sql);
+        const resultado = await db.query(sql, parametros);
         const rows = resultado.rows || [];
         const asesores = rows.map((asesor) => ({
             ...asesor,

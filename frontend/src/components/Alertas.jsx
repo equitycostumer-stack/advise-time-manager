@@ -2,7 +2,7 @@
 // COMPONENTE ALERTAS
 // ======================================================
 
-export default function Alertas({ asesores = [], incidencias = [] }) {
+export default function Alertas({ asesores = [], incidencias = [], ahora = 0 }) {
     const alertas = [];
 
     // Las llegadas tarde salen de incidencias reales, no de campos antiguos del Dashboard.
@@ -18,7 +18,7 @@ export default function Alertas({ asesores = [], incidencias = [] }) {
         if (!asesor.inicio_estado) return;
 
         const inicio = new Date(asesor.inicio_estado).getTime();
-        const minutos = Number.isNaN(inicio) ? 0 : Math.max(0, Math.floor((Date.now() - inicio) / 60000));
+        const minutos = Number.isNaN(inicio) ? 0 : Math.max(0, Math.floor((ahora - inicio) / 60000));
 
         if (asesor.estado === "BREAK" && minutos > 15) {
             alertas.push(`☕ ${asesor.nombre} lleva ${minutos} minutos en Break`);

@@ -1,17 +1,13 @@
-const ResumenJornadaService = require("../services/ResumenJornadaService");
-const horariosRepository = require("../repositories/horariosRepository");
 const movimientosRepository = require("../repositories/movimientosRepository");
 const { registrarIncidencia } = require("../controllers/incidenciasController");
+const resumenJornadaService = require("./resumenJornadaService");
 
-// Mocks de dependencias externas
-jest.mock("../repositories/horariosRepository");
 jest.mock("../repositories/movimientosRepository");
 jest.mock("../controllers/incidenciasController");
 
-describe("ResumenJornadaService - Unit Tests", () => {
+describe("ResumenJornadaService", () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        // Fijar el tiempo "ahora" para pruebas deterministas cuando la jornada esté abierta
         jest.useFakeTimers().setSystemTime(new Date("2026-08-25T17:00:00-05:00"));
     });
 
@@ -19,11 +15,8 @@ describe("ResumenJornadaService - Unit Tests", () => {
         jest.useRealTimers();
     });
 
-    // ======================================================
-    // CÁLCULO DE TIEMPOS Y PRODUCTIVIDAD
-    // ======================================================
     describe("calcularTiempos", () => {
-        it("debe calcular correctamente los tiempos con jornada cerrada (con almuerzo excluido)", () => {
+        it("calcula los tiempos con almuerzo excluido del tiempo trabajado", () => {
             const movimientos = [
                 { tipo: "ENTRADA", fecha_hora: "2026-08-25 08:00:00" },
                 { tipo: "ALMUERZO_INICIO", fecha_hora: "2026-08-25 12:00:00" },
@@ -31,77 +24,74 @@ describe("ResumenJornadaService - Unit Tests", () => {
                 { tipo: "SALIDA", fecha_hora: "2026-08-25 17:00:00" }
             ];
 
-            const tiempos = ResumenJornadaService.calcularTiempos(movimientos);
-
+            const tiempos = resumenJornadaService.calcularTiempos(movimientos);
             const unaHora = 60 * 60 * 1000;
-            expect(tiempos.tiempoAlmuerzo).toBe(1 * unaHora);
-            expect(tiempos.tiempoTrabajado).toBe(8 * unaHora); // 4h antes + 4h después de almuerzo
+
+            expect(tiempos.tiempoAlmuerzo).toBe(unaHora);
+            expect(tiempos.tiempoTrabajado).toBe(8 * unaHora);
             expect(tiempos.tiempoProductivo).toBe(8 * unaHora);
         });
 
-        it("debe descontar pausas (break, baño, reuniones) del tiempo productivo", () => {
+        it("descuenta break, baño y reunión del tiempo productivo", () => {
             const movimientos = [
                 { tipo: "ENTRADA", fecha_hora: "2026-08-25 08:00:00" },
-                { tipo: "BREAK_INICIO", fecha_hora: "2026-08-25 10:00:00" }, // 15m break
+                { tipo: "BREAK_INICIO", fecha_hora: "2026-08-25 10:00:00" },
                 { tipo: "BREAK_FIN", fecha_hora: "2026-08-25 10:15:00" },
-                { tipo: "BANO_INICIO", fecha_hora: "2026-08-25 11:00:00" }, // 10m baño
+                { tipo: "BANO_INICIO", fecha_hora: "2026-08-25 11:00:00" },
                 { tipo: "BANO_FIN", fecha_hora: "2026-08-25 11:10:00" },
                 { tipo: "SALIDA", fecha_hora: "2026-08-25 12:00:00" }
             ];
 
-            const tiempos = ResumenJornadaService.calcularTiempos(movimientos);
-
-            const quinceMin = 15 * 60 * 1000;
-            const diezMin = 10 * 60 * 1000;
+            const tiempos = resumenJornadaService.calcularTiempos(movimientos);
+            const quinceMinutos = 15 * 60 * 1000;
+            const diezMinutos = 10 * 60 * 1000;
             const cuatroHoras = 4 * 60 * 60 * 1000;
 
-            expect(tiempos.tiempoBreak).toBe(quinceMin);
-            expect(tiempos.tiempoBano).toBe(diezMin);
+            expect(tiempos.tiempoBreak).toBe(quinceMinutos);
+            expect(tiempos.tiempoBano).toBe(diezMinutos);
             expect(tiempos.tiempoTrabajado).toBe(cuatroHoras);
-            // Productivo = Trabajado (4h) - Break (15m) - Baño (10m)
-            expect(tiempos.tiempoProductivo).toBe(cuatroHoras - quinceMin - diezMin);
+            expect(tiempos.tiempoProductivo).toBe(cuatroHoras - quinceMinutos - diezMinutos);
         });
 
-        it("debe acumular tiempo hasta el momento actual si la jornada no ha cerrado", () => {
+        it("acumula tiempo hasta el momento actual si la jornada sigue abierta", () => {
             const movimientos = [
                 { tipo: "ENTRADA", fecha_hora: "2026-08-25 08:00:00" }
             ];
-            // Hora actual configurada en `beforeEach`: 17:00:00 (9 horas transcurridas)
 
-            const tiempos = ResumenJornadaService.calcularTiempos(movimientos);
+            const tiempos = resumenJornadaService.calcularTiempos(movimientos);
 
-            const nueveHoras = 9 * 60 * 60 * 1000;
-            expect(tiempos.tiempoTrabajado).toBe(nueveHoras);
-            expect(tiempos.tiempoProductivo).toBe(nueveHoras);
+            expect(tiempos.tiempoTrabajado).toBe(9 * 60 * 60 * 1000);
+            expect(tiempos.tiempoProductivo).toBe(9 * 60 * 60 * 1000);
         });
     });
 
-    // ======================================================
-    // CÁLCULO DE RETRASO
-    // ======================================================
     describe("calcularRetraso", () => {
-        it("debe detectar llegada tarde y calcular los minutos de retraso exactos", async () => {
-            // Horario oficial: 08:00:00
-            horariosRepository.obtenerHorarioDia.mockResolvedValue({ hora_entrada: "08:00:00" });
+        it("detecta una llegada tarde usando el horario persistido del día", async () => {
+            movimientosRepository.obtenerHorarioDelDia.mockResolvedValue({
+                hora_entrada: "08:00:00",
+                tolerancia_minutos: 0
+            });
 
-            // Entrada del asesor: 08:25:00 (Martes)
-            const horaEntrada = "2026-08-25 08:25:00";
-
-            const resultado = await ResumenJornadaService.calcularRetraso(horaEntrada);
+            const resultado = await resumenJornadaService.calcularRetraso(
+                "2026-08-25 08:25:00"
+            );
 
             expect(resultado).toEqual({
                 llego_tarde: 1,
                 minutos_retraso: 25
             });
-            expect(horariosRepository.obtenerHorarioDia).toHaveBeenCalledWith("MARTES");
+            expect(movimientosRepository.obtenerHorarioDelDia).toHaveBeenCalledWith(2);
         });
 
-        it("debe retornar 0 minutos de retraso si el asesor llega a tiempo o antes", async () => {
-            horariosRepository.obtenerHorarioDia.mockResolvedValue({ hora_entrada: "08:00:00" });
+        it("no marca retraso si la llegada está dentro de la tolerancia", async () => {
+            movimientosRepository.obtenerHorarioDelDia.mockResolvedValue({
+                hora_entrada: "08:00:00",
+                tolerancia_minutos: 10
+            });
 
-            const horaEntrada = "2026-08-25 07:55:00";
-
-            const resultado = await ResumenJornadaService.calcularRetraso(horaEntrada);
+            const resultado = await resumenJornadaService.calcularRetraso(
+                "2026-08-25 08:10:00"
+            );
 
             expect(resultado).toEqual({
                 llego_tarde: 0,
@@ -110,33 +100,30 @@ describe("ResumenJornadaService - Unit Tests", () => {
         });
     });
 
-    // ======================================================
-    // FLUJO COMPLETO (actualizar)
-    // ======================================================
     describe("actualizar", () => {
-        it("debe persistir el resumen y registrar una incidencia si el asesor llegó tarde", async () => {
+        it("persiste el resumen y registra incidencia si el asesor llegó tarde", async () => {
             const asesorId = 101;
             const movimientos = [
                 { tipo: "ENTRADA", fecha_hora: "2026-08-25 08:15:00" },
                 { tipo: "SALIDA", fecha_hora: "2026-08-25 17:00:00" }
             ];
 
-            movimientosRepository.obtenerMovimientosDelDia.mockResolvedValue(movimientos);
-            movimientosRepository.obtenerResumenDia.mockResolvedValue({ id: 50 });
-            horariosRepository.obtenerHorarioDia.mockResolvedValue({ hora_entrada: "08:00:00" });
-            registrarIncidencia.mockResolvedValue(true);
+            movimientosRepository.obtenerMovimientosDesdeUltimaEntrada.mockResolvedValue(movimientos);
+            movimientosRepository.obtenerResumenPorFecha.mockResolvedValue({ id: 50 });
+            movimientosRepository.obtenerHorarioDelDia.mockResolvedValue({
+                hora_entrada: "08:00:00",
+                tolerancia_minutos: 0
+            });
+            movimientosRepository.actualizarResumenDia.mockResolvedValue(undefined);
 
-            await ResumenJornadaService.actualizar(asesorId);
+            await resumenJornadaService.actualizar(asesorId);
 
-            // Verifica registro de incidencia
             expect(registrarIncidencia).toHaveBeenCalledWith(
                 asesorId,
                 "LLEGADA TARDE",
                 "ALTA",
                 "15 minutos de retraso"
             );
-
-            // Verifica persistencia en DB
             expect(movimientosRepository.actualizarResumenDia).toHaveBeenCalledWith(
                 50,
                 expect.objectContaining({
@@ -148,22 +135,26 @@ describe("ResumenJornadaService - Unit Tests", () => {
             );
         });
 
-        it("debe ignorar marcas previas a la última ENTRADA registrada", async () => {
+        it("procesa únicamente la jornada devuelta desde la última entrada", async () => {
             const asesorId = 102;
             const movimientos = [
-                { tipo: "ENTRADA", fecha_hora: "2026-08-25 07:00:00" },
-                { tipo: "SALIDA", fecha_hora: "2026-08-25 07:30:00" },
-                // Segunda entrada (jornada válida a procesar)
                 { tipo: "ENTRADA", fecha_hora: "2026-08-25 08:00:00" },
                 { tipo: "SALIDA", fecha_hora: "2026-08-25 16:00:00" }
             ];
 
-            movimientosRepository.obtenerMovimientosDelDia.mockResolvedValue(movimientos);
-            movimientosRepository.obtenerResumenDia.mockResolvedValue({ id: 51 });
-            horariosRepository.obtenerHorarioDia.mockResolvedValue({ hora_entrada: "08:00:00" });
+            movimientosRepository.obtenerMovimientosDesdeUltimaEntrada.mockResolvedValue(movimientos);
+            movimientosRepository.obtenerResumenPorFecha.mockResolvedValue({ id: 51 });
+            movimientosRepository.obtenerHorarioDelDia.mockResolvedValue({
+                hora_entrada: "08:00:00",
+                tolerancia_minutos: 0
+            });
 
-            await ResumenJornadaService.actualizar(asesorId);
+            await resumenJornadaService.actualizar(asesorId);
 
+            expect(movimientosRepository.obtenerMovimientosDesdeUltimaEntrada)
+                .toHaveBeenCalledWith(asesorId);
+            expect(movimientosRepository.obtenerResumenPorFecha)
+                .toHaveBeenCalledWith(asesorId, "2026-08-25 08:00:00");
             expect(movimientosRepository.actualizarResumenDia).toHaveBeenCalledWith(
                 51,
                 expect.objectContaining({

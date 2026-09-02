@@ -120,7 +120,24 @@ const registrarPausaLlamadas = async (req, res) => {
 
 const revisarIncidencia = async (req, res) => {
   const { id } = req.params;
-  const { coach, comentario } = req.body;
+  const comentario = typeof req.body?.comentario === "string"
+    ? req.body.comentario.trim()
+    : null;
+  const revisor = req.usuario?.usuario || (req.usuario?.id ? String(req.usuario.id) : null);
+
+  if (!revisor) {
+    return res.status(401).json({
+      ok: false,
+      mensaje: "No fue posible identificar al usuario revisor."
+    });
+  }
+
+  if (comentario && comentario.length > 1000) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: "El comentario no puede superar los 1000 caracteres."
+    });
+  }
 
   try {
     const sql = `
@@ -133,7 +150,14 @@ const revisarIncidencia = async (req, res) => {
       WHERE id = $3
     `;
 
-    await db.query(sql, [coach, comentario, id]);
+    const resultado = await db.query(sql, [revisor, comentario || null, id]);
+
+    if (!resultado.rowCount) {
+      return res.status(404).json({
+        ok: false,
+        mensaje: "Incidencia no encontrada."
+      });
+    }
 
     return res.json({
       ok: true,
@@ -193,19 +217,9 @@ const finalizarPausaLlamadas = async (req, res) => {
 const obtenerPausaActiva = async (req, res) => {
   const { asesorId } = req.params;
 
-  try {
-    const sql = `
-      SELECT id, motivo:detalle AS motivo, detalle, fecha_hora
-      FROM incidencias
-      WHERE asesor_id = $1
-        AND tipo = 'PAUSA DE LLAMADAS'
-        AND fecha_fin IS NULL
-        AND DATE(fecha_hora) = CURRENT_DATE
-      ORDER BY fecha_hora DESC
-      LIMIT 1
-    `;
-
+    try {
     const { rows } = await db.query(
+
       `SELECT id, detalle, fecha_hora
        FROM incidencias
        WHERE asesor_id = $1

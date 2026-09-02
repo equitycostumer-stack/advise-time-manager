@@ -16,6 +16,7 @@ const {
 
 const verificarToken = require("../middleware/authMiddleware");
 const verificarPropioAsesor = require("../middleware/verificarPropioAsesor");
+const verificarRol = require("../middleware/rolesMiddleware");
 
 router.use(verificarToken);
 
@@ -24,6 +25,19 @@ router.use(verificarToken);
 // ======================================================
 
 router.get("/", async (req, res) => {
+    const esAdministrador = req.usuario?.rol === "ADMINISTRADOR";
+    const asesorIdPropio = Number(req.usuario?.asesor_id);
+
+    if (!esAdministrador && (!Number.isInteger(asesorIdPropio) || asesorIdPropio <= 0)) {
+        return res.status(403).json({
+            ok: false,
+            mensaje: "Este usuario no tiene un asesor vinculado."
+        });
+    }
+
+    const parametros = esAdministrador ? [] : [asesorIdPropio];
+    const filtroAsesor = esAdministrador ? "" : "AND i.asesor_id = $1";
+
     const sql = `
         SELECT
             i.id,
@@ -40,13 +54,14 @@ router.get("/", async (req, res) => {
             a.nombre
         FROM incidencias i
         INNER JOIN asesores a ON a.id = i.asesor_id
-        WHERE i.revisada = 0
+            WHERE i.revisada = 0
+          ${filtroAsesor}
           AND DATE(i.fecha_hora) = CURRENT_DATE
         ORDER BY i.fecha_hora DESC
     `;
 
     try {
-        const { rows } = await db.query(sql);
+        const { rows } = await db.query(sql, parametros);
         return res.json(rows);
     } catch (err) {
         console.error("❌ Error obteniendo incidencias pendientes:", err);
@@ -61,7 +76,7 @@ router.get("/", async (req, res) => {
 // HISTORIAL DEL DÍA POR ASESOR
 // ======================================================
 
-router.get("/asesor/:asesorId", async (req, res) => {
+router.get("/asesor/:asesorId", verificarPropioAsesor, async (req, res) => {
     const sql = `
         SELECT
             id,
@@ -96,7 +111,7 @@ router.get("/asesor/:asesorId", async (req, res) => {
 // REVISAR INCIDENCIA
 // ======================================================
 
-router.put("/:id/revisar", revisarIncidencia);
+router.put("/:id/revisar", verificarRol("ADMINISTRADOR"), revisarIncidencia);
 
 // ======================================================
 // PAUSA DE LLAMADAS
@@ -124,10 +139,22 @@ router.get("/historial", async (req, res) => {
         fecha,
         fecha_desde: fechaDesde,
         fecha_hasta: fechaHasta,
-        asesor_id: asesorId,
+        asesor_id: asesorIdSolicitado,
         tipo,
         nivel
     } = req.query;
+
+    const esAdministrador = req.usuario?.rol === "ADMINISTRADOR";
+    const asesorIdFiltro = esAdministrador
+        ? asesorIdSolicitado
+        : req.usuario?.asesor_id;
+
+    if (!esAdministrador && (!asesorIdFiltro || !Number.isInteger(Number(asesorIdFiltro)))) {
+        return res.status(403).json({
+            ok: false,
+            mensaje: "No tiene permiso para consultar incidencias de otros asesores."
+        });
+    }
 
     const desde = fechaDesde || fecha || null;
     const hasta = fechaHasta || fecha || desde;
@@ -144,8 +171,8 @@ router.get("/historial", async (req, res) => {
         condiciones.push(`DATE(i.fecha_hora) <= $${valores.length}`);
     }
 
-    if (asesorId) {
-        const id = Number(asesorId);
+    if (asesorIdFiltro) {
+        const id = Number(asesorIdFiltro);
         if (!Number.isInteger(id) || id <= 0) {
             return res.status(400).json({
                 ok: false,

@@ -349,7 +349,7 @@ function App() {
               estado={estado}
               inicioJornada={inicioJornada}
               setEstado={setEstado}
-              setResumen={setResumen}
+              
               onMovimientoRegistrado={async () => {
                 await cargarEstado();
                 await cargarResumen();

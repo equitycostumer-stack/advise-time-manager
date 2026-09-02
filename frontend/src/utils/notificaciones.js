@@ -2,7 +2,7 @@
 // CENTRO DE NOTIFICACIONES
 // ==============================================
 
-function enviarNotificacion(incidencia) {
+export function enviarNotificacion(incidencia) {
 
     console.log("");
 
@@ -32,8 +32,4 @@ function enviarNotificacion(incidencia) {
 
 }
 
-module.exports = {
 
-    enviarNotificacion
-
-};

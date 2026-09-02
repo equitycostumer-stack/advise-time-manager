@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 export default function Buttons({
@@ -10,8 +10,7 @@ export default function Buttons({
     inicioJornada,
 
     setEstado,
-
-    setResumen,
+
 
     onMovimientoRegistrado
 

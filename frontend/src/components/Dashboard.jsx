@@ -166,12 +166,11 @@ export default function Dashboard() {
     });
     const [historial, setHistorial] = useState([]);
     const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
-    const [resumenJornada, setResumenJornada] = useState(null);
-    const [ahora, setAhora] = useState(Date.now());
+    const [ahora, setAhora] = useState(() => Date.now());
     const [mostrarHistorialIncidencias, setMostrarHistorialIncidencias] = useState(false);
     const [listaHistorialGeneral, setListaHistorialGeneral] = useState([]);
     const [cargandoHistorialGeneral, setCargandoHistorialGeneral] = useState(false);
-    const [mostrarHistorialGeneral, setMostrarHistorialGeneral] = useState(false);
+    
     const [filtrosHistorialGeneral, setFiltrosHistorialGeneral] = useState({ fechaDesde: "", fechaHasta: "", asesorId: "", tipo: "", nivel: "" });
     const [filtroEstado, setFiltroEstado] = useState("");
 
@@ -207,16 +206,12 @@ export default function Dashboard() {
 
     async function verHistorial(asesor) {
         try {
-            const [historialRes, resumenRes] = await Promise.all([
-                api.get(`/movimientos/historial/${asesor.id}`),
-                api.get(`/movimientos/resumen/${asesor.id}`)
-            ]);
+            const historialRes = await api.get(`/movimientos/historial/${asesor.id}`);
             let movimientos = [];
             if (Array.isArray(historialRes.data)) movimientos = historialRes.data;
             else if (Array.isArray(historialRes.data?.data)) movimientos = historialRes.data.data;
             else if (Array.isArray(historialRes.data?.data?.movimientos)) movimientos = historialRes.data.data.movimientos;
             setHistorial(movimientos);
-            setResumenJornada(resumenRes.data?.data?.resumen || resumenRes.data?.resumen || null);
             setAsesorSeleccionado(asesor);
         } catch (error) {
             console.error("❌ ERROR CARGANDO HISTORIAL", error);
@@ -257,7 +252,7 @@ export default function Dashboard() {
         setListaHistorialGeneral([]);
     }
 
-    const trabajando = asesores.filter((a) => a.estado === "TRABAJANDO").length;
+    
     const pausas = asesores.filter((a) => ["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION"].includes(a.estado)).length;
     const llegadasTarde = asesores.filter((a) => a.llego_tarde).length;
     const asesoresConJornada = asesores.filter((a) => Number(a.tiempo_trabajado) > 0);
@@ -357,7 +352,7 @@ export default function Dashboard() {
             </Modulo>
 
             <Modulo title="🚨 Incidencias pendientes" count={incidencias.length}>
-                <Alertas asesores={asesores} incidencias={incidencias} />
+                <Alertas asesores={asesores} incidencias={incidencias} ahora={ahora} />
                 <CentroIncidencias incidencias={incidencias} />
                 <PanelIncidencias incidencias={incidencias} onActualizar={cargarDashboard} />
             </Modulo>

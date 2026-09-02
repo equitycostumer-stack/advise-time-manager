@@ -63,6 +63,7 @@ router.get(
 
 router.get(
     "/resumen-jornada/:asesorId",
+    verificarPropioAsesor,
     movimientosController.obtenerResumenJornada
 );
 

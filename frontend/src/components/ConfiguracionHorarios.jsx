@@ -98,7 +98,7 @@ export default function ConfiguracionHorarios() {
                     cursor: "pointer"
                 }}
             >
-                ⚙️ Configuración de horarios
+                ⚙️ Configuración
                 <span style={{ float: "right" }}>{abierto ? "▲" : "▼"}</span>
             </button>
 

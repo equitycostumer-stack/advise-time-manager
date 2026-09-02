@@ -35,6 +35,7 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173",
+    "https://equity-time-manager-seven.vercel.app",
     "https://advise-time-manager-seven.vercel.app"
 ];
 
@@ -86,9 +87,11 @@ console.log("✓ reportes");
 app.use("/api/usuarios", require("./routes/usuariosRoutes"));
 console.log("✓ usuarios");
 
-// Configuración general de empresa: requiere token y rol ADMINISTRADOR.
 app.use("/api/configuracion-empresa", require("./routes/configuracionEmpresa"));
 console.log("✓ configuracion empresa");
+
+app.use("/api/configuracion-ventas", require("./routes/configuracionVentas"));
+console.log("✓ configuracion ventas");
 
 app.use("/api/notificaciones", require("./routes/notificaciones"));
 console.log("✓ notificaciones");

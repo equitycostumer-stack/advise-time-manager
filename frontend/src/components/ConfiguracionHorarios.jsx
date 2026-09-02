@@ -104,9 +104,24 @@ export default function ConfiguracionHorarios() {
 
             {abierto && (
                 <div style={{ background: "#fff", border: "1px solid #0d6efd", borderTop: "none", borderRadius: "0 0 10px 10px", padding: "20px" }}>
-                    <p style={{ color: "#666", marginTop: 0 }}>
-                        Solo administradores pueden modificar esta configuración. Los cambios afectan las nuevas entradas.
+                    <p style={{ color: "#4b5563", marginTop: 0 }}>
+                        Solo administradores pueden modificar horarios, usuarios y parámetros operativos.
                     </p>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "10px", marginBottom: "18px" }}>
+                        <div style={{ padding: "12px 14px", borderRadius: "9px", background: "#f7fbf8", border: "1px solid #dcebe2", color: "#245b3a" }}>
+                            <strong>🏢 Empresa</strong><br />
+                            <span style={{ color: "#4b5563", fontSize: "14px" }}>Equity Line Professional Services</span>
+                        </div>
+                        <div style={{ padding: "12px 14px", borderRadius: "9px", background: "#fffaf0", border: "1px solid #eadca8", color: "#785b00" }}>
+                            <strong>💰 Ventas y recaudos</strong><br />
+                            <span style={{ color: "#4b5563", fontSize: "14px" }}>Recaudo y ranking quincenal activos</span>
+                        </div>
+                    </div>
+
+                    <details open style={{ marginBottom: "16px" }}>
+                        <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>🕒 Horarios operativos</summary>
+                        <p style={{ color: "#4b5563", fontSize: "14px" }}>Los cambios se aplican a las nuevas entradas.</p>
 
                     {cargando ? <p>Cargando horarios...</p> : (
                         <div style={{ overflowX: "auto" }}>
@@ -132,10 +147,26 @@ export default function ConfiguracionHorarios() {
                         </div>
                     )}
 
-                    <button type="button" onClick={guardar} disabled={cargando || guardando} style={{ marginTop: "18px", padding: "11px 18px", background: "#0d6efd", color: "#fff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>
-                        {guardando ? "Guardando..." : "Guardar configuración"}
+                    <button type="button" onClick={guardar} disabled={cargando || guardando} style={{ marginTop: "18px", padding: "11px 18px", background: "#245b3a", color: "#fff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>
+                        {guardando ? "Guardando..." : "Guardar horarios"}
                     </button>
                     {mensaje && <p style={{ color: mensaje.startsWith("Configuración") ? "#198754" : "#dc3545", fontWeight: "bold" }}>{mensaje}</p>}
+                        </details>
+
+                        <details style={{ marginTop: "14px" }}>
+                            <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>👥 Usuarios y contraseñas</summary>
+                            <p style={{ color: "#4b5563", marginBottom: 0 }}>La administración de usuarios y contraseñas se incorporará en este módulo con protección exclusiva para administradores.</p>
+                        </details>
+
+                        <details style={{ marginTop: "8px" }}>
+                            <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>🏢 Información de la empresa</summary>
+                            <p style={{ color: "#4b5563", marginBottom: 0 }}>Empresa: Equity Line Professional Services. Los responsables y mensajes institucionales se conectarán a configuración persistente en la siguiente etapa.</p>
+                        </details>
+
+                        <details style={{ marginTop: "8px" }}>
+                            <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>💰 Ventas y recaudos</summary>
+                            <p style={{ color: "#4b5563", marginBottom: 0 }}>El registro de recaudo y el ranking quincenal permanecen activos. Sus reglas editables se agregarán después de crear la tabla de configuración correspondiente.</p>
+                        </details>
                 </div>
             )}
         </section>

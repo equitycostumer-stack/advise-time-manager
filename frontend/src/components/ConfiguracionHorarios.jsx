@@ -34,6 +34,10 @@ export default function ConfiguracionHorarios() {
     const [cargandoUsuarios, setCargandoUsuarios] = useState(false);
     const [guardandoUsuario, setGuardandoUsuario] = useState(null);
     const [mensajeUsuarios, setMensajeUsuarios] = useState("");
+    const [empresa, setEmpresa] = useState({ nombre_empresa: "", nombre_corto: "", coach: "", customer_service: "", jefe: "", mensaje_dia: "", correo_contacto: "", telefono_contacto: "" });
+    const [cargandoEmpresa, setCargandoEmpresa] = useState(false);
+    const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
+    const [mensajeEmpresa, setMensajeEmpresa] = useState("");
 
     useEffect(() => {
         if (usuario?.rol !== "ADMINISTRADOR") return;
@@ -93,6 +97,33 @@ export default function ConfiguracionHorarios() {
             window.alert(error.response?.data?.mensaje || "No fue posible restablecer la contraseña.");
         }
     }
+
+
+    async function cargarEmpresa() {
+        setCargandoEmpresa(true);
+        setMensajeEmpresa("");
+        try {
+            const { data } = await api.get("/configuracion-empresa");
+            if (data?.data) setEmpresa((actual) => ({ ...actual, ...data.data }));
+        } catch (error) {
+            setMensajeEmpresa(error.response?.data?.mensaje || "No fue posible cargar la información de la empresa.");
+        } finally { setCargandoEmpresa(false); }
+    }
+
+    async function guardarEmpresa() {
+        setGuardandoEmpresa(true);
+        setMensajeEmpresa("");
+        try {
+            const { data } = await api.put("/configuracion-empresa", empresa);
+            if (!data?.ok) throw new Error(data?.mensaje || "No fue posible guardar la información.");
+            setEmpresa((actual) => ({ ...actual, ...(data.data || {}) }));
+            setMensajeEmpresa("Información de la empresa guardada correctamente.");
+        } catch (error) {
+            setMensajeEmpresa(error.response?.data?.mensaje || error.message || "No fue posible guardar la información.");
+        } finally { setGuardandoEmpresa(false); }
+    }
+
+    function cambiarEmpresa(campo, valor) { setEmpresa((actual) => ({ ...actual, [campo]: valor })); }
 
     function cambiarUsuario(id, campo, valor) {
         setUsuarios((actuales) => actuales.map((item) => item.id === id ? { ...item, [campo]: valor } : item));
@@ -211,9 +242,14 @@ export default function ConfiguracionHorarios() {
                             {mensajeUsuarios && <p style={{ color: mensajeUsuarios.includes("correctamente") ? "#198754" : "#c0392b", fontWeight: "bold" }}>{mensajeUsuarios}</p>}
                         </details>
 
-                        <details style={{ marginTop: "8px" }}>
+                        <details style={{ marginTop: "8px" }} onToggle={(e) => { if (e.currentTarget.open && !empresa.nombre_empresa) cargarEmpresa(); }}>
                             <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>🏢 Información de la empresa</summary>
-                            <p style={{ color: "#4b5563", marginBottom: 0 }}>Empresa: Equity Line Professional Services. Los responsables y mensajes institucionales se conectarán a configuración persistente en la siguiente etapa.</p>
+                            {cargandoEmpresa ? <p>Cargando información...</p> : <div style={{ display: "grid", gap: "10px" }}>
+                                {[['nombre_empresa','Nombre de la empresa'],['nombre_corto','Nombre corto'],['coach','Coach'],['customer_service','Customer Services'],['jefe','Jefe o gerente'],['correo_contacto','Correo de contacto'],['telefono_contacto','Teléfono de contacto']].map(([campo, etiqueta]) => <label key={campo} style={{ color: "#245b3a", fontWeight: "bold" }}>{etiqueta}<input value={empresa[campo] || ""} onChange={(e) => cambiarEmpresa(campo, e.target.value)} style={input} /></label>)}
+                                <label style={{ color: "#245b3a", fontWeight: "bold" }}>Mensaje del día<textarea value={empresa.mensaje_dia || ""} onChange={(e) => cambiarEmpresa("mensaje_dia", e.target.value)} rows="3" style={{ ...input, resize: "vertical" }} /></label>
+                                <button type="button" onClick={guardarEmpresa} disabled={guardandoEmpresa} style={{ justifySelf: "start", padding: "10px 16px", background: "#245b3a", color: "#fff", border: 0, borderRadius: "7px", fontWeight: "bold" }}>{guardandoEmpresa ? "Guardando..." : "Guardar información"}</button>
+                                {mensajeEmpresa && <p style={{ color: mensajeEmpresa.includes("correctamente") ? "#198754" : "#c0392b", fontWeight: "bold" }}>{mensajeEmpresa}</p>}
+                            </div>}
                         </details>
 
                         <details style={{ marginTop: "8px" }}>

@@ -30,6 +30,10 @@ export default function ConfiguracionHorarios() {
     const [guardando, setGuardando] = useState(false);
     const [mensaje, setMensaje] = useState("");
     const [abierto, setAbierto] = useState(false);
+    const [usuarios, setUsuarios] = useState([]);
+    const [cargandoUsuarios, setCargandoUsuarios] = useState(false);
+    const [guardandoUsuario, setGuardandoUsuario] = useState(null);
+    const [mensajeUsuarios, setMensajeUsuarios] = useState("");
 
     useEffect(() => {
         if (usuario?.rol !== "ADMINISTRADOR") return;
@@ -46,6 +50,53 @@ export default function ConfiguracionHorarios() {
             })
             .finally(() => setCargando(false));
     }, [usuario]);
+
+    async function cargarUsuarios() {
+        setCargandoUsuarios(true);
+        setMensajeUsuarios("");
+        try {
+            const { data } = await api.get("/usuarios");
+            setUsuarios(Array.isArray(data?.usuarios) ? data.usuarios : []);
+        } catch (error) {
+            console.error("Error cargando usuarios", error);
+            setMensajeUsuarios(error.response?.data?.mensaje || "No fue posible cargar los usuarios.");
+        } finally {
+            setCargandoUsuarios(false);
+        }
+    }
+
+    async function guardarUsuario(item) {
+        setGuardandoUsuario(item.id);
+        setMensajeUsuarios("");
+        try {
+            const { data } = await api.put(`/usuarios/${item.id}`, {
+                email: item.email || null,
+                telefono: item.telefono || null,
+                rol: item.rol,
+                activo: Boolean(item.activo)
+            });
+            if (!data?.ok) throw new Error(data?.mensaje || "No fue posible actualizar el usuario.");
+            setMensajeUsuarios("Usuario actualizado correctamente.");
+        } catch (error) {
+            setMensajeUsuarios(error.response?.data?.mensaje || error.message || "No fue posible actualizar el usuario.");
+        } finally {
+            setGuardandoUsuario(null);
+        }
+    }
+
+    async function resetearPassword(id) {
+        if (!window.confirm("¿Restablecer la contraseña de este usuario?")) return;
+        try {
+            const { data } = await api.put(`/usuarios/${id}/reset-password`);
+            window.alert(`${data?.mensaje || "Contraseña restablecida."}\nContraseña temporal: ${data?.passwordTemporal || "Consulte al administrador."}`);
+        } catch (error) {
+            window.alert(error.response?.data?.mensaje || "No fue posible restablecer la contraseña.");
+        }
+    }
+
+    function cambiarUsuario(id, campo, valor) {
+        setUsuarios((actuales) => actuales.map((item) => item.id === id ? { ...item, [campo]: valor } : item));
+    }
 
     if (usuario?.rol !== "ADMINISTRADOR") return null;
 
@@ -153,9 +204,11 @@ export default function ConfiguracionHorarios() {
                     {mensaje && <p style={{ color: mensaje.startsWith("Configuración") ? "#198754" : "#dc3545", fontWeight: "bold" }}>{mensaje}</p>}
                         </details>
 
-                        <details style={{ marginTop: "14px" }}>
+                        <details style={{ marginTop: "14px" }} onToggle={(e) => { if (e.currentTarget.open && usuarios.length === 0) cargarUsuarios(); }}>
                             <summary style={{ cursor: "pointer", color: "#245b3a", fontWeight: "bold", padding: "8px 0" }}>👥 Usuarios y contraseñas</summary>
-                            <p style={{ color: "#4b5563", marginBottom: 0 }}>La administración de usuarios y contraseñas se incorporará en este módulo con protección exclusiva para administradores.</p>
+                            <p style={{ color: "#4b5563" }}>Edición protegida para administradores. Las contraseñas nunca se muestran; solo pueden restablecerse.</p>
+                            {cargandoUsuarios ? <p>Cargando usuarios...</p> : usuarios.length === 0 ? <p>No hay usuarios disponibles.</p> : <div style={{ overflowX: "auto" }}><table style={{ width: "100%", minWidth: "760px", borderCollapse: "collapse", color: "#1f2937" }}><thead><tr>{["Usuario", "Email", "Teléfono", "Rol", "Activo", "Acción"].map((x) => <th key={x} style={{ textAlign: "left", padding: "8px", color: "#245b3a", background: "#f7fbf8" }}>{x}</th>)}</tr></thead><tbody>{usuarios.map((item) => <tr key={item.id} style={{ borderBottom: "1px solid #dcebe2" }}><td style={{ padding: "8px", fontWeight: "bold" }}>{item.usuario}</td><td style={{ padding: "8px" }}><input value={item.email || ""} onChange={(e) => cambiarUsuario(item.id, "email", e.target.value)} style={input} /></td><td style={{ padding: "8px" }}><input value={item.telefono || ""} onChange={(e) => cambiarUsuario(item.id, "telefono", e.target.value)} style={input} /></td><td style={{ padding: "8px" }}><select value={item.rol || "ASESOR"} onChange={(e) => cambiarUsuario(item.id, "rol", e.target.value)} style={input}><option value="ASESOR">ASESOR</option><option value="ADMINISTRADOR">ADMINISTRADOR</option></select></td><td style={{ padding: "8px" }}><input type="checkbox" checked={Boolean(item.activo)} onChange={(e) => cambiarUsuario(item.id, "activo", e.target.checked)} /></td><td style={{ padding: "8px", whiteSpace: "nowrap" }}><button type="button" onClick={() => guardarUsuario(item)} disabled={guardandoUsuario === item.id} style={{ marginRight: "6px", padding: "7px 10px", background: "#245b3a", color: "#fff", border: 0, borderRadius: "6px", fontWeight: "bold" }}>{guardandoUsuario === item.id ? "Guardando..." : "Guardar"}</button><button type="button" onClick={() => resetearPassword(item.id)} style={{ padding: "7px 10px", background: "#b8941f", color: "#fff", border: 0, borderRadius: "6px", fontWeight: "bold" }}>Restablecer contraseña</button></td></tr>)}</tbody></table></div>}
+                            {mensajeUsuarios && <p style={{ color: mensajeUsuarios.includes("correctamente") ? "#198754" : "#c0392b", fontWeight: "bold" }}>{mensajeUsuarios}</p>}
                         </details>
 
                         <details style={{ marginTop: "8px" }}>

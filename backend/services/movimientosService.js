@@ -364,6 +364,12 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
     if (!estado)
         throw new Error("Debe registrar Entrada.");
 
+    // Nunca se debe cerrar una pausa perteneciente a una jornada anterior.
+    // El estado actual se guarda por asesor, por lo que esta validación evita
+    // reutilizar un almuerzo o reunión viejo al comenzar un nuevo día.
+    if (!this.esMismaFecha(estado.inicio_jornada))
+        throw new Error("La jornada activa no corresponde a hoy. Registre Entrada nuevamente.");
+
     if (estado.estado !== estadoEsperado)
         throw new Error("La pausa no está iniciada.");
 

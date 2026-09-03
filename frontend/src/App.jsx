@@ -348,6 +348,7 @@ function App() {
               asesor={asesor}
               estado={estado}
               inicioJornada={inicioJornada}
+              movimientos={resumen?.movimientos || []}
               setEstado={setEstado}
               
               onMovimientoRegistrado={async () => {

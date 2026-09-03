@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../services/api";
 
 export default function Buttons({
@@ -9,8 +9,11 @@ export default function Buttons({
 
     inicioJornada,
 
+    movimientos = [],
+
     setEstado,
-
+
+
 
     onMovimientoRegistrado
 
@@ -22,6 +25,10 @@ export default function Buttons({
 
         const [botonPresionado, setBotonPresionado] =
         useState(null);
+
+    // Bloquea movimientos repetidos mientras la solicitud anterior termina.
+    const [movimientoEnCurso, setMovimientoEnCurso] = useState(false);
+    const movimientoEnCursoRef = useRef(false);
 
     // ======================================================
     // PAUSA DE LLAMADAS (registro informativo)
@@ -73,9 +80,17 @@ export default function Buttons({
                 "Seleccione un asesor."
             );
 
-            return;
-
+                        return;
         }
+
+        // Protección contra doble clic, doble toque o reenvío mientras
+        // el backend todavía está respondiendo.
+        if (movimientoEnCursoRef.current) {
+            return;
+        }
+
+        movimientoEnCursoRef.current = true;
+        setMovimientoEnCurso(true);
 
 
         console.log(
@@ -224,6 +239,9 @@ export default function Buttons({
         }
 
         finally {
+
+            movimientoEnCursoRef.current = false;
+            setMovimientoEnCurso(false);
 
             // ==============================================
             // QUITAR EFECTO VISUAL
@@ -473,6 +491,13 @@ export default function Buttons({
             estadoActual.includes("SALIDA") &&
             !jornadaEsDeHoy
         );
+
+    // Reglas diarias: solo un break y un almuerzo por jornada.
+    // Baño, capacitación y reunión no se bloquean por cantidad.
+    const almuerzoYaUsado = Array.isArray(movimientos) &&
+        movimientos.some((movimiento) => movimiento.tipo === "ALMUERZO_INICIO");
+    const breakYaUsado = Array.isArray(movimientos) &&
+        movimientos.some((movimiento) => movimiento.tipo === "BREAK_INICIO");
         
 console.log("================================");
 console.log("DEBUG BOTONES");
@@ -500,7 +525,7 @@ console.log("================================");
                     "#0B5ED7",
                     "ENTRADA"
                 )}
-                disabled={!disponible}
+                disabled={movimientoEnCurso || !disponible}
                 onClick={() =>
                     registrar(
                         "ENTRADA",
@@ -524,8 +549,9 @@ console.log("================================");
                         : "BREAK_INICIO"
                 )}
                 disabled={
-                    !trabajando &&
-                    !enBreak
+                    movimientoEnCurso ||
+                    (!trabajando && !enBreak) ||
+                    (!enBreak && breakYaUsado)
                 }
                 onClick={() =>
                     registrar(
@@ -542,7 +568,9 @@ console.log("================================");
                 {
                     enBreak
                         ? "▶ REGRESO BREAK"
-                        : "☕ BREAK"
+                        : breakYaUsado
+                            ? "✅ BREAK COMPLETADO"
+                            : "☕ BREAK"
                 }
             </button>
             {/* ====================================== */}
@@ -557,8 +585,9 @@ console.log("================================");
                         : "ALMUERZO_INICIO"
                 )}
                 disabled={
-                    !trabajando &&
-                    !enAlmuerzo
+                    movimientoEnCurso ||
+                    (!trabajando && !enAlmuerzo) ||
+                    (!enAlmuerzo && almuerzoYaUsado)
                 }
                 onClick={() =>
                     registrar(
@@ -575,7 +604,9 @@ console.log("================================");
                 {
                     enAlmuerzo
                         ? "▶ REGRESO ALMUERZO"
-                        : "🍽 ALMUERZO"
+                        : almuerzoYaUsado
+                            ? "✅ ALMUERZO COMPLETADO"
+                            : "🍽 ALMUERZO"
                 }
             </button>
 
@@ -592,8 +623,8 @@ console.log("================================");
                         : "BANO_INICIO"
                 )}
                 disabled={
-                    !trabajando &&
-                    !enBano
+                    movimientoEnCurso ||
+                    (!trabajando && !enBano)
                 }
                 onClick={() =>
                     registrar(
@@ -627,8 +658,8 @@ console.log("================================");
                         : "CAPACITACION_INICIO"
                 )}
                 disabled={
-                    !trabajando &&
-                    !enCapacitacion
+                    movimientoEnCurso ||
+                    (!trabajando && !enCapacitacion)
                 }
                 onClick={() =>
                     registrar(
@@ -662,8 +693,8 @@ console.log("================================");
                         : "REUNION_INICIO"
                 )}
                 disabled={
-                    !trabajando &&
-                    !enReunion
+                    movimientoEnCurso ||
+                    (!trabajando && !enReunion)
                 }
                 onClick={() =>
                     registrar(
@@ -694,7 +725,7 @@ console.log("================================");
                     "#C0392B",
                     "SALIDA"
                 )}
-                disabled={!trabajando}
+                disabled={movimientoEnCurso || !trabajando}
                 onClick={() =>
                     registrar(
                         "SALIDA",

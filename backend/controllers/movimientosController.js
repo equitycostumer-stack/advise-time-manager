@@ -5,6 +5,7 @@
 // ======================================================
 
 const movimientosService = require("../services/movimientosService");
+const adminRepository = require("../repositories/adminRepository");
 
 const resumenJornadaService = require(
     "../services/resumenJornadaService"
@@ -177,6 +178,15 @@ const reiniciarJornada = async (req, res) => {
         const resultado = await movimientosService.reiniciarJornada(
             asesor_id
         );
+
+        await adminRepository.registrarAuditoria({
+            usuarioId: req.usuario?.id,
+            accion: "REINICIO_JORNADA",
+            entidad: "ASESOR",
+            entidadId: asesor_id,
+            motivo: "Reinicio manual de jornada por administrador",
+            nuevos: resultado.asesor
+        });
 
         return res.status(200).json(resultado);
 

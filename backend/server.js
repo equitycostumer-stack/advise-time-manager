@@ -92,6 +92,8 @@ try {
 
 app.use("/api/notificaciones", require("./routes/notificaciones"));
 console.log("✓ notificaciones");
+app.use("/api/admin", require("./routes/admin"));
+console.log("✓ admin");
 
 app.get("/", (req, res) => {
     res.json({ ok: true, mensaje: "EQUITY LINE API funcionando" });

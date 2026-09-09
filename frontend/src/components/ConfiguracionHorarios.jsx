@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import AdminPanel from "./AdminPanel";
 
 const diasIniciales = [
     { dia_semana: 0, nombre_dia: "Domingo" },
@@ -282,6 +283,14 @@ export default function ConfiguracionHorarios() {
                                 <button type="button" onClick={guardarVentasConfig} disabled={guardandoVentas} style={{ justifySelf: "start", padding: "10px 16px", background: "#245b3a", color: "#fff", border: 0, borderRadius: "7px", fontWeight: "bold" }}>{guardandoVentas ? "Guardando..." : "Guardar ventas y recaudos"}</button>
                                 {mensajeVentas && <p style={{ color: mensajeVentas.includes("correctamente") ? "#198754" : "#c0392b", fontWeight: "bold" }}>{mensajeVentas}</p>}
                             </div>}
+                        </details>
+
+                        <details style={{ marginTop: "14px" }}>
+                            <summary style={{ cursor: "pointer", color: "#4f2b91", fontWeight: "800", padding: "14px 16px", borderRadius: "12px", background: "linear-gradient(135deg, #f4efff, #eef5ff)", border: "1px solid #d8cafa", boxShadow: "0 8px 18px rgba(79,43,145,.08)" }}>
+                                🛠️ Centro administrativo
+                                <span style={{ float: "right", color: "#6f42c1" }}>Gestión avanzada</span>
+                            </summary>
+                            <AdminPanel />
                         </details>
                 </div>
             )}

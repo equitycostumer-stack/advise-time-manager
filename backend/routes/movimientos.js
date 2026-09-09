@@ -10,6 +10,7 @@ const router = express.Router();
 const movimientosController = require("../controllers/movimientosController");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarPropioAsesor = require("../middleware/verificarPropioAsesor");
+const verificarRol = require("../middleware/rolesMiddleware");
 
 // ======================================================
 // TODAS LAS RUTAS REQUIEREN SESIÓN VÁLIDA
@@ -35,6 +36,16 @@ router.get(
     "/estado/:asesorId",
     verificarPropioAsesor,
     movimientosController.obtenerEstadoActual
+);
+
+// ======================================================
+// REINICIAR JORNADA (solo administrador)
+// ======================================================
+
+router.post(
+    "/reiniciar/:asesorId",
+    verificarRol("ADMINISTRADOR"),
+    movimientosController.reiniciarJornada
 );
 
 // ======================================================

@@ -335,6 +335,34 @@ class MovimientosRepository {
     }
 
     // ======================================================
+    // REINICIAR JORNADA DEL DÍA - COLOMBIA
+    // ======================================================
+
+    async reiniciarJornadaDelDia(asesorId) {
+        if (!asesorId) throw new Error("El asesor es obligatorio.");
+
+        await this.ejecutar(`
+            DELETE FROM estados_actuales
+            WHERE asesor_id = ?
+        `, [asesorId]);
+
+        await this.ejecutar(`
+            DELETE FROM movimientos
+            WHERE asesor_id = ?
+              AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+              AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
+        `, [asesorId]);
+
+        await this.ejecutar(`
+            DELETE FROM resumen_jornada
+            WHERE asesor_id = ?
+              AND fecha = (NOW() AT TIME ZONE 'America/Bogota')::date
+        `, [asesorId]);
+
+        return true;
+    }
+
+    // ======================================================
     // OBTENER HISTORIAL
     // ======================================================
 

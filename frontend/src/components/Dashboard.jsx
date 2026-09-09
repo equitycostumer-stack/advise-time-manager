@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import ExportarWord from "./ExportarWord";
 import ExportarHistorial from "./ExportarHistorial";
 import Alertas from "./Alertas";
@@ -154,6 +155,7 @@ function IncidenciaCard({ inc }) {
 }
 
 export default function Dashboard() {
+    const { usuario } = useAuth();
     const [asesores, setAsesores] = useState([]);
     const [incidencias, setIncidencias] = useState([]);
     const [productividad, setProductividad] = useState({
@@ -216,6 +218,25 @@ export default function Dashboard() {
         } catch (error) {
             console.error("❌ ERROR CARGANDO HISTORIAL", error);
             alert("No fue posible cargar el historial.");
+        }
+    }
+
+    async function reiniciarJornada(asesor) {
+        const confirmado = window.confirm(
+            `¿Reiniciar la jornada de ${asesor.nombre}? Se eliminarán su estado actual y los registros de jornada de hoy.`
+        );
+
+        if (!confirmado) return;
+
+        try {
+            await api.post(`/movimientos/reiniciar/${asesor.id}`);
+            alert("La jornada fue reiniciada correctamente.");
+            setAsesorSeleccionado(null);
+            setHistorial([]);
+            await cargarDashboard();
+        } catch (error) {
+            console.error("❌ ERROR REINICIANDO JORNADA", error);
+            alert(error.response?.data?.mensaje || "No fue posible reiniciar la jornada.");
         }
     }
 
@@ -345,6 +366,7 @@ export default function Dashboard() {
                                 </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 14px", borderTop: "1px solid #e4efe7" }}><span style={{ color: "#789184", fontSize: "13px", fontWeight: "700" }}>Puntualidad</span><span style={{ color: a.llego_tarde ? "#dc3545" : "#198754", fontWeight: "800", fontSize: "13px" }}>{a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min tarde` : "🟢 Puntual"}</span></div>
                                 <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "11px 14px", background: "#245b3a", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer", boxShadow: "0 5px 12px rgba(36,91,58,.18)" }}>📋 Abrir historial</button>
+                                {usuario?.rol === "ADMINISTRADOR" && <button onClick={() => reiniciarJornada(a)} style={{ width: "100%", marginTop: "8px", padding: "11px 14px", background: "#dc3545", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer" }}>🔄 Reiniciar jornada</button>}
                             </div>
                         );
                     })}

@@ -621,15 +621,35 @@ async finalizarReunion(datos) {
 // OBTENER ESTADO ACTUAL
 // =====================================================
 
-async obtenerEstadoActual(asesorId) {
+    async obtenerEstadoActual(asesorId) {
 
-    return await movimientosRepository.obtenerEstadoActual(
-        asesorId
-    );
+        return await movimientosRepository.obtenerEstadoActual(
+            asesorId
+        );
 
-}
+    }
 
-// =====================================================
+    // =====================================================
+    // REINICIAR JORNADA
+    // =====================================================
+
+    async reiniciarJornada(asesorId) {
+
+        const asesor = await this.obtenerAsesor(asesorId);
+
+        await movimientosRepository.reiniciarJornadaDelDia(
+            asesor.id
+        );
+
+        return {
+            ok: true,
+            mensaje: "La jornada fue reiniciada correctamente.",
+            asesor
+        };
+
+    }
+
+    // =====================================================
 // OBTENER HISTORIAL
 // =====================================================
 

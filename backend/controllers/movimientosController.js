@@ -158,6 +158,42 @@ const obtenerEstadoActual = async (req, res) => {
 };
 
 // ======================================================
+// REINICIAR JORNADA
+// ======================================================
+
+const reiniciarJornada = async (req, res) => {
+
+    try {
+
+        const asesor_id = obtenerAsesorId(req);
+
+        if (!asesor_id) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: "Debe indicar el asesor."
+            });
+        }
+
+        const resultado = await movimientosService.reiniciarJornada(
+            asesor_id
+        );
+
+        return res.status(200).json(resultado);
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(400).json({
+            ok: false,
+            mensaje: error.message
+        });
+
+    }
+
+};
+
+// ======================================================
 // OBTENER HISTORIAL
 // ======================================================
 
@@ -323,6 +359,8 @@ module.exports = {
     registrarMovimiento,
 
     obtenerEstadoActual,
+
+    reiniciarJornada,
 
     obtenerHistorial,
 

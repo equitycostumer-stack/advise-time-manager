@@ -380,7 +380,7 @@ function App() {
 
             <Dashboard />
 
-            {usuario?.rol === "ADMINISTRADOR" && <PanelControlAdmin />}
+            <PanelControlAdmin />
 
             <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
 

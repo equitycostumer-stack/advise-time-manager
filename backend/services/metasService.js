@@ -5,7 +5,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 class MetasService {
     validar(datos) {
         const periodoTipo = String(datos.periodo_tipo || "MES").toUpperCase();
-        if (!["MES", "QUINCENA"].includes(periodoTipo)) throw new Error("El tipo de periodo no es válido.");
+        if (periodoTipo !== "QUINCENA") throw new Error("Las metas solo se manejan por quincena.");
         if (!ISO_DATE.test(datos.periodo_inicio || "") || !ISO_DATE.test(datos.periodo_fin || "") || datos.periodo_inicio > datos.periodo_fin) {
             throw new Error("El periodo debe contener fechas válidas.");
         }

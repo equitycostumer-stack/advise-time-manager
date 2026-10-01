@@ -3,9 +3,8 @@ const router = express.Router();
 const controller = require("../controllers/metasController");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarRol = require("../middleware/rolesMiddleware");
-
 router.use(verificarToken);
 router.get("/", controller.listar);
+router.get("/historial", controller.historial);
 router.put("/", verificarRol("ADMINISTRADOR"), controller.guardar);
-
 module.exports = router;

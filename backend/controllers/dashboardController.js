@@ -235,7 +235,7 @@ const obtenerPanelEjecutivo = async (req, res) => {
 
                     COUNT(*) FILTER (
                         WHERE a.activo = 1
-                          AND COALESCE(r.llego_tarde, false) = true
+                          AND r.llego_tarde IS TRUE
                     ) AS llegadas_tarde,
 
                     COALESCE(
@@ -288,7 +288,7 @@ const obtenerPanelEjecutivo = async (req, res) => {
 
                 FROM incidencias
 
-                WHERE COALESCE(revisada, 0) = 0
+                WHERE revisada IS FALSE
             `)
         ]);
 

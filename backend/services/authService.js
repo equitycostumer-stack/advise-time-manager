@@ -1,129 +1,69 @@
-// ======================================================
-// ADVISE SOLUTIONS SERVICES
-// TIME MANAGER
-// Auth Service
-// ======================================================
-
+// Servicio de autenticación JWT.
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const usuariosRepository = require("../repositories/usuariosRepository");
 
-// Las sesiones no deben terminar automáticamente al cierre de la jornada.
-// Se conserva una duración personalizada, pero se reemplaza el valor antiguo de 8h.
+// Evita el cierre diario heredado de 8 horas. Un valor personalizado distinto
+// de 8h sigue siendo respetado para instalaciones que lo necesiten.
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN && process.env.JWT_EXPIRES_IN !== "8h"
     ? process.env.JWT_EXPIRES_IN
     : "24h";
 
+function exigirSecret() {
+    if (!process.env.JWT_SECRET) {
+        const error = new Error("Error interno de autenticación.");
+        error.status = 500;
+        throw error;
+    }
+}
+
+function crearToken(usuario) {
+    exigirSecret();
+    return jwt.sign({
+        id: usuario.id,
+        asesor_id: usuario.asesor_id,
+        usuario: usuario.usuario,
+        rol: usuario.rol
+    }, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
 class AuthService {
-
-    // ======================================================
-    // LOGIN
-    // ======================================================
-
     async login(usuario, password) {
-
-        // ==================================================
-        // VALIDACIONES INICIALES
-        // ==================================================
-
-        if (!usuario || !usuario.trim()) {
+        if (!usuario || !String(usuario).trim()) {
             const error = new Error("Debe ingresar el usuario.");
             error.status = 400;
             throw error;
         }
-
-        if (!password || !password.trim()) {
+        if (!password || !String(password).trim()) {
             const error = new Error("Debe ingresar la contraseña.");
             error.status = 400;
             throw error;
         }
 
-        // ==================================================
-        // BUSCAR USUARIO
-        // ==================================================
-
-        const usuarioDB = await usuariosRepository.obtenerPorUsuario(
-            usuario.trim()
-        );
-
-        console.log("====================================");
-        console.log("USUARIO ENCONTRADO EN BD:");
-        console.log(usuarioDB);
-        console.log("====================================");
-
+        const usuarioDB = await usuariosRepository.obtenerPorUsuario(String(usuario).trim());
         if (!usuarioDB) {
             const error = new Error("Usuario o contraseña incorrectos.");
-            error.status = 401; // Unauthorized
+            error.status = 401;
             throw error;
         }
-
-        // ==================================================
-        // USUARIO ACTIVO
-        // ==================================================
-
         if (!usuarioDB.activo) {
             const error = new Error("El usuario está inactivo.");
-            error.status = 401; // Unauthorized
+            error.status = 401;
             throw error;
         }
-
-        // ==================================================
-        // VALIDAR CONTRASEÑA
-        // ==================================================
-
-        const passwordCorrecto = await bcrypt.compare(
-            password,
-            usuarioDB.password
-        );
-
+        const passwordCorrecto = await bcrypt.compare(password, usuarioDB.password);
         if (!passwordCorrecto) {
             const error = new Error("Usuario o contraseña incorrectos.");
-            error.status = 401; // Unauthorized
+            error.status = 401;
             throw error;
         }
 
-        // ==================================================
-        // VALIDAR JWT SECRET
-        // ==================================================
-
-        if (!process.env.JWT_SECRET) {
-            console.error("❌ JWT_SECRET no configurado en variables de entorno.");
-            const error = new Error("Error interno: Variable JWT_SECRET no configurada.");
-            error.status = 500; // Internal Server Error
-            throw error;
-        }
-
-        // ==================================================
-        // GENERAR TOKEN
-        // ==================================================
-
-        const token = jwt.sign(
-            {
-                id: usuarioDB.id,
-                asesor_id: usuarioDB.asesor_id,
-                usuario: usuarioDB.usuario,
-                rol: usuarioDB.rol
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: JWT_EXPIRES_IN
-            }
-        );
-
-        // ==================================================
-        // ACTUALIZAR ÚLTIMO ACCESO
-        // ==================================================
-
+        const token = crearToken(usuarioDB);
         try {
             await usuariosRepository.actualizarUltimoAcceso(usuarioDB.id);
         } catch (error) {
-            console.warn("No fue posible actualizar ultimo_acceso:", error.message);
+            console.warn("No fue posible actualizar el último acceso:", error.code || error.message);
         }
-
-        // ==================================================
-        // RESPUESTA
-        // ==================================================
 
         return {
             ok: true,
@@ -140,60 +80,38 @@ class AuthService {
                 debe_cambiar_password: Boolean(usuarioDB.debe_cambiar_password)
             }
         };
-
     }
 
-    // ======================================================
-    // CAMBIAR CONTRASEÑA
-    // ======================================================
+    renovarToken(payload) {
+        return { ok: true, token: crearToken(payload) };
+    }
 
     async cambiarPassword(usuarioId, passwordActual, passwordNueva) {
-
-        if (!passwordActual || !passwordActual.trim()) {
+        if (!passwordActual || !String(passwordActual).trim()) {
             const error = new Error("Debe ingresar su contraseña actual.");
             error.status = 400;
             throw error;
         }
-
-        if (!passwordNueva || passwordNueva.trim().length < 6) {
+        if (!passwordNueva || String(passwordNueva).trim().length < 6) {
             const error = new Error("La nueva contraseña debe tener al menos 6 caracteres.");
             error.status = 400;
             throw error;
         }
-
         const usuarioDB = await usuariosRepository.obtenerPorId(usuarioId);
-
         if (!usuarioDB) {
             const error = new Error("El usuario no existe.");
             error.status = 404;
             throw error;
         }
-
-        const passwordCorrecto = await bcrypt.compare(
-            passwordActual,
-            usuarioDB.password
-        );
-
+        const passwordCorrecto = await bcrypt.compare(passwordActual, usuarioDB.password);
         if (!passwordCorrecto) {
             const error = new Error("La contraseña actual es incorrecta.");
             error.status = 401;
             throw error;
         }
-
-        const passwordHash = await bcrypt.hash(passwordNueva, 10);
-
-        await usuariosRepository.actualizarPasswordPropia(
-            usuarioId,
-            passwordHash
-        );
-
-        return {
-            ok: true,
-            mensaje: "Contraseña actualizada correctamente."
-        };
-
+        await usuariosRepository.actualizarPasswordPropia(usuarioId, await bcrypt.hash(passwordNueva, 10));
+        return { ok: true, mensaje: "Contraseña actualizada correctamente." };
     }
-
 }
 
 module.exports = new AuthService();

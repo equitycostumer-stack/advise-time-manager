@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
+function hoyColombia() {
+    const partes = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit"
+    }).formatToParts(new Date()).reduce((resultado, parte) => ({ ...resultado, [parte.type]: parte.value }), {});
+    return { year: Number(partes.year), month: Number(partes.month) - 1, dia: Number(partes.day) };
+}
 function periodoQuincenaActual() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = hoy.getMonth();
-    const ultimoDia = new Date(year, month + 1, 0).getDate();
-    const dia = hoy.getDate();
+    const hoy = hoyColombia();
+    const { year, month, dia } = hoy;
+    const ultimoDia = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     const inicio = dia <= 15 ? 1 : 16;
     const fin = dia <= 15 ? 15 : ultimoDia;
     return {
@@ -33,11 +37,23 @@ function porcentaje(parte, total) {
     if (meta <= 0) return 0;
     return Math.min(100, Math.max(0, Math.round(Number(parte || 0) / meta * 100)));
 }
+function porcentajeReal(parte, total) {
+    const meta = Number(total || 0);
+    return meta > 0 ? Math.max(0, Math.round(Number(parte || 0) / meta * 100)) : 0;
+}
+function diasRestantes(periodo) {
+    const limite = new Date(`${periodo.fin}T23:59:59-05:00`).getTime();
+    return Math.max(0, Math.ceil((limite - Date.now()) / 86400000));
+}
+function progresoColor(valor) {
+    return valor >= 100 ? "#198754" : valor >= 70 ? "#d39e00" : "#c94c4c";
+}
 
 function fechaLocal(valor) {
     if (!valor) return "";
     const fecha = new Date(valor);
-    return Number.isNaN(fecha.getTime()) ? String(valor).slice(0, 10) : fecha.toLocaleDateString("en-CA");
+    if (Number.isNaN(fecha.getTime())) return String(valor).slice(0, 10);
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(fecha);
 }
 
 const tarjeta = {
@@ -63,8 +79,9 @@ export default function PanelControlAdmin() {
     const [ejecutivo, setEjecutivo] = useState(null);
     const [asesores, setAsesores] = useState([]);
     const [metas, setMetas] = useState([]);
+    const [historialMetas, setHistorialMetas] = useState([]);
     const [ventasPersonales, setVentasPersonales] = useState([]);
-    const [periodo, setPeriodo] = useState(periodoQuincenaActual());
+    const [periodo] = useState(periodoQuincenaActual());
     const [config, setConfig] = useState({ simbolo_moneda: "$", moneda: "USD" });
     const [cargando, setCargando] = useState(true);
     const [mensaje, setMensaje] = useState("");
@@ -80,6 +97,7 @@ export default function PanelControlAdmin() {
 
             if (esAdministrador) {
                 peticiones.unshift(api.get("/dashboard/ejecutivo"), api.get("/asesores"));
+                peticiones.push(api.get(`/metas/historial?periodo_inicio=${periodo.inicio}&periodo_fin=${periodo.fin}`));
             } else {
                 peticiones.unshift(
                     api.get("/dashboard"),
@@ -93,6 +111,7 @@ export default function PanelControlAdmin() {
             const configRespuesta = respuestas[esAdministrador ? 3 : 4];
             setMetas(Array.isArray(metasRespuesta.data?.data) ? metasRespuesta.data.data : []);
             setConfig((actual) => ({ ...actual, ...(configRespuesta.data?.data || {}) }));
+            if (esAdministrador) setHistorialMetas(Array.isArray(respuestas[4]?.data?.data) ? respuestas[4].data.data : []);
 
             if (esAdministrador) {
                 setEjecutivo(respuestas[0].data?.data || null);
@@ -135,7 +154,7 @@ export default function PanelControlAdmin() {
     }, [cargar]);
 
     const ventasDelDia = useMemo(() => {
-        const hoy = new Date().toLocaleDateString("en-CA");
+        const hoy = `${String(hoyColombia().year).padStart(4, "0")}-${String(hoyColombia().month + 1).padStart(2, "0")}-${String(hoyColombia().dia).padStart(2, "0")}`;
         return ventasPersonales.filter((venta) => fechaLocal(venta.fecha_hora) === hoy && venta.estado === "ACTIVA");
     }, [ventasPersonales]);
 
@@ -223,10 +242,14 @@ export default function PanelControlAdmin() {
         <div style={tarjeta}>
             <h3 style={{ marginTop: 0, color: "#245b3a" }}>{esAdministrador ? "🏆 Metas por asesor" : "🏆 Mi meta individual"}</h3>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-                <div style={{ flex: "1 1 220px", padding: 10, background: "#f7fbf8", borderRadius: 7, color: "#245b3a" }}><strong>Periodo:</strong> {periodo.inicio} al {periodo.fin}<br /><small>Quincena actual</small></div>
+                <div style={{ flex: "1 1 220px", padding: 10, background: "#f7fbf8", borderRadius: 7, color: "#245b3a" }}><strong>Periodo:</strong> {periodo.inicio} al {periodo.fin}<br /><small>Quincena actual · {diasRestantes(periodo)} días restantes · Hora Colombia</small></div>
                 <button type="button" onClick={cargar} style={{ alignSelf: "end", padding: "10px 14px", background: "#245b3a", color: "#fff", border: 0, borderRadius: 7, fontWeight: "bold" }}>Actualizar</button>
             </div>
-            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", minWidth: 820, borderCollapse: "collapse" }}><thead><tr>{["Asesor", "Meta ventas", "Ventas", "% ventas", "Meta recaudo", "Recaudo", "% recaudo", ...(esAdministrador ? ["Acción"] : [])].map((h) => <th key={h} style={{ textAlign: "left", padding: 8, background: "#f7fbf8", color: "#245b3a" }}>{h}</th>)}</tr></thead><tbody>{filas.map((fila) => { const ventasActuales = Number(fila.ventas_actuales || 0); const recaudoActual = Number(fila.recaudo_actual || 0); const pv = porcentaje(ventasActuales, fila.meta_ventas); const pr = porcentaje(recaudoActual, fila.meta_recaudo); return <tr key={fila.asesor_id} style={{ borderBottom: "1px solid #e5eee8" }}><td style={{ padding: 8, fontWeight: "bold" }}>{fila.asesor_nombre || "Asesor"}</td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" step="1" value={fila.meta_ventas || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_ventas", ev.target.value)} style={{ ...input, width: 100 }} /> : `${Number(fila.meta_ventas || 0).toLocaleString("es-CO")} ventas`}</td><td style={{ padding: 8 }}>{ventasActuales}</td><td style={{ padding: 8, color: pv >= 100 ? "#198754" : "#b7791f", fontWeight: "bold" }}>{pv}%</td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" value={fila.meta_recaudo || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_recaudo", ev.target.value)} style={{ ...input, width: 120 }} /> : moneda(fila.meta_recaudo, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8 }}>{moneda(recaudoActual, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8, color: pr >= 100 ? "#198754" : "#b7791f", fontWeight: "bold" }}>{pr}%</td>{esAdministrador && <td style={{ padding: 8 }}><button type="button" onClick={() => guardarMeta(fila)} style={{ padding: "8px 10px", background: "#b8941f", color: "#fff", border: 0, borderRadius: 6, fontWeight: "bold" }}>Guardar</button></td>}</tr>; })}</tbody></table></div>
+            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", minWidth: 820, borderCollapse: "collapse" }}><thead><tr>{["Asesor", "Meta ventas", "Ventas", "% ventas", "Meta recaudo", "Recaudo", "% recaudo", ...(esAdministrador ? ["Acción"] : [])].map((h) => <th key={h} style={{ textAlign: "left", padding: 8, background: "#f7fbf8", color: "#245b3a" }}>{h}</th>)}</tr></thead><tbody>{filas.map((fila) => { const ventasActuales = Number(fila.ventas_actuales || 0); const recaudoActual = Number(fila.recaudo_actual || 0); const pv = porcentaje(ventasActuales, fila.meta_ventas); const pr = porcentaje(recaudoActual, fila.meta_recaudo); const pvReal = porcentajeReal(ventasActuales, fila.meta_ventas); const prReal = porcentajeReal(recaudoActual, fila.meta_recaudo); const diasTranscurridos = Math.max(1, Math.ceil((Date.now() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const diasPeriodo = Math.max(1, Math.ceil((new Date(`${periodo.fin}T23:59:59-05:00`).getTime() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const proyeccionVentas = Math.round(ventasActuales / Math.min(diasTranscurridos, diasPeriodo) * diasPeriodo); return <tr key={fila.asesor_id} style={{ borderBottom: "1px solid #e5eee8" }}><td style={{ padding: 8, fontWeight: "bold" }}>{fila.asesor_nombre || "Asesor"}</td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" step="1" value={fila.meta_ventas || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_ventas", ev.target.value)} style={{ ...input, width: 100 }} /> : `${Number(fila.meta_ventas || 0).toLocaleString("es-CO")} ventas`}</td><td style={{ padding: 8 }}>{ventasActuales}</td><td style={{ padding: 8, minWidth: 150 }}><strong style={{ color: progresoColor(pvReal) }}>{pvReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pv}%`, height: "100%", background: progresoColor(pvReal), borderRadius: 8 }} /></div><small>Proyección: {proyeccionVentas} ventas</small></td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" value={fila.meta_recaudo || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_recaudo", ev.target.value)} style={{ ...input, width: 120 }} /> : moneda(fila.meta_recaudo, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8 }}>{moneda(recaudoActual, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8, minWidth: 120 }}><strong style={{ color: progresoColor(prReal) }}>{prReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pr}%`, height: "100%", background: progresoColor(prReal), borderRadius: 8 }} /></div></td>{esAdministrador && <td style={{ padding: 8 }}><button type="button" onClick={() => guardarMeta(fila)} style={{ padding: "8px 10px", background: "#b8941f", color: "#fff", border: 0, borderRadius: 6, fontWeight: "bold" }}>Guardar</button></td>}</tr>; })}</tbody></table></div>
         </div>
+        {esAdministrador && <div style={tarjeta}>
+            <h3 style={{ marginTop: 0, color: "#245b3a" }}>🕘 Historial de cambios de metas</h3>
+            {historialMetas.length === 0 ? <p style={{ color: "#66756b" }}>Aún no hay cambios registrados para esta quincena.</p> : <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr>{["Fecha", "Asesor", "Meta ventas", "Meta recaudo", "Modificado por"].map((h) => <th key={h} style={{ textAlign: "left", padding: 8, background: "#f7fbf8", color: "#245b3a" }}>{h}</th>)}</tr></thead><tbody>{historialMetas.slice(0, 10).map((cambio) => <tr key={cambio.id}><td style={{ padding: 8 }}>{cambio.cambiado_at ? new Date(cambio.cambiado_at).toLocaleString("es-CO", { timeZone: "America/Bogota" }) : "-"}</td><td style={{ padding: 8 }}>{cambio.asesor_nombre}</td><td style={{ padding: 8 }}>{Number(cambio.meta_ventas || 0).toLocaleString("es-CO")} ventas</td><td style={{ padding: 8 }}>{moneda(cambio.meta_recaudo, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8 }}>{cambio.cambiado_por_usuario || "Administrador"}</td></tr>)}</tbody></table></div>}
+        </div>}
     </section>;
 }

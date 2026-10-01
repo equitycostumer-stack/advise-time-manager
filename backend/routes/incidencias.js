@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
             a.nombre
         FROM incidencias i
         INNER JOIN asesores a ON a.id = i.asesor_id
-            WHERE i.revisada = 0
+            WHERE i.revisada IS FALSE
           ${filtroAsesor}
           AND DATE(i.fecha_hora) = CURRENT_DATE
         ORDER BY i.fecha_hora DESC

@@ -139,11 +139,6 @@ async registrarEntrada(datos) {
             asesor.id
         );
 
-    console.log("=================================");
-    console.log("ESTADO ACTUAL ANTES DE ENTRADA");
-    console.log(estadoActual);
-    console.log("=================================");
-
     const esJornadaDeHoy =
         estadoActual &&
         this.esMismaFecha(estadoActual.inicio_jornada);
@@ -165,11 +160,6 @@ async registrarEntrada(datos) {
     }
 
     const ahora = new Date();
-
-    console.log("=================================");
-    console.log("FECHA GENERADA PARA ENTRADA");
-    console.log("ahora:", ahora);
-    console.log("=================================");
 
     // ==================================================
     // SOLO SE INSERTA SI LA VALIDACIÓN YA PASÓ
@@ -220,14 +210,6 @@ async registrarEntrada(datos) {
     } else {
 
         // Jornada existente es de otro día -> se reinicia
-
-        console.log("=================================");
-        console.log("DEBUG NUEVA JORNADA");
-        console.log("asesor:", asesor.id);
-        console.log("estado anterior:", estadoActual);
-        console.log("inicio_jornada anterior:", estadoActual.inicio_jornada);
-        console.log("fecha actual:", ahora);
-        console.log("=================================");
 
         await movimientosRepository.actualizarEstadoActual(
             asesor.id,
@@ -423,15 +405,6 @@ async finalizarPausa(datos, tipoMovimiento, estadoEsperado) {
     const excedioLimite =
         limiteMinutos != null &&
         duracionMinutos > limiteMinutos;
-
-    console.log("=================================");
-    console.log("DEBUG FIN DE PAUSA");
-    console.log("asesor:", asesor.id);
-    console.log("estado:", estadoEsperado);
-    console.log("duracion (min):", duracionMinutos);
-    console.log("limite (min):", limiteMinutos);
-    console.log("excedio_limite:", excedioLimite);
-    console.log("=================================");
 
     await movimientosRepository.insertarMovimiento(
         asesor.id,

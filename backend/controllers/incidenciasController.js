@@ -33,7 +33,7 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
       FROM incidencias
       WHERE asesor_id = $1
         AND tipo = $2
-        AND revisada = 0
+        AND revisada IS FALSE
         AND DATE(fecha_hora) = DATE($3)
       LIMIT 1
     `;
@@ -45,7 +45,7 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
       return;
     }
 
-    // Insertar registro (por defecto revisada = 0)
+    // Insertar registro (por defecto revisada IS FALSE)
     const sql = `
       INSERT INTO incidencias (
         asesor_id,

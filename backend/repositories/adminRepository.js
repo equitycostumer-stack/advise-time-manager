@@ -143,7 +143,7 @@ class AdminRepository {
             const values = campos.map((c) => datos[c] === undefined ? anterior[c] : datos[c]);
             const nuevo = await client.query(`UPDATE resumen_jornada SET hora_entrada=$1, hora_salida=$2, tiempo_trabajado=$3,
                 tiempo_productivo=$4, tiempo_break=$5, tiempo_almuerzo=$6, tiempo_bano=$7, tiempo_capacitacion=$8,
-                tiempo_reunion=$9, llego_tarde=$10, minutos_retraso=$11 WHERE id=$12 RETURNING *`, [...values, id]);
+                tiempo_reunion=$9, llego_tarde=($10::int = 1), minutos_retraso=$11 WHERE id=$12 RETURNING *`, [...values, id]);
             await client.query(`INSERT INTO auditoria_administrativa
                 (usuario_id, accion, entidad, entidad_id, motivo, datos_anteriores, datos_nuevos)
                 VALUES ($1, 'CORRECCION', 'RESUMEN_JORNADA', $2, $3, $4::jsonb, $5::jsonb)`,

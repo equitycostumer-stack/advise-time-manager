@@ -40,23 +40,11 @@ if (process.env.NODE_ENV !== "test") {
       const client = await pool.connect();
       console.log("✅ Conexión exitosa a PostgreSQL (Supabase)");
 
-      const res = await client.query(`
-        SELECT 
-          current_database() AS base,
-          inet_server_addr() AS servidor,
-          inet_server_port() AS puerto,
-          current_user AS usuario,
-          current_setting('TIMEZONE') AS zona_sesion,
-          NOW() AS fecha_postgres,
-          NOW() AT TIME ZONE 'UTC' AS fecha_utc,
-          CURRENT_TIMESTAMP AS timestamp_postgres
-      `);
-
-      console.log("📊 Diagnóstico de conexión:", res.rows[0]);
+      await client.query("SELECT 1");
+      console.log("✅ Base de datos lista; zona horaria Colombia configurada");
       client.release();
     } catch (err) {
-      console.error("❌ ERROR POSTGRESQL (SUPABASE):");
-      console.error(err);
+      console.error("❌ Error de conexión PostgreSQL:", err.code || err.message);
     }
   })();
 }

@@ -77,6 +77,8 @@ app.use("/api/usuarios", require("./routes/usuariosRoutes"));
 console.log("✓ usuarios");
 app.use("/api/configuracion-empresa", require("./routes/configuracionEmpresa"));
 console.log("✓ configuracion empresa");
+app.use("/api/metas", require("./routes/metas"));
+console.log("✓ metas");
 
 // La ruta se carga de forma segura mientras se completa su copia al repositorio.
 try {
@@ -92,8 +94,6 @@ try {
 
 app.use("/api/notificaciones", require("./routes/notificaciones"));
 console.log("✓ notificaciones");
-app.use("/api/admin", require("./routes/admin"));
-console.log("✓ admin");
 
 app.get("/", (req, res) => {
     res.json({ ok: true, mensaje: "EQUITY LINE API funcionando" });

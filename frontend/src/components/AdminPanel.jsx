@@ -56,11 +56,11 @@ export default function AdminPanel() {
 
     useEffect(() => { cargar(); }, []);
 
-    const asesoresActivos = useMemo(() => (datos.asesores || []).filter((a) => Boolean(a.activo)), [datos.asesores]);
+    const asesoresActivos = useMemo(() => (datos.asesores || []).filter((a) => a.activo), [datos.asesores]);
     const alertaAlta = (datos.alertas || []).filter((a) => a.tipo === "JORNADA_ANTERIOR").length;
 
     async function cambiarEstado(asesor) {
-        const activo = !Boolean(asesor.activo);
+        const activo = !asesor.activo;
         const motivo = window.prompt(`Motivo para ${activo ? "activar" : "desactivar"} a ${asesor.nombre}:`);
         if (!motivo || motivo.trim().length < 5) return alert("Debes indicar un motivo de al menos 5 caracteres.");
         try { await api.patch(`/admin/asesores/${asesor.id}/estado`, { activo, motivo }); await cargar(); }

@@ -19,9 +19,9 @@ class MetasService {
         return { asesor_id: asesorId, periodo_tipo: periodoTipo, periodo_inicio: datos.periodo_inicio, periodo_fin: datos.periodo_fin, meta_ventas: metaVentas, meta_recaudo: metaRecaudo };
     }
 
-    async listar(periodoInicio, periodoFin) {
+    async listar(periodoInicio, periodoFin, asesorId = null) {
         if (!ISO_DATE.test(periodoInicio || "") || !ISO_DATE.test(periodoFin || "")) throw new Error("El periodo no es válido.");
-        return repository.listar(periodoInicio, periodoFin);
+        return repository.listar(periodoInicio, periodoFin, asesorId);
     }
 
     async guardar(datos, usuarioId) {

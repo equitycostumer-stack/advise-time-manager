@@ -4,8 +4,8 @@ const controller = require("../controllers/metasController");
 const verificarToken = require("../middleware/authMiddleware");
 const verificarRol = require("../middleware/rolesMiddleware");
 
-router.use(verificarToken, verificarRol("ADMINISTRADOR"));
+router.use(verificarToken);
 router.get("/", controller.listar);
-router.put("/", controller.guardar);
+router.put("/", verificarRol("ADMINISTRADOR"), controller.guardar);
 
 module.exports = router;

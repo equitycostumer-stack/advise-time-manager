@@ -1,7 +1,7 @@
 const db = require("../config/db");
 
 class MetasRepository {
-    async listar(periodoInicio, periodoFin) {
+    async listar(periodoInicio, periodoFin, asesorId = null) {
         const result = await db.query(`
             SELECT
                 m.id,
@@ -30,8 +30,9 @@ class MetasRepository {
             ) v ON v.asesor_id = m.asesor_id
             WHERE m.periodo_inicio = $1::date
               AND m.periodo_fin = $2::date
+              AND ($3::integer IS NULL OR m.asesor_id = $3::integer)
             ORDER BY a.nombre ASC
-        `, [periodoInicio, periodoFin]);
+        `, [periodoInicio, periodoFin, asesorId]);
         return result.rows;
     }
 

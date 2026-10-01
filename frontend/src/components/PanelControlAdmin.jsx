@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
 
-function hoyISO() { return new Date().toISOString().slice(0, 10); }
 function inicioMes() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`; }
 function finMes() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10); }
 function moneda(valor, simbolo = "$", codigo = "USD") { return `${simbolo}${Number(valor || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })} ${codigo}`; }

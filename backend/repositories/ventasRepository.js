@@ -171,10 +171,19 @@ class VentasRepository {
             WHERE a.activo = 1
             GROUP BY a.id, a.nombre
             ORDER BY
-                CASE WHEN ? = 'RECAUDO' THEN total_recaudo ELSE 0 END DESC,
-                CASE WHEN ? = 'VALOR_VENDIDO' THEN total_vendido ELSE 0 END DESC,
-                CASE WHEN ? = 'CANTIDAD_VENTAS' THEN cantidad_ventas ELSE 0 END DESC,
-                total_vendido DESC,
+                CASE
+                    WHEN ? = 'RECAUDO' THEN COALESCE(SUM(v.recaudo), 0)
+                    ELSE 0
+                END DESC,
+                CASE
+                    WHEN ? = 'VALOR_VENDIDO' THEN COALESCE(SUM(v.valor), 0)
+                    ELSE 0
+                END DESC,
+                CASE
+                    WHEN ? = 'CANTIDAD_VENTAS' THEN COUNT(v.id)
+                    ELSE 0
+                END DESC,
+                COALESCE(SUM(v.valor), 0) DESC,
                 a.nombre ASC
         `;
         return await this.ejecutar(sql, [fechaDesde, fechaHasta, criterio, criterio, criterio]);

@@ -80,7 +80,7 @@ const obtenerDashboard = async (req, res) => {
                 'YYYY-MM-DD HH24:MI:SS'
             ) AS inicio_jornada,
 
-            (COALESCE(r.llego_tarde, 0) = 1) AS llego_tarde,
+            COALESCE(r.llego_tarde, false) AS llego_tarde,
 
             COALESCE(r.minutos_retraso, 0) AS minutos_retraso,
             COALESCE(r.tiempo_trabajado, 0) AS tiempo_trabajado,
@@ -235,7 +235,7 @@ const obtenerPanelEjecutivo = async (req, res) => {
 
                     COUNT(*) FILTER (
                         WHERE a.activo = 1
-                          AND COALESCE(r.llego_tarde, 0) = 1
+                          AND COALESCE(r.llego_tarde, false) = true
                     ) AS llegadas_tarde,
 
                     COALESCE(

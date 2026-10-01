@@ -8,7 +8,7 @@ function obtenerPeriodoInicial() {
 }
 
 
-export default function VentasDashboard() {
+export default function VentasDashboard({ esAdministrador = false }) {
 
     const [resumenDia, setResumenDia] = useState({
         cantidad_ventas: 0,
@@ -27,6 +27,7 @@ export default function VentasDashboard() {
     const [quincenaRanking, setQuincenaRanking] = useState(periodoInicial.quincena);
     const [rankingQuincenal, setRankingQuincenal] = useState([]);
     const [cargandoRanking, setCargandoRanking] = useState(false);
+    const [configVentas, setConfigVentas] = useState({ moneda: "USD", simbolo_moneda: "$", ranking_activo: true, ranking_visible_asesores: true, criterio_ranking: "RECAUDO" });
 
     // ======================================================
     // CARGAR DATOS
@@ -36,11 +37,13 @@ export default function VentasDashboard() {
 
         try {
 
-            const [resDia, resAsesores, resListado] = await Promise.all([
+            const [resDia, resAsesores, resListado, resConfig] = await Promise.all([
                 api.get("/ventas/resumen/dia"),
                 api.get("/ventas/resumen/asesores"),
-                api.get("/ventas/dia")
+                api.get("/ventas/dia"),
+                api.get("/configuracion-ventas")
             ]);
+            if (resConfig.data?.data) setConfigVentas((actual) => ({ ...actual, ...resConfig.data.data }));
 
             setResumenDia(
                 resDia.data?.data || { cantidad_ventas: 0, total_vendido: 0 }
@@ -163,11 +166,7 @@ export default function VentasDashboard() {
 
         const numero = Number(valor) || 0;
 
-        return numero.toLocaleString("es-CO", {
-            style: "currency",
-            currency: "COP",
-            maximumFractionDigits: 0
-        });
+        return `${configVentas.simbolo_moneda || "$"}${numero.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
 
     }
 
@@ -179,9 +178,10 @@ export default function VentasDashboard() {
             ? porAsesor
             : [];
     const ranking = [...rankingFuente].sort((a, b) => {
-        const cantidad = Number(b.cantidad_ventas || 0) - Number(a.cantidad_ventas || 0);
-        if (cantidad !== 0) return cantidad;
-        return Number(b.total_vendido || 0) - Number(a.total_vendido || 0);
+        const criterio = configVentas.criterio_ranking || "RECAUDO";
+        const campo = criterio === "CANTIDAD_VENTAS" ? "cantidad_ventas" : criterio === "VALOR_VENDIDO" ? "total_vendido" : "total_recaudo";
+        const diferencia = Number(b[campo] || 0) - Number(a[campo] || 0);
+        return diferencia || Number(b.total_vendido || 0) - Number(a.total_vendido || 0) || String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""));
     });
 
     // ======================================================
@@ -303,6 +303,7 @@ export default function VentasDashboard() {
 
             </div>
 
+            {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
             <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
                 <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Mejores asesores por quincena</h3>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>
@@ -340,6 +341,7 @@ export default function VentasDashboard() {
                     </div>
                 )}
             </div>
+            )}
 
             {/* =====================================================
                 LISTADO INDIVIDUAL DE VENTAS DEL DÍA

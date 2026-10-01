@@ -100,4 +100,52 @@ const obtenerDashboard = async (req, res) => {
     }
 };
 
-module.exports = { obtenerDashboard };
+
+const obtenerPanelEjecutivo = async (req, res) => {
+    try {
+        const fecha = `(NOW() AT TIME ZONE 'America/Bogota')::date`;
+        const [operacion, ventas, incidencias] = await Promise.all([
+            db.query(`
+                SELECT
+                    COUNT(*) FILTER (WHERE a.activo = 1) AS total_asesores,
+                    COUNT(*) FILTER (WHERE a.activo = 1 AND COALESCE(e.estado, 'DISPONIBLE') = 'TRABAJANDO') AS trabajando,
+                    COUNT(*) FILTER (WHERE a.activo = 1 AND COALESCE(e.estado, 'DISPONIBLE') IN ('BREAK','ALMUERZO','BANO','CAPACITACION','REUNION')) AS en_pausa,
+                    COUNT(*) FILTER (WHERE a.activo = 1 AND COALESCE(r.llego_tarde, false) = true) AS llegadas_tarde,
+                    COALESCE(SUM(r.tiempo_trabajado), 0) AS tiempo_trabajado,
+                    COALESCE(SUM(r.tiempo_productivo), 0) AS tiempo_productivo
+                FROM asesores a
+                LEFT JOIN estados_actuales e ON e.asesor_id = a.id AND e.inicio_jornada::date = ${fecha}
+                LEFT JOIN resumen_jornada r ON r.asesor_id = a.id AND r.fecha = ${fecha}
+            `),
+            db.query(`
+                SELECT COUNT(*) AS cantidad_ventas,
+                       COALESCE(SUM(valor), 0) AS total_vendido,
+                       COALESCE(SUM(recaudo), 0) AS total_recaudo
+                FROM ventas
+                WHERE estado = 'ACTIVA'
+                  AND fecha_hora >= ${fecha}
+                  AND fecha_hora < (${fecha} + INTERVAL '1 day')
+            `),
+            db.query(`
+                SELECT COUNT(*) AS pendientes
+                FROM incidencias
+                WHERE COALESCE(revisada, false) = false
+            `)
+        ]);
+        const op=operacion.rows[0] || {}, ven=ventas.rows[0] || {}, inc=incidencias.rows[0] || {};
+        const trabajado=Number(op.tiempo_trabajado)||0;
+        const productivo=Number(op.tiempo_productivo)||0;
+        return res.json({ ok:true, data:{
+            fecha: new Date().toISOString().slice(0,10),
+            asesores: { total:Number(op.total_asesores)||0, trabajando:Number(op.trabajando)||0, en_pausa:Number(op.en_pausa)||0, llegadas_tarde:Number(op.llegadas_tarde)||0 },
+            productividad: { tiempo_trabajado:trabajado, tiempo_productivo:productivo, porcentaje:trabajado ? Math.round(productivo/trabajado*100) : 0 },
+            ventas: { cantidad:Number(ven.cantidad_ventas)||0, total_vendido:Number(ven.total_vendido)||0, total_recaudo:Number(ven.total_recaudo)||0 },
+            incidencias_pendientes:Number(inc.pendientes)||0
+        }});
+    } catch (error) {
+        console.error("Error obteniendo panel ejecutivo:", error);
+        return res.status(500).json({ ok:false, mensaje:error.message });
+    }
+};
+
+module.exports = { obtenerDashboard, obtenerPanelEjecutivo };

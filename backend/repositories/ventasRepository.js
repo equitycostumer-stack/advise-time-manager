@@ -157,7 +157,7 @@ class VentasRepository {
         return await this.ejecutar(sql, [asesorId]);
     }
 
-    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta) {
+    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, criterio = "RECAUDO") {
         const sql = `
             SELECT a.id AS asesor_id, a.nombre AS asesor_nombre,
                    COUNT(v.id) AS cantidad_ventas,
@@ -170,9 +170,14 @@ class VentasRepository {
                 AND v.fecha_hora < (?::date + INTERVAL '1 day')
             WHERE a.activo = 1
             GROUP BY a.id, a.nombre
-            ORDER BY total_vendido DESC, cantidad_ventas DESC, a.nombre ASC
+            ORDER BY
+                CASE WHEN ? = 'RECAUDO' THEN total_recaudo ELSE 0 END DESC,
+                CASE WHEN ? = 'VALOR_VENDIDO' THEN total_vendido ELSE 0 END DESC,
+                CASE WHEN ? = 'CANTIDAD_VENTAS' THEN cantidad_ventas ELSE 0 END DESC,
+                total_vendido DESC,
+                a.nombre ASC
         `;
-        return await this.ejecutar(sql, [fechaDesde, fechaHasta]);
+        return await this.ejecutar(sql, [fechaDesde, fechaHasta, criterio, criterio, criterio]);
     }
 
     // ==================================================

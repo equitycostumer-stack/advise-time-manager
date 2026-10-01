@@ -1,6 +1,14 @@
 const repository = require("../repositories/configuracionVentasRepository");
+
 class ConfiguracionVentasService {
-    async obtener() { return repository.obtener(); }
+    async obtener() {
+        return (await repository.obtener()) || {
+            moneda: "USD", simbolo_moneda: "$", permitir_recaudo: true,
+            permitir_recaudo_cero: true, recaudo_no_supera_venta: true,
+            ranking_activo: true, ranking_visible_asesores: true, criterio_ranking: "RECAUDO"
+        };
+    }
+
     async actualizar(datos, usuarioId) {
         const criterio = String(datos.criterio_ranking || "RECAUDO").toUpperCase();
         if (!["RECAUDO", "VALOR_VENDIDO", "CANTIDAD_VENTAS"].includes(criterio)) throw new Error("Criterio de ranking inválido.");

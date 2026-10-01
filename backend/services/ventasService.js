@@ -5,6 +5,8 @@
 
 const ventasRepository = require("../repositories/ventasRepository");
 const movimientosRepository = require("../repositories/movimientosRepository");
+const configuracionVentasRepository = require("../repositories/configuracionVentasRepository");
+
 
 class VentasService {
 
@@ -58,11 +60,14 @@ class VentasService {
                 ? String(datos.cliente_id).trim()
                 : null;
 
-        const recaudo = datos.recaudo === "" || datos.recaudo == null
-            ? 0
-            : Number(datos.recaudo);
-        if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > valor) {
-            throw new Error("El recaudo debe ser mayor o igual a cero y no puede superar el valor de la venta.");
+        const configuracion = (await configuracionVentasRepository.obtener()) || {
+            permitir_recaudo: true, permitir_recaudo_cero: true, recaudo_no_supera_venta: true
+        };
+        const recaudo = datos.recaudo === "" || datos.recaudo == null ? 0 : Number(datos.recaudo);
+        if (!configuracion.permitir_recaudo && recaudo > 0) throw new Error("El registro de recaudo está desactivado por configuración.");
+        if (!configuracion.permitir_recaudo_cero && recaudo === 0) throw new Error("Debe registrar un recaudo mayor a cero.");
+        if (!Number.isFinite(recaudo) || recaudo < 0 || (configuracion.recaudo_no_supera_venta && recaudo > valor)) {
+            throw new Error("El recaudo debe ser válido y respetar las reglas configuradas.");
         }
 
         // ----------------------------------------------
@@ -160,7 +165,8 @@ class VentasService {
     }
 
     async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta) {
-        return await ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta);
+        const configuracion = await configuracionVentasRepository.obtener();
+        return await ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, configuracion?.criterio_ranking || "RECAUDO");
     }
 
     // ==================================================

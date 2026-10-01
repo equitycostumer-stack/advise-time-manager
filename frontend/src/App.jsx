@@ -20,6 +20,7 @@ import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
 import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
+import PanelControlAdmin from "./components/PanelControlAdmin";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -379,7 +380,9 @@ function App() {
 
             <Dashboard />
 
-            <VentasDashboard />
+            {usuario?.rol === "ADMINISTRADOR" && <PanelControlAdmin />}
+
+            <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
 
             {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
           </>

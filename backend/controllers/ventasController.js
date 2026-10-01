@@ -14,7 +14,7 @@ const registrarVenta = async (req, res) => {
     try {
 
         const resultado =
-            await ventasService.registrarVenta(req.body);
+            await ventasService.registrarVenta({ ...req.body, usuario: req.usuario });
 
         return res.status(200).json(resultado);
 

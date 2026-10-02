@@ -90,12 +90,10 @@ class VentasService {
         if (diferenciaDias > 366) {
             const error = new Error("El rango no puede superar 366 días."); error.status = 400; throw error;
         }
-        const asesorId = obtenerAsesorIdPermitido(usuario);
-        if (usuario?.rol !== "ADMINISTRADOR" && !asesorId) {
-            const error = new Error("Este usuario no tiene un asesor vinculado."); error.status = 403; throw error;
-        }
+        // El ranking es un indicador motivacional compartido: no filtrar por
+        // asesor aquí. Las metas y los detalles de ventas sí permanecen privados.
         const configuracion = await configuracionVentasRepository.obtener();
-        return ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, configuracion?.criterio_ranking || "RECAUDO", asesorId);
+        return ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, configuracion?.criterio_ranking || "RECAUDO", null);
     }
 
     async anularVenta(id, usuario = null, motivo = "") {

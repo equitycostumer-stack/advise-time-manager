@@ -349,7 +349,7 @@ function App() {
           >
             👥 Usuarios
           </button>}
-          {usuario?.rol === "ADMINISTRADOR" && <button
+          {usuario && <button
             onClick={() => setVista("control")}
             style={{
               flex: 1,

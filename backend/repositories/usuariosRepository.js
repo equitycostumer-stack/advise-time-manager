@@ -198,7 +198,7 @@ class UsuariosRepository {
                 FROM usuarios u
                 LEFT JOIN asesores a ON a.id = u.asesor_id
                 WHERE u.id = $1
-                FOR UPDATE
+                FOR UPDATE OF u
             `, [id]);
             if (!actual.rows.length) throw new Error("El usuario no existe.");
             const anterior = actual.rows[0];

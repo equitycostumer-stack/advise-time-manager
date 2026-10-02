@@ -99,21 +99,18 @@ export default function VentasDashboard({ esAdministrador = false }) {
 
     async function anularVenta(id, clienteId) {
 
+        const motivo = window.prompt("Escribe el motivo de la anulación (mínimo 5 caracteres):", "");
+        if (motivo === null || motivo.trim().length < 5) {
+            if (motivo !== null) window.alert("La anulación requiere un motivo de al menos 5 caracteres.");
+            return;
+        }
         const confirmar = window.confirm(
-            `¿Anular esta venta${clienteId ? ` (cliente: ${clienteId})` : ""}? Esta acción no se puede deshacer.`
+            `¿Confirmas anular esta venta${clienteId ? ` (cliente: ${clienteId})` : ""}?\n\nMotivo: ${motivo.trim()}\n\nEsta acción quedará auditada.`
         );
-
         if (!confirmar) return;
-
         setAnulando(id);
-
         try {
-
-            const { data } = await api.patch(`/ventas/${id}/anular`);
-
-            if (!data?.ok) {
-                throw new Error(data?.mensaje || "No fue posible anular la venta.");
-            }
+            const { data } = await api.patch(`/ventas/${id}/anular`, { motivo: motivo.trim() });
 
             await cargarVentas();
 

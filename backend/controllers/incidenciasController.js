@@ -143,7 +143,7 @@ const revisarIncidencia = async (req, res) => {
     const sql = `
       UPDATE incidencias
       SET
-        revisada = 1,
+        revisada = true,
         revisada_por = $1,
         comentario = $2,
         fecha_revision = NOW()

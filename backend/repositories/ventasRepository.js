@@ -193,17 +193,35 @@ class VentasRepository {
     // ANULAR VENTA
     // ==================================================
 
-    async anularVenta(id) {
-        const sql = `
-            UPDATE ventas
-            SET estado = 'ANULADA'
-            WHERE
-                id = ?
-                AND estado = 'ACTIVA'
-        `;
-
-        await this.ejecutar(sql, [id]);
-        return true;
+    async anularVenta(id, usuario = null, motivo) {
+        const client = await db.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const result = await client.query(`
+                UPDATE ventas
+                SET estado = 'ANULADA'
+                WHERE id = $1 AND estado = 'ACTIVA'
+                RETURNING id, asesor_id, cliente_id, valor, recaudo, estado
+            `, [id]);
+            if (!result.rows[0]) {
+                const error = new Error("La venta no existe o ya está anulada.");
+                error.status = 409;
+                throw error;
+            }
+            const venta = result.rows[0];
+            await client.query(`
+                INSERT INTO ventas_anulaciones_auditoria
+                    (venta_id, asesor_id, cliente_id, valor, recaudo, motivo, anulado_por)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `, [venta.id, venta.asesor_id, venta.cliente_id, venta.valor, venta.recaudo, motivo, usuario?.id || null]);
+            await client.query("COMMIT");
+            return true;
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     // ==================================================

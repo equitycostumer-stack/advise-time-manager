@@ -207,7 +207,7 @@ class MovimientosRepository {
                 ?::date,
                 ?,
                 0, 0, 0, 0, 0, 0, 0,
-                ?,
+                (?::text IN ('1', 'true', 't')),
                 ?
             )
         `;
@@ -300,7 +300,7 @@ class MovimientosRepository {
                 tiempo_capacitacion = ?,
                 tiempo_reunion = ?,
                 tiempo_productivo = ?,
-                llego_tarde = (?)::boolean,
+                llego_tarde = (?::text IN ('1', 'true', 't')),
                 minutos_retraso = ?
             WHERE id = ?
         `;

@@ -174,19 +174,19 @@ const anularVenta = async (req, res) => {
         const id = Number(req.params.id);
 
         const resultado =
-            await ventasService.anularVenta(id, req.usuario);
+            await ventasService.anularVenta(id, req.usuario, req.body?.motivo);
 
         return res.status(200).json(resultado);
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Error anulando venta:", error.code || error.message);
 
         const statusCode = error.status || 400;
 
         return res.status(statusCode).json({
             ok: false,
-            mensaje: error.message
+            mensaje: error.message || "No fue posible anular la venta."
         });
 
     }

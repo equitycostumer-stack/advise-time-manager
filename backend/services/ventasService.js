@@ -173,10 +173,16 @@ class VentasService {
     // ANULAR VENTA
     // ==================================================
 
-    async anularVenta(id, usuario = null) {
+    async anularVenta(id, usuario = null, motivo = "") {
 
         if (!id) {
             throw new Error("Debe indicar la venta a anular.");
+        }
+        const motivoNormalizado = String(motivo || "").trim();
+        if (motivoNormalizado.length < 5) {
+            const error = new Error("Debe indicar un motivo de al menos 5 caracteres para anular la venta.");
+            error.status = 400;
+            throw error;
         }
 
         const venta =
@@ -208,7 +214,7 @@ class VentasService {
 
         }
 
-        await ventasRepository.anularVenta(id);
+        await ventasRepository.anularVenta(id, usuario, motivoNormalizado);
 
         return {
             ok: true,

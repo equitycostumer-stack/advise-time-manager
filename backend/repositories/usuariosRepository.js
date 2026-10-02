@@ -181,7 +181,7 @@ class UsuariosRepository {
         if (datos.rol === "ASESOR" && datos.asesor_id) {
             await this.ejecutar(
                 "UPDATE asesores SET activo = ? WHERE id = ?",
-                [datos.activo ? 1 : 0, datos.asesor_id]
+                [Boolean(datos.activo), datos.asesor_id]
             );
         }
 
@@ -204,8 +204,8 @@ class UsuariosRepository {
             const anterior = actual.rows[0];
             if (anterior.rol !== "ASESOR") throw new Error("Solo se puede eliminar un usuario con rol ASESOR.");
             if (!anterior.asesor_id) throw new Error("El usuario no tiene un asesor vinculado.");
-            const nuevoUsuario = await client.query("UPDATE usuarios SET activo = 0 WHERE id = $1 RETURNING id, usuario, rol, asesor_id, activo", [id]);
-            const nuevoAsesor = await client.query("UPDATE asesores SET activo = 0 WHERE id = $1 RETURNING id, nombre, activo", [anterior.asesor_id]);
+            const nuevoUsuario = await client.query("UPDATE usuarios SET activo = false WHERE id = $1 RETURNING id, usuario, rol, asesor_id, activo", [id]);
+            const nuevoAsesor = await client.query("UPDATE asesores SET activo = false WHERE id = $1 RETURNING id, nombre, activo", [anterior.asesor_id]);
             await client.query(`
                 INSERT INTO auditoria_administrativa
                     (usuario_id, accion, entidad, entidad_id, motivo, datos_anteriores, datos_nuevos)

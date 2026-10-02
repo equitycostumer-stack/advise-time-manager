@@ -21,6 +21,7 @@ import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
 import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
 import PanelControlAdmin from "./components/PanelControlAdmin";
+import Usuarios from "./pages/Usuarios";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -333,10 +334,27 @@ function App() {
           >
             📊 Histórico
           </button>
+          {usuario?.rol === "ADMINISTRADOR" && <button
+            onClick={() => setVista("usuarios")}
+            style={{
+              flex: 1,
+              padding: "12px",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              background: vista === "usuarios" ? "#0d6efd" : "#e9ecef",
+              color: vista === "usuarios" ? "#fff" : "#333"
+            }}
+          >
+            👥 Usuarios
+          </button>}
         </div>
 
         {vista === "historico" ? (
           <HistoricoDashboard />
+        ) : vista === "usuarios" ? (
+          <Usuarios />
         ) : (
           <>
             <AdvisorSelect

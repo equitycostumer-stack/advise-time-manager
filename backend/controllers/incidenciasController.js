@@ -27,14 +27,15 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
   try {
     const fechaHora = generarFechaColombia();
 
-    // Revisa si ya existe una incidencia igual SIN revisar hoy (Usando 0 para falso en PostgreSQL)
+    // Revisa si ya existe una incidencia igual sin revisar durante el día de Colombia.
     const verificar = `
       SELECT id
       FROM incidencias
       WHERE asesor_id = $1
         AND tipo = $2
         AND revisada IS FALSE
-        AND DATE(fecha_hora) = DATE($3)
+        AND fecha_hora >= $3::date
+        AND fecha_hora < ($3::date + INTERVAL '1 day')
       LIMIT 1
     `;
 
@@ -225,7 +226,8 @@ const obtenerPausaActiva = async (req, res) => {
        WHERE asesor_id = $1
          AND tipo = 'PAUSA DE LLAMADAS'
          AND fecha_fin IS NULL
-         AND DATE(fecha_hora) = CURRENT_DATE
+         AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+         AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
        ORDER BY fecha_hora DESC
        LIMIT 1`,
       [asesorId]

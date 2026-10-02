@@ -65,16 +65,8 @@ export default function Buttons({
         nuevoEstado
     ) {
 
-        console.log(
-            "===== PASO 1 ====="
-        );
-
 
         if (!asesor) {
-
-            console.log(
-                "No hay asesor seleccionado"
-            );
 
             alert(
                 "Seleccione un asesor."
@@ -93,22 +85,6 @@ export default function Buttons({
         setMovimientoEnCurso(true);
 
 
-        console.log(
-            "===== PASO 2 ====="
-        );
-
-
-        console.log({
-
-            asesor,
-
-            tipo,
-
-            nuevoEstado
-
-        });
-
-
         // ==================================================
         // ACTIVAR EFECTO VISUAL
         // ==================================================
@@ -119,10 +95,6 @@ export default function Buttons({
 
 
         try {
-
-            console.log(
-                "===== PASO 3 ====="
-            );
 
 
             const { data } =
@@ -143,16 +115,6 @@ export default function Buttons({
                 );
 
 
-            console.log(
-                "===== PASO 4 ====="
-            );
-
-
-            console.log(
-                data
-            );
-
-
             if (!data?.ok) {
 
                 throw new Error(
@@ -166,11 +128,6 @@ export default function Buttons({
                 );
 
             }
-
-
-            console.log(
-                "===== PASO 5 ====="
-            );
 
 
             const estadoServidor =
@@ -196,27 +153,14 @@ export default function Buttons({
                 "function"
             ) {
 
-                console.log(
-                    "===== PASO 6 ====="
-                );
-
 
                 await onMovimientoRegistrado();
 
             }
 
-
-            console.log(
-                "===== PASO 7 ====="
-            );
-
         }
 
         catch (error) {
-
-            console.log(
-                "===== ERROR ====="
-            );
 
 
             console.error(
@@ -498,19 +442,6 @@ export default function Buttons({
         movimientos.some((movimiento) => movimiento.tipo === "ALMUERZO_INICIO");
     const breakYaUsado = Array.isArray(movimientos) &&
         movimientos.some((movimiento) => movimiento.tipo === "BREAK_INICIO");
-        
-console.log("================================");
-console.log("DEBUG BOTONES");
-console.log("asesor:", asesor);
-console.log("estado ORIGINAL:", estado);
-console.log("estado NORMALIZADO:", estadoActual);
-console.log("inicioJornada:", inicioJornada);
-console.log("jornadaEsDeHoy:", jornadaEsDeHoy);
-console.log("disponible:", disponible);
-console.log("trabajando:", trabajando);
-console.log("enBreak:", enBreak);
-console.log("enAlmuerzo:", enAlmuerzo);
-console.log("================================");
 
         return (
         <>

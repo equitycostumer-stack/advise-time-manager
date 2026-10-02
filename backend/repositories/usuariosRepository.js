@@ -178,7 +178,47 @@ class UsuariosRepository {
             id
         ]);
 
+        if (datos.rol === "ASESOR" && datos.asesor_id) {
+            await this.ejecutar(
+                "UPDATE asesores SET activo = ? WHERE id = ?",
+                [datos.activo ? 1 : 0, datos.asesor_id]
+            );
+        }
+
         return true;
+    }
+
+    async eliminarAsesor(id, usuarioId, motivo) {
+        const client = await db.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const actual = await client.query(`
+                SELECT u.id, u.usuario, u.rol, u.asesor_id, u.activo,
+                       a.nombre AS asesor_nombre, a.activo AS asesor_activo
+                FROM usuarios u
+                LEFT JOIN asesores a ON a.id = u.asesor_id
+                WHERE u.id = $1
+                FOR UPDATE
+            `, [id]);
+            if (!actual.rows.length) throw new Error("El usuario no existe.");
+            const anterior = actual.rows[0];
+            if (anterior.rol !== "ASESOR") throw new Error("Solo se puede eliminar un usuario con rol ASESOR.");
+            if (!anterior.asesor_id) throw new Error("El usuario no tiene un asesor vinculado.");
+            const nuevoUsuario = await client.query("UPDATE usuarios SET activo = 0 WHERE id = $1 RETURNING id, usuario, rol, asesor_id, activo", [id]);
+            const nuevoAsesor = await client.query("UPDATE asesores SET activo = 0 WHERE id = $1 RETURNING id, nombre, activo", [anterior.asesor_id]);
+            await client.query(`
+                INSERT INTO auditoria_administrativa
+                    (usuario_id, accion, entidad, entidad_id, motivo, datos_anteriores, datos_nuevos)
+                VALUES ($1, 'BAJA_LOGICA', 'ASESOR', $2, $3, $4::jsonb, $5::jsonb)
+            `, [usuarioId || null, anterior.asesor_id, motivo, JSON.stringify(anterior), JSON.stringify({ usuario: nuevoUsuario.rows[0], asesor: nuevoAsesor.rows[0] })]);
+            await client.query("COMMIT");
+            return { usuario: nuevoUsuario.rows[0], asesor: nuevoAsesor.rows[0] };
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     // ======================================================

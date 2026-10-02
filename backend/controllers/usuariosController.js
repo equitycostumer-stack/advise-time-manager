@@ -141,6 +141,16 @@ class UsuariosController {
 
     }
 
+    async eliminar(req, res) {
+        try {
+            const respuesta = await usuariosService.eliminarAsesor(Number(req.params.id), req.usuario, req.body?.motivo);
+            return res.status(200).json(respuesta);
+        } catch (error) {
+            console.error("Error eliminando asesor:", error.code || error.message);
+            return res.status(error.status || 400).json({ ok: false, mensaje: error.message || "No fue posible eliminar el asesor." });
+        }
+    }
+
 }
 
 module.exports = new UsuariosController();

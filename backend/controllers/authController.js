@@ -26,9 +26,9 @@ class AuthController {
         }
     }
 
-    renovarToken(req, res) {
+    async renovarToken(req, res) {
         try {
-            return res.status(200).json(authService.renovarToken(req.usuario));
+            return res.status(200).json(await authService.renovarToken(req.usuario));
         } catch (error) {
             console.error("Error renovando sesión:", error.code || error.message);
             return res.status(500).json({ ok: false, mensaje: "No fue posible renovar la sesión." });

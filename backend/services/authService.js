@@ -54,7 +54,11 @@ class AuthService {
         };
     }
 
-    renovarToken(payload) { return { ok: true, token: crearToken(payload) }; }
+    async renovarToken(payload) {
+        const usuarioActual = await usuariosRepository.obtenerPorId(payload.id);
+        if (!usuarioActual || !usuarioActual.activo) throw error("La sesión ya no está activa.", 401);
+        return { ok: true, token: crearToken(usuarioActual) };
+    }
 
     async cambiarPassword(usuarioId, passwordActual, passwordNueva) {
         if (!passwordActual) throw error("Debe ingresar su contraseña actual.", 400);

@@ -89,5 +89,16 @@ class UsuariosService {
         await usuariosRepository.actualizarPassword(Number(id), await bcrypt.hash(temporal, 12));
         return { ok: true, mensaje: "Contraseña restablecida correctamente.", passwordTemporal: temporal, debe_cambiar_password: true };
     }
+
+    async eliminarAsesor(id, actor, motivo) {
+        if (!Number.isInteger(Number(id)) || Number(id) <= 0) throw error("El usuario indicado no es válido.");
+        if (!motivo || String(motivo).trim().length < 5) throw error("Debes indicar un motivo de al menos 5 caracteres.");
+        if (actor && Number(actor.id) === Number(id)) throw error("No puedes eliminar tu propia cuenta.", 409);
+        const usuario = await usuariosRepository.obtenerPorId(Number(id));
+        if (!usuario) throw error("El usuario no existe.", 404);
+        if (usuario.rol !== "ASESOR") throw error("Solo se puede eliminar un usuario con rol ASESOR.", 409);
+        const resultado = await usuariosRepository.eliminarAsesor(Number(id), actor?.id, String(motivo).trim());
+        return { ok: true, mensaje: "Asesor eliminado mediante baja lógica. El historial se conservó.", data: resultado };
+    }
 }
 module.exports = new UsuariosService();

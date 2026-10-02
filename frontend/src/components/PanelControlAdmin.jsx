@@ -56,6 +56,17 @@ function fechaLocal(valor) {
     return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(fecha);
 }
 
+function asesorIdDeSesion(usuario) {
+    if (usuario?.asesor_id) return Number(usuario.asesor_id);
+    try {
+        const token = localStorage.getItem("token");
+        const payload = token ? JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) : null;
+        return payload?.asesor_id ? Number(payload.asesor_id) : null;
+    } catch {
+        return null;
+    }
+}
+
 const tarjeta = {
     background: "#fff",
     border: "1px solid #dcebe2",
@@ -75,7 +86,7 @@ const input = {
 export default function PanelControlAdmin() {
     const { usuario } = useAuth();
     const esAdministrador = usuario?.rol === "ADMINISTRADOR";
-    const asesorId = usuario?.asesor_id;
+    const asesorId = asesorIdDeSesion(usuario);
     const [ejecutivo, setEjecutivo] = useState(null);
     const [asesores, setAsesores] = useState([]);
     const [metas, setMetas] = useState([]);

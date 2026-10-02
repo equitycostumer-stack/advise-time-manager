@@ -73,6 +73,14 @@ router.put(
 
 );
 
+// Baja lógica del asesor y de su acceso, conservando ventas y auditoría.
+router.delete(
+    "/:id",
+    usuariosController
+        .eliminar
+        .bind(usuariosController)
+);
+
 // ======================================================
 // RESTABLECER CONTRASEÑA
 // ======================================================

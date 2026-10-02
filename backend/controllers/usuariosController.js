@@ -83,7 +83,8 @@ class UsuariosController {
 
                     Number(id),
 
-                    req.body
+                    req.body,
+                    req.usuario
 
                 );
 

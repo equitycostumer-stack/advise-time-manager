@@ -1,208 +1,58 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
-// VENTAS CONTROLLER
+// EQUITY LINE PROFESSIONAL SERVICES - VENTAS CONTROLLER
 // ======================================================
-
 const ventasService = require("../services/ventasService");
 
-// ======================================================
-// REGISTRAR VENTA
-// ======================================================
+function responderError(res, error, fallback, defecto = 500) {
+    const status = Number(error.status) || defecto;
+    return res.status(status).json({
+        ok: false,
+        mensaje: status < 500 ? error.message : fallback
+    });
+}
 
 const registrarVenta = async (req, res) => {
-
     try {
-
-        const resultado =
-            await ventasService.registrarVenta({ ...req.body, usuario: req.usuario });
-
-        return res.status(200).json(resultado);
-
+        return res.status(201).json(await ventasService.registrarVenta({ ...req.body, usuario: req.usuario }));
     } catch (error) {
-
-        console.error(error);
-
-        return res.status(400).json({
-            ok: false,
-            mensaje: error.message
-        });
-
+        console.error("Error registrando venta:", error.code || error.message);
+        return responderError(res, error, "No fue posible registrar la venta.", 400);
     }
-
 };
-
-// ======================================================
-// OBTENER VENTAS DEL DÍA
-// ======================================================
 
 const obtenerVentasDelDia = async (req, res) => {
-
-    try {
-
-        const ventas =
-            await ventasService.obtenerVentasDelDia();
-
-        return res.status(200).json({
-            ok: true,
-            data: ventas
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-            ok: false,
-            mensaje: error.message
-        });
-
-    }
-
+    try { return res.json({ ok: true, data: await ventasService.obtenerVentasDelDia(req.usuario) }); }
+    catch (error) { console.error("Error consultando ventas del día:", error.code || error.message); return responderError(res, error, "No fue posible consultar las ventas del día."); }
 };
-
-// ======================================================
-// OBTENER VENTAS DE UN ASESOR
-// ======================================================
 
 const obtenerVentasPorAsesor = async (req, res) => {
-
     try {
-
         const asesorId = Number(req.params.asesorId);
-
-        const ventas =
-            await ventasService.obtenerVentasPorAsesor(asesorId);
-
-        return res.status(200).json({
-            ok: true,
-            data: ventas
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(400).json({
-            ok: false,
-            mensaje: error.message
-        });
-
-    }
-
+        if (!Number.isInteger(asesorId) || asesorId <= 0) return res.status(400).json({ ok: false, mensaje: "El asesor indicado no es válido." });
+        return res.json({ ok: true, data: await ventasService.obtenerVentasPorAsesor(asesorId) });
+    } catch (error) { console.error("Error consultando ventas por asesor:", error.code || error.message); return responderError(res, error, "No fue posible consultar las ventas.", 400); }
 };
-
-// ======================================================
-// RESUMEN DEL DÍA
-// ======================================================
 
 const obtenerResumenVentasDelDia = async (req, res) => {
-
-    try {
-
-        const resumen =
-            await ventasService.obtenerResumenVentasDelDia();
-
-        return res.status(200).json({
-            ok: true,
-            data: resumen
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-            ok: false,
-            mensaje: error.message
-        });
-
-    }
-
+    try { return res.json({ ok: true, data: await ventasService.obtenerResumenVentasDelDia(req.usuario) }); }
+    catch (error) { console.error("Error consultando resumen de ventas:", error.code || error.message); return responderError(res, error, "No fue posible consultar el resumen de ventas."); }
 };
-
-// ======================================================
-// RESUMEN POR ASESOR
-// ======================================================
 
 const obtenerResumenVentasPorAsesorPeriodo = async (req, res) => {
     try {
         const { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } = req.query;
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaDesde || "") || !/^\d{4}-\d{2}-\d{2}$/.test(fechaHasta || "") || fechaDesde > fechaHasta) {
-            return res.status(400).json({ ok: false, mensaje: "El rango de fechas no es válido." });
-        }
-        const resumen = await ventasService.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta);
-        return res.status(200).json({ ok: true, data: resumen });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ ok: false, mensaje: error.message });
-    }
+        return res.json({ ok: true, data: await ventasService.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, req.usuario) });
+    } catch (error) { console.error("Error consultando ranking de ventas:", error.code || error.message); return responderError(res, error, "No fue posible consultar el ranking de ventas.", 400); }
 };
 
 const obtenerResumenVentasPorAsesor = async (req, res) => {
-
-    try {
-
-        const resumen =
-            await ventasService.obtenerResumenVentasPorAsesor();
-
-        return res.status(200).json({
-            ok: true,
-            data: resumen
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-            ok: false,
-            mensaje: error.message
-        });
-
-    }
-
+    try { return res.json({ ok: true, data: await ventasService.obtenerResumenVentasPorAsesor(req.usuario) }); }
+    catch (error) { console.error("Error consultando resumen por asesor:", error.code || error.message); return responderError(res, error, "No fue posible consultar el resumen por asesor."); }
 };
-
-// ======================================================
-// ANULAR VENTA
-// ======================================================
 
 const anularVenta = async (req, res) => {
-
-    try {
-
-        const id = Number(req.params.id);
-
-        const resultado =
-            await ventasService.anularVenta(id, req.usuario, req.body?.motivo);
-
-        return res.status(200).json(resultado);
-
-    } catch (error) {
-
-        console.error("Error anulando venta:", error.code || error.message);
-
-        const statusCode = error.status || 400;
-
-        return res.status(statusCode).json({
-            ok: false,
-            mensaje: error.message || "No fue posible anular la venta."
-        });
-
-    }
-
+    try { return res.json(await ventasService.anularVenta(Number(req.params.id), req.usuario, req.body?.motivo)); }
+    catch (error) { console.error("Error anulando venta:", error.code || error.message); return responderError(res, error, "No fue posible anular la venta.", 400); }
 };
 
-// ======================================================
-// EXPORTAR
-// ======================================================
-
-module.exports = {
-    registrarVenta,
-    obtenerVentasDelDia,
-    obtenerVentasPorAsesor,
-    obtenerResumenVentasDelDia,
-    obtenerResumenVentasPorAsesor,
-    obtenerResumenVentasPorAsesorPeriodo,
-    anularVenta
-};
+module.exports = { registrarVenta, obtenerVentasDelDia, obtenerVentasPorAsesor, obtenerResumenVentasDelDia, obtenerResumenVentasPorAsesor, obtenerResumenVentasPorAsesorPeriodo, anularVenta };

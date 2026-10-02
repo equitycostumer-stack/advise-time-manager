@@ -105,6 +105,7 @@ class UsuariosRepository {
         const sql = `
             SELECT
                 u.id,
+                u.asesor_id,
                 u.usuario,
                 u.email,
                 u.telefono,
@@ -129,16 +130,26 @@ class UsuariosRepository {
     // VALIDAR SI EXISTE USUARIO
     // ======================================================
 
-    async existeUsuario(usuario) {
+    async existeUsuario(usuario, email = null) {
         const sql = `
             SELECT id
             FROM usuarios
-            WHERE LOWER(usuario) = LOWER(?) OR LOWER(email) = LOWER(?)
+            WHERE LOWER(usuario) = LOWER(?) OR (? IS NOT NULL AND LOWER(email) = LOWER(?))
             LIMIT 1
         `;
 
-        const filas = await this.ejecutar(sql, [usuario, usuario]);
+        const filas = await this.ejecutar(sql, [usuario, email, email]);
 
+        return filas.length > 0;
+    }
+
+    async existeUsuarioExcepto(usuario, email, id) {
+        const filas = await this.ejecutar(`
+            SELECT id FROM usuarios
+            WHERE id <> ?
+              AND (LOWER(usuario) = LOWER(?) OR (? IS NOT NULL AND LOWER(email) = LOWER(?)))
+            LIMIT 1
+        `, [id, usuario, email, email]);
         return filas.length > 0;
     }
 
@@ -150,6 +161,7 @@ class UsuariosRepository {
         const sql = `
             UPDATE usuarios
             SET
+                asesor_id = ?,
                 email = ?,
                 telefono = ?,
                 rol = ?,
@@ -158,6 +170,7 @@ class UsuariosRepository {
         `;
 
         await this.ejecutar(sql, [
+            datos.asesor_id,
             datos.email,
             datos.telefono,
             datos.rol,
@@ -230,6 +243,22 @@ class UsuariosRepository {
         await this.ejecutar(sql, [id]);
 
         return true;
+    }
+
+    async registrarFalloLogin(id, intentosFallidos, bloqueadoHasta) {
+        await this.ejecutar(`
+            UPDATE usuarios
+            SET intentos_fallidos = ?, bloqueado_hasta = ?
+            WHERE id = ?
+        `, [intentosFallidos, bloqueadoHasta, id]);
+    }
+
+    async limpiarFallosLogin(id) {
+        await this.ejecutar(`
+            UPDATE usuarios
+            SET intentos_fallidos = 0, bloqueado_hasta = NULL
+            WHERE id = ?
+        `, [id]);
     }
 }
 

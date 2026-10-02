@@ -32,12 +32,18 @@ console.log("====================================");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
 
-const allowedOrigins = [
+const allowedOriginsPorDefecto = [
     "http://localhost:5173",
     "https://equity-time-manager-seven.vercel.app",
     "https://advise-time-manager-seven.vercel.app"
 ];
+const allowedOrigins = String(process.env.ALLOWED_ORIGINS || allowedOriginsPorDefecto.join(","))
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 const corsOptions = {
     origin: (origin, callback) => {
@@ -51,8 +57,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    next();
+});
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 require("./config/db");
 
 console.log("Cargando rutas...");
@@ -104,7 +116,18 @@ app.get("/health", (req, res) => {
 });
 
 app.use((req, res) => {
-    res.status(404).json({ ok: false, mensaje: `Ruta no encontrada: ${req.originalUrl}` });
+    res.status(404).json({ ok: false, mensaje: "Ruta no encontrada." });
+});
+
+app.use((error, req, res, next) => {
+    if (error?.type === "entity.too.large") {
+        return res.status(413).json({ ok: false, mensaje: "La solicitud es demasiado grande." });
+    }
+    if (error?.message?.startsWith("Origen no permitido")) {
+        return res.status(403).json({ ok: false, mensaje: "Origen no permitido." });
+    }
+    console.error("Error no controlado en la API:", error.code || error.message);
+    return res.status(500).json({ ok: false, mensaje: "Error interno del servidor." });
 });
 
 const PORT = process.env.PORT || 5000;

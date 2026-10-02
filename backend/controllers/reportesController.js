@@ -1,63 +1,34 @@
 // ======================================================
-// EQUITY LINE PROFESSIONAL SERVICES
-// REPORTES CONTROLLER
+// EQUITY LINE PROFESSIONAL SERVICES - REPORTES CONTROLLER
 // ======================================================
-
 const reportesService = require("../services/reportesService");
 
-// ======================================================
-// ASISTENCIA POR RANGO
-// ======================================================
+function responderError(res, error) {
+    const status = Number(error.status) || 400;
+    return res.status(status).json({
+        ok: false,
+        mensaje: status < 500 ? error.message : "No fue posible consultar el reporte."
+    });
+}
 
 const obtenerAsistencia = async (req, res) => {
     try {
         const { desde, hasta } = req.query;
-
-        const datos = await reportesService.obtenerAsistencia(desde, hasta);
-
-        return res.status(200).json({
-            ok: true,
-            data: datos
-        });
+        return res.json({ ok: true, data: await reportesService.obtenerAsistencia(desde, hasta, req.usuario) });
     } catch (error) {
-        console.error(error);
-
-        return res.status(400).json({
-            ok: false,
-            mensaje: error.message
-        });
+        console.error("Error consultando asistencia:", error.code || error.message);
+        return responderError(res, error);
     }
 };
-
-// ======================================================
-// VENTAS POR RANGO (Incluyendo ID de cliente)
-// ======================================================
 
 const obtenerVentas = async (req, res) => {
     try {
         const { desde, hasta } = req.query;
-
-        const datos = await reportesService.obtenerVentas(desde, hasta);
-
-        return res.status(200).json({
-            ok: true,
-            data: datos
-        });
+        return res.json({ ok: true, data: await reportesService.obtenerVentas(desde, hasta, req.usuario) });
     } catch (error) {
-        console.error(error);
-
-        return res.status(400).json({
-            ok: false,
-            mensaje: error.message
-        });
+        console.error("Error consultando ventas históricas:", error.code || error.message);
+        return responderError(res, error);
     }
 };
 
-// ======================================================
-// EXPORTAR
-// ======================================================
-
-module.exports = {
-    obtenerAsistencia,
-    obtenerVentas
-};
+module.exports = { obtenerAsistencia, obtenerVentas };

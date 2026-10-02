@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const verificarToken = require("../middleware/authMiddleware");
+const rateLimitLogin = require("../middleware/rateLimitLogin");
 
-router.post("/login", authController.login);
+router.post("/login", rateLimitLogin, authController.login);
 router.post("/refresh", verificarToken, authController.renovarToken);
 router.put("/cambiar-password", verificarToken, authController.cambiarPassword);
 

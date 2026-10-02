@@ -56,8 +56,10 @@ router.get("/", async (req, res) => {
         INNER JOIN asesores a ON a.id = i.asesor_id
             WHERE i.revisada IS FALSE
           ${filtroAsesor}
-          AND DATE(i.fecha_hora) = CURRENT_DATE
+          AND i.fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+          AND i.fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
         ORDER BY i.fecha_hora DESC
+        LIMIT 5000
     `;
 
     try {
@@ -91,8 +93,10 @@ router.get("/asesor/:asesorId", verificarPropioAsesor, async (req, res) => {
             fecha_fin
         FROM incidencias
         WHERE asesor_id = $1
-          AND DATE(fecha_hora) = CURRENT_DATE
+          AND fecha_hora >= (NOW() AT TIME ZONE 'America/Bogota')::date
+          AND fecha_hora < (NOW() AT TIME ZONE 'America/Bogota')::date + INTERVAL '1 day'
         ORDER BY fecha_hora DESC
+        LIMIT 2000
     `;
 
     try {
@@ -163,12 +167,12 @@ router.get("/historial", async (req, res) => {
 
     if (desde) {
         valores.push(desde);
-        condiciones.push(`DATE(i.fecha_hora) >= $${valores.length}`);
+        condiciones.push(`i.fecha_hora >= $${valores.length}::date`);
     }
 
     if (hasta) {
         valores.push(hasta);
-        condiciones.push(`DATE(i.fecha_hora) <= $${valores.length}`);
+        condiciones.push(`i.fecha_hora < ($${valores.length}::date + INTERVAL '1 day')`);
     }
 
     if (asesorIdFiltro) {
@@ -216,6 +220,7 @@ router.get("/historial", async (req, res) => {
         INNER JOIN asesores a ON a.id = i.asesor_id
         ${where}
         ORDER BY i.fecha_hora DESC
+        LIMIT 5000
     `;
 
     try {

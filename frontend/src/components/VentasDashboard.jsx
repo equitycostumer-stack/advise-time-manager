@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
+function ahoraColombia() {
+    const partes = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date()).reduce((resultado, parte) => ({ ...resultado, [parte.type]: parte.value }), {});
+    return { year: Number(partes.year), month: Number(partes.month), day: Number(partes.day) };
+}
+
 function obtenerPeriodoInicial() {
-    const ahora = new Date();
-    const mes = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}`;
-    return { mes, quincena: ahora.getDate() <= 15 ? "1" : "2" };
+    const ahora = ahoraColombia();
+    const mes = `${ahora.year}-${String(ahora.month).padStart(2, "0")}`;
+    return { mes, quincena: ahora.day <= 15 ? "1" : "2" };
 }
 
 
@@ -110,7 +120,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
         if (!confirmar) return;
         setAnulando(id);
         try {
-            const { data } = await api.patch(`/ventas/${id}/anular`, { motivo: motivo.trim() });
+            await api.patch(`/ventas/${id}/anular`, { motivo: motivo.trim() });
 
             await cargarVentas();
 

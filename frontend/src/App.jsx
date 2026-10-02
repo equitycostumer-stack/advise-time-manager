@@ -349,12 +349,38 @@ function App() {
           >
             👥 Usuarios
           </button>}
+          {usuario?.rol === "ADMINISTRADOR" && <button
+            onClick={() => setVista("control")}
+            style={{
+              flex: 1,
+              padding: "12px",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              background: vista === "control" ? "#6f42c1" : "#f1eafa",
+              color: vista === "control" ? "#fff" : "#4f2b91"
+            }}
+          >
+            🎯 Centro ejecutivo
+          </button>}
         </div>
 
         {vista === "historico" ? (
           <HistoricoDashboard />
         ) : vista === "usuarios" ? (
           <Usuarios />
+        ) : vista === "control" ? (
+          <section style={{ maxWidth: 1180, margin: "0 auto", padding: "4px 0 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+              <div>
+                <h2 style={{ margin: 0, color: "#4f2b91" }}>🎯 Centro de Control Ejecutivo</h2>
+                <p style={{ margin: "4px 0 0", color: "#66756b" }}>Vista independiente para indicadores, metas y productividad.</p>
+              </div>
+              <button type="button" onClick={() => setVista("principal")} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#e9ecef", color: "#333", fontWeight: 700, cursor: "pointer" }}>← Volver a la app</button>
+            </div>
+            <PanelControlAdmin />
+          </section>
         ) : (
           <>
             <AdvisorSelect
@@ -397,8 +423,6 @@ function App() {
             <Footer />
 
             <Dashboard />
-
-            <PanelControlAdmin />
 
             <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
 

@@ -96,7 +96,7 @@ class AdminRepository {
             await client.query("BEGIN");
             const actual = await client.query("SELECT id, nombre, activo FROM asesores WHERE id = $1 FOR UPDATE", [asesorId]);
             if (!actual.rows.length) throw new Error("El asesor no existe.");
-            const nuevo = await client.query("UPDATE asesores SET activo = $1 WHERE id = $2 RETURNING id, nombre, activo", [Boolean(activo), asesorId]);
+            const nuevo = await client.query("UPDATE asesores SET activo = $1 WHERE id = $2 RETURNING id, nombre, activo", [activo ? 1 : 0, asesorId]);
             await client.query(`INSERT INTO auditoria_administrativa
                 (usuario_id, accion, entidad, entidad_id, motivo, datos_anteriores, datos_nuevos)
                 VALUES ($1, 'CAMBIO_ESTADO', 'ASESOR', $2, $3, $4::jsonb, $5::jsonb)`,

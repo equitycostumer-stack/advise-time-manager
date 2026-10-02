@@ -134,7 +134,7 @@ class UsuariosRepository {
         const sql = `
             SELECT id
             FROM usuarios
-            WHERE LOWER(usuario) = LOWER(?) OR (? IS NOT NULL AND LOWER(email) = LOWER(?))
+            WHERE LOWER(usuario) = LOWER(?) OR (CAST(? AS TEXT) IS NOT NULL AND LOWER(email) = LOWER(CAST(? AS TEXT)))
             LIMIT 1
         `;
 
@@ -147,7 +147,7 @@ class UsuariosRepository {
         const filas = await this.ejecutar(`
             SELECT id FROM usuarios
             WHERE id <> ?
-              AND (LOWER(usuario) = LOWER(?) OR (? IS NOT NULL AND LOWER(email) = LOWER(?)))
+              AND (LOWER(usuario) = LOWER(?) OR (CAST(? AS TEXT) IS NOT NULL AND LOWER(email) = LOWER(CAST(? AS TEXT))))
             LIMIT 1
         `, [id, usuario, email, email]);
         return filas.length > 0;

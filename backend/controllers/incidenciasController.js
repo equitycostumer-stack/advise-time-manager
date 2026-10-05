@@ -56,7 +56,7 @@ const registrarIncidencia = async (asesorId, tipo, nivel, detalle) => {
         fecha_hora,
         revisada
       )
-      VALUES ($1, $2, $3, $4, $5, 0)
+      VALUES ($1, $2, $3, $4, $5, FALSE)
     `;
 
     await db.query(sql, [asesorId, tipo, nivel, detalle, fechaHora]);
@@ -95,7 +95,7 @@ const registrarPausaLlamadas = async (req, res) => {
         comentario,
         fecha_revision
       )
-      VALUES ($1, 'PAUSA DE LLAMADAS', 'INFORMATIVA', $2, $3, NULL, 1, $4, $5, $3)
+      VALUES ($1, 'PAUSA DE LLAMADAS', 'INFORMATIVA', $2, $3, NULL, TRUE, $4, $5, $3)
       RETURNING id
     `;
 

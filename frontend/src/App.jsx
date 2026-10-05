@@ -21,6 +21,7 @@ import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
 import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
 import PanelControlAdmin from "./components/PanelControlAdmin";
+import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
 import Usuarios from "./pages/Usuarios";
 
 // ======================================================
@@ -153,7 +154,7 @@ function App() {
   const [inicioJornada, setInicioJornada] = useState(null);
   const [resumen, setResumen] = useState(null);
   const [cargando, setCargando] = useState(true);
-  const [vista, setVista] = useState("principal");
+  const [vista, setVista] = useState(() => new URLSearchParams(window.location.search).get("vista") || "principal");
 
   // Selección de mensaje aleatorio memorizada
   const mensaje = useMemo(
@@ -366,7 +367,9 @@ function App() {
           </button>}
         </div>
 
-        {vista === "historico" ? (
+        {vista === "auditoria" && usuario?.rol === "ADMINISTRADOR" ? (
+          <AuditoriaAdministrativa />
+        ) : vista === "historico" ? (
           <HistoricoDashboard />
         ) : vista === "usuarios" ? (
           <Usuarios />

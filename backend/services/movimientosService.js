@@ -6,7 +6,8 @@ const notificacionesRepository = require("../repositories/notificacionesReposito
 
 const {
     TIPOS,
-    ESTADOS
+    ESTADOS,
+    ESTADO_POR_MOVIMIENTO
 } = require("../constants/movimientos");
 
 class MovimientosService {
@@ -60,6 +61,24 @@ class MovimientosService {
 
         }
 
+    }
+
+    async sincronizarEstadoDesdeMovimientos(asesorId) {
+        const movimientos = await movimientosRepository.obtenerMovimientosDesdeUltimaEntrada(asesorId);
+        const entrada = movimientos.find((movimiento) => movimiento.tipo === TIPOS.ENTRADA);
+        if (!entrada) return null;
+
+        const ultimo = movimientos[movimientos.length - 1];
+        const estado = ESTADO_POR_MOVIMIENTO[ultimo.tipo] || ESTADOS.TRABAJANDO;
+        const inicioEstado = resumenJornadaService.convertirFechaColombia(ultimo.fecha_hora);
+        const inicioJornada = resumenJornadaService.convertirFechaColombia(entrada.fecha_hora);
+
+        if (!inicioEstado || !inicioJornada) {
+            throw new Error("No fue posible interpretar las fechas del movimiento corregido.");
+        }
+
+        await movimientosRepository.actualizarEstadoActual(asesorId, estado, inicioEstado, inicioJornada);
+        return { estado, inicio_estado: ultimo.fecha_hora, inicio_jornada: entrada.fecha_hora };
     }
 
     // =====================================================

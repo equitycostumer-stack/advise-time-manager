@@ -1,4 +1,6 @@
 const adminRepository = require("../repositories/adminRepository");
+const movimientosService = require("../services/movimientosService");
+const resumenJornadaService = require("../services/resumenJornadaService");
 
 const errorResponse = (res, error) => res.status(400).json({ ok: false, mensaje: error.message || "No fue posible completar la operación." });
 
@@ -36,6 +38,8 @@ async function corregirMovimiento(req, res) {
         const id = Number(req.params.id);
         if (!Number.isInteger(id) || id <= 0) throw new Error("Movimiento inválido.");
         const data = await adminRepository.corregirMovimiento(id, req.body, req.usuario.id);
+        await movimientosService.sincronizarEstadoDesdeMovimientos(data.asesor_id);
+        await resumenJornadaService.actualizar(data.asesor_id);
         return res.json({ ok: true, data });
     } catch (error) { console.error("Error corrigiendo movimiento:", error); return errorResponse(res, error); }
 }

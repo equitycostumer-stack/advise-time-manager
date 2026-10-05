@@ -77,7 +77,8 @@ export default function AdminPanel() {
         if (!motivo) return;
         try {
             await api.patch(`/admin/movimientos/${movimiento.id}`, { tipo, fecha_hora: fechaHora, observacion, motivo });
-            alert("Movimiento corregido y auditado."); await cargar();
+            window.dispatchEvent(new Event("datos-actualizados"));
+            alert("Movimiento corregido, estado actualizado y auditado."); await cargar();
         } catch (e) { alert(e.response?.data?.mensaje || "No fue posible corregir el movimiento."); }
     }
 
@@ -119,6 +120,6 @@ export default function AdminPanel() {
 
         <div style={card}><h3>📝 Movimientos corregibles</h3><div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr><th>Fecha</th><th>Asesor</th><th>Tipo</th><th>Observación</th><th>Acción</th></tr></thead><tbody>{movimientos.map((m) => <tr key={m.id}><td style={{ padding: 8 }}>{m.fecha_hora}</td><td style={{ padding: 8 }}>{m.asesor_nombre}</td><td style={{ padding: 8 }}>{m.tipo}</td><td style={{ padding: 8 }}>{m.observacion || "—"}</td><td style={{ padding: 8 }}><button onClick={() => corregirMovimiento(m)} style={{ ...button, background: "#ffc107" }}>✏ Corregir</button></td></tr>)}</tbody></table></div></div>
 
-        <div style={card}><h3>🔐 Auditoría administrativa</h3><div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Motivo</th></tr></thead><tbody>{(datos.auditoria || []).map((a) => <tr key={a.id}><td style={{ padding: 8 }}>{a.created_at}</td><td style={{ padding: 8 }}>{a.usuario || "—"}</td><td style={{ padding: 8 }}>{a.accion}</td><td style={{ padding: 8 }}>{a.entidad} #{a.entidad_id || "—"}</td><td style={{ padding: 8 }}>{a.motivo || "—"}</td></tr>)}</tbody></table></div></div>
+        <div style={card}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}><h3 style={{ margin: 0 }}>🔐 Auditoría administrativa</h3><button type="button" onClick={() => window.open(`${window.location.origin}/?vista=auditoria`, "_blank", "noopener,noreferrer")} style={{ ...button, background: "#6f42c1", color: "#fff" }}>Abrir auditoría en otra pestaña</button></div><p style={{ color: "#66756b" }}>Consulta el historial completo con filtros y exportación CSV.</p><div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Motivo</th></tr></thead><tbody>{(datos.auditoria || []).map((a) => <tr key={a.id}><td style={{ padding: 8 }}>{a.created_at}</td><td style={{ padding: 8 }}>{a.usuario || "—"}</td><td style={{ padding: 8 }}>{a.accion}</td><td style={{ padding: 8 }}>{a.entidad} #{a.entidad_id || "—"}</td><td style={{ padding: 8 }}>{a.motivo || "—"}</td></tr>)}</tbody></table></div></div>
     </section>;
 }

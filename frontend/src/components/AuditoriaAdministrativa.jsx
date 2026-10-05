@@ -56,7 +56,7 @@ export default function AuditoriaAdministrativa() {
                         <h2 style={{ margin: 0, color: "#4f2b91" }}>🔐 Auditoría administrativa</h2>
                         <p style={{ margin: "6px 0 0", color: "#66756b" }}>Registro protegido de correcciones, cambios y operaciones administrativas.</p>
                     </div>
-                    <button type="button" onClick={() => window.close()} style={{ ...button, background: "#e9ecef", color: "#333" }}>← Cerrar pestaña</button>
+                    <button type="button" onClick={() => { window.location.href = `${window.location.pathname}?vista=control`; }} style={{ ...button, background: "#e9ecef", color: "#333" }}>← Volver al panel</button>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 10, marginTop: 16 }}>
                     <label>Buscar<input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Usuario, motivo o entidad" style={input} /></label>

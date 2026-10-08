@@ -305,6 +305,7 @@ function App() {
       <aside className="app-sidebar">
         <div className="sidebar-brand">
           <img src={logo} alt="Equity Line" className="sidebar-logo" />
+          <div className="sidebar-brand-copy"><strong>EQUITY LINE</strong><span>Professional Services</span></div>
         </div>
         <div className="sidebar-version">SISTEMA DE CONTROL</div>
         <div className="sidebar-user"><span>BIENVENIDO</span><strong>{usuario?.usuario || "Usuario"}</strong><small>{usuario?.rol || "ASESOR"}</small></div>

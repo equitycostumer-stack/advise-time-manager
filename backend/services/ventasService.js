@@ -82,6 +82,52 @@ class VentasService {
         return ventasRepository.obtenerResumenVentasPorAsesor(asesorId);
     }
 
+    validarMotivo(motivo) {
+        const texto = String(motivo || "").trim();
+        if (texto.length < 5 || texto.length > 500) {
+            const error = new Error("Debe indicar un motivo de entre 5 y 500 caracteres.");
+            error.status = 400;
+            throw error;
+        }
+        return texto;
+    }
+
+    validarRangoAdmin(fechaDesde, fechaHasta) {
+        if (!this.validarFechaISO(fechaDesde) || !this.validarFechaISO(fechaHasta) || fechaDesde > fechaHasta) {
+            const error = new Error("El rango de fechas no es válido."); error.status = 400; throw error;
+        }
+        const dias = (new Date(`${fechaHasta}T12:00:00-05:00`) - new Date(`${fechaDesde}T12:00:00-05:00`)) / 86400000;
+        if (dias > 366) { const error = new Error("El rango no puede superar 366 días."); error.status = 400; throw error; }
+    }
+
+    async listarVentasAdmin(fechaDesde, fechaHasta, asesorId, estado) {
+        this.validarRangoAdmin(fechaDesde, fechaHasta);
+        const id = asesorId === undefined || asesorId === "" ? null : Number(asesorId);
+        if (id !== null && (!Number.isInteger(id) || id <= 0)) { const error = new Error("El asesor indicado no es válido."); error.status = 400; throw error; }
+        return ventasRepository.listarVentasAdmin(fechaDesde, fechaHasta, id, estado);
+    }
+
+    async corregirVenta(id, datos, usuario) {
+        const ventaId = Number(id);
+        if (!Number.isInteger(ventaId) || ventaId <= 0) throw new Error("La venta indicada no es válida.");
+        const motivo = this.validarMotivo(datos.motivo);
+        const asesorId = Number(datos.asesor_id);
+        const valor = Number(datos.valor);
+        const recaudo = Number(datos.recaudo);
+        if (!Number.isInteger(asesorId) || asesorId <= 0) throw new Error("Debe seleccionar un asesor válido.");
+        if (!Number.isFinite(valor) || valor <= 0 || valor > 100000000000) throw new Error("El valor de la venta no es válido.");
+        if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > 100000000000) throw new Error("El recaudo no es válido.");
+        const configuracion = (await configuracionVentasRepository.obtener()) || { recaudo_no_supera_venta: true };
+        if (configuracion.recaudo_no_supera_venta && recaudo > valor) throw new Error("El recaudo no puede superar el valor de la venta.");
+        const asesor = await movimientosRepository.obtenerAsesor(asesorId);
+        if (!asesor || !asesor.activo) throw new Error("El asesor seleccionado no existe o está inactivo.");
+        const clienteId = datos.cliente_id ? String(datos.cliente_id).trim().slice(0, 120) : null;
+        const observacion = datos.observacion ? String(datos.observacion).trim().slice(0, 500) : null;
+        const original = await ventasRepository.obtenerVentaPorId(ventaId);
+        const accion = Number(original?.asesor_id) !== asesorId ? "REASIGNACION" : "EDICION";
+        return ventasRepository.actualizarVentaAdmin(ventaId, { asesor_id: asesorId, cliente_id: clienteId, valor, recaudo, observacion, accion }, usuario?.id, motivo);
+    }
+
     async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, usuario) {
         if (!this.validarFechaISO(fechaDesde) || !this.validarFechaISO(fechaHasta) || fechaDesde > fechaHasta) {
             const error = new Error("El rango de fechas no es válido."); error.status = 400; throw error;

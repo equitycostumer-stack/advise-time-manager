@@ -100,11 +100,12 @@ class VentasService {
         if (dias > 366) { const error = new Error("El rango no puede superar 366 días."); error.status = 400; throw error; }
     }
 
-    async listarVentasAdmin(fechaDesde, fechaHasta, asesorId, estado) {
+    async listarVentasAdmin(fechaDesde, fechaHasta, asesorId, clienteId, estado) {
         this.validarRangoAdmin(fechaDesde, fechaHasta);
         const id = asesorId === undefined || asesorId === "" ? null : Number(asesorId);
         if (id !== null && (!Number.isInteger(id) || id <= 0)) { const error = new Error("El asesor indicado no es válido."); error.status = 400; throw error; }
-        return ventasRepository.listarVentasAdmin(fechaDesde, fechaHasta, id, estado);
+        const cliente = clienteId === undefined || clienteId === null ? "" : String(clienteId).trim().slice(0, 120);
+        return ventasRepository.listarVentasAdmin(fechaDesde, fechaHasta, id, cliente, estado);
     }
 
     async corregirVenta(id, datos, usuario) {

@@ -54,7 +54,7 @@ class VentasRepository {
         `, [asesorId]);
     }
 
-    async listarVentasAdmin(fechaDesde, fechaHasta, asesorId = null, estado = "TODAS") {
+    async listarVentasAdmin(fechaDesde, fechaHasta, asesorId = null, clienteId = "", estado = "TODAS") {
         const estados = ["ACTIVA", "ANULADA"];
         const estadoFiltro = estados.includes(estado) ? estado : null;
         return this.ejecutar(`
@@ -66,9 +66,10 @@ class VentasRepository {
               AND v.fecha_hora < (?::date + INTERVAL '1 day')
               AND (?::integer IS NULL OR v.asesor_id = ?::integer)
               AND (?::text IS NULL OR v.estado = ?::text)
+              AND (?::text = '' OR v.cliente_id::text ILIKE ?::text)
             ORDER BY v.fecha_hora DESC, v.id DESC
             LIMIT 2000
-        `, [fechaDesde, fechaHasta, asesorId, asesorId, estadoFiltro, estadoFiltro]);
+        `, [fechaDesde, fechaHasta, asesorId, asesorId, estadoFiltro, estadoFiltro, clienteId ? `%${clienteId}%` : "", clienteId ? `%${clienteId}%` : ""]);
     }
 
     async actualizarVentaAdmin(id, cambios, usuarioId, motivo) {

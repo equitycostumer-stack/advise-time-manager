@@ -391,10 +391,6 @@ export default function Dashboard() {
                 {listaHistorialGeneral.length === 0 ? <p style={{ color: palette.muted }}>Selecciona filtros y presiona Consultar.</p> : <div style={{ display: "grid", gap: "12px" }}>{listaHistorialGeneral.map((inc) => <IncidenciaCard key={inc.id} inc={inc} />)}</div>}
             </Modulo>
 
-            <Modulo title="💰 Ventas del día" defaultOpen={false}>
-                <div style={{ padding: "4px" }}><p style={{ color: palette.muted }}>El resumen de ventas se muestra en el módulo de ventas del dashboard.</p></div>
-            </Modulo>
-
             {asesorSeleccionado && (
                 <div role="dialog" aria-modal="true" onClick={(e) => e.target === e.currentTarget && setAsesorSeleccionado(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", zIndex: 9999 }}>
                     <div style={{ background: palette.surface, color: palette.black, width: "100%", maxWidth: "700px", maxHeight: "90vh", overflowY: "auto", border: `1px solid ${palette.border}`, borderTop: `5px solid ${palette.gold}`, borderRadius: "14px", padding: "24px" }}>

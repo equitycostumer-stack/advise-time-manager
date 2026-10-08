@@ -490,7 +490,6 @@ function App() {
                   <AdvisorSelect asesores={asesores} asesor={asesor} setAsesor={setAsesor} />
                   <small>● En línea</small>
                 </div>
-                <b>›</b>
               </article>
               <article className="current-status-card">
                 <div className="status-play">▶</div>

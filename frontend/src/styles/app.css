@@ -96,3 +96,14 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .goals-history-card { margin-top:0 !important; }
 .dashboard-secondary .ventas-dashboard, .dashboard-secondary > div:has(.goals-history-toggle) { margin-top:0 !important; }
 @media (max-width:700px) { .person-card { padding:15px; } .person-card-content .select { max-width:100%; } }
+
+/* Selector de asesor accionado por la flecha de la tarjeta */
+.advisor-dropdown { position:relative; width:100%; max-width:245px; }
+.advisor-trigger { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 9px; border:1px solid #cbd8e5; border-radius:7px; background:#fff; color:#17385f; font-size:13px; font-weight:700; cursor:pointer; text-align:left; }
+.advisor-trigger strong { color:#177bc8; font-size:22px; font-weight:400; line-height:14px; transform:rotate(90deg); }
+.advisor-trigger:disabled { cursor:default; opacity:.9; }
+.advisor-options { position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:50; max-height:230px; overflow:auto; padding:5px; background:#fff; border:1px solid #bcd0e4; border-radius:8px; box-shadow:0 12px 25px rgba(20,60,100,.22); }
+.advisor-options button { width:100%; display:block; padding:9px 10px; border:0; border-radius:5px; background:#fff; color:#17385f; text-align:left; cursor:pointer; font-size:13px; }
+.advisor-options button:hover { background:#eaf4ff; color:#0879cf; }
+.advisor-empty { padding:10px; color:#718198; font-size:12px; }
+@media (max-width:700px) { .advisor-dropdown { max-width:100%; } }

@@ -22,14 +22,20 @@ export default function Header() {
     }, [usuario]);
 
     return <div className="header">
-        <img src={logo} alt={empresa?.nombre_empresa || "EQUITY LINE"} className="logo" style={{ width: "400px", height: "auto", display: "block", margin: "0 auto 15px auto" }} />
-        <h1 className="title">{empresa?.nombre_corto || "EQUITY LINE"}</h1>
-        <h2 className="subtitle">Professional Services</h2>
-        <hr />
-        <h2 className="sectionTitle">Control de Tiempo y Bienestar</h2>
-        <div className="clock">{fechaHora.toLocaleTimeString("es-CO")}</div>
-        <div className="date">{fechaHora.toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
-        <NotificacionesBell />
-        {usuario && <button onClick={() => { logout(); window.location.reload(); }} style={{ marginTop: "15px", padding: "8px 18px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", fontSize: "14px" }}>🚪 Cerrar sesión ({usuario.usuario})</button>}
+        <div className="header-brand">
+            <img src={logo} alt={empresa?.nombre_empresa || "EQUITY LINE"} className="logo" />
+            <div>
+                <h1 className="title">{empresa?.nombre_corto || "EQUITY LINE"}</h1>
+                <p className="subtitle">Control de Tiempo y Bienestar</p>
+            </div>
+        </div>
+        <div className="header-actions">
+            <div className="header-date">
+                <strong>{fechaHora.toLocaleTimeString("es-CO")}</strong>
+                <span>{fechaHora.toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+            </div>
+            <NotificacionesBell />
+            {usuario && <button onClick={() => { logout(); window.location.reload(); }} className="logout-button">🚪 Cerrar sesión</button>}
+        </div>
     </div>;
 }

@@ -143,22 +143,7 @@ export default function ResumenJornada({ resumen, asesor }) {
                 </span>
             </div>
 
-            <div style={{ marginTop: 20, paddingTop: 18, borderTop: "2px solid #d9e5dc" }}>
-                <h3 style={{ margin: "0 0 12px", color: "#0d6efd", textAlign: "left" }}>💰 Ventas del día</h3>
-                {fila("📈 Cantidad de ventas", ventasDelDia.length)}
-                {fila("💵 Total vendido", formatearMoneda(totalVentas))}
-                {ventasDelDia.length > 0 && (
-                    <div style={{ marginTop: 10 }}>
-                        {ventasDelDia.map((venta) => (
-                            <div key={venta.id} style={{ padding: "9px 0", borderBottom: "1px solid #e5e7eb", color: "#6c757d", textAlign: "left", fontSize: 14 }}>
-                                <strong style={{ color: "#198754" }}>{formatearMoneda(venta.valor)}</strong>
-                                {venta.cliente_id ? ` — Cliente: ${venta.cliente_id}` : ""}
-                                <span style={{ display: "block", color: "#6c757d", marginTop: 3 }}>{venta.observacion || "Sin observación"}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+
         </div>
     );
 }

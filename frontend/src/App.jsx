@@ -142,6 +142,14 @@ const MENSAJES_MOTIVACIONALES = [
   "🎯 Hoy es un buen día para superar tus propias expectativas."
 ];
 
+function formatearDuracion(segundos = 0) {
+  const total = Math.max(0, Number(segundos) || 0);
+  const horas = Math.floor(total / 3600);
+  const minutos = Math.floor((total % 3600) / 60);
+  const segundosRestantes = total % 60;
+  return [horas, minutos, segundosRestantes].map((valor) => String(valor).padStart(2, "0")).join(":");
+}
+
 // ======================================================
 // APP
 // ======================================================
@@ -157,6 +165,25 @@ function App() {
   const [resumen, setResumen] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [vista, setVista] = useState(() => new URLSearchParams(window.location.search).get("vista") || "principal");
+  const [tiempoJornadaEnVivo, setTiempoJornadaEnVivo] = useState(0);
+
+  useEffect(() => {
+    if (!inicioJornada || String(estado).toUpperCase().includes("SALIDA")) {
+      setTiempoJornadaEnVivo(0);
+      return undefined;
+    }
+
+    const inicio = convertirFechaColombia(inicioJornada);
+    if (!inicio) {
+      setTiempoJornadaEnVivo(0);
+      return undefined;
+    }
+
+    const actualizar = () => setTiempoJornadaEnVivo(Math.max(0, Math.floor((Date.now() - inicio.getTime()) / 1000)));
+    actualizar();
+    const intervalo = setInterval(actualizar, 1000);
+    return () => clearInterval(intervalo);
+  }, [inicioJornada, estado]);
 
   // Selección de mensaje aleatorio memorizada
   const mensaje = useMemo(
@@ -455,18 +482,14 @@ function App() {
               </article>
             </section>
 
-            <div className="advisor-picker">
-              <AdvisorSelect
-                asesores={asesores}
-                asesor={asesor}
-                setAsesor={setAsesor}
-              />
-            </div>
-
             <section className="dashboard-top-cards" aria-label="Estado de jornada">
               <article className="person-card">
                 <div className="person-avatar">●</div>
-                <div><strong>{asesorSeleccionado?.nombre || "Selecciona un asesor"}</strong><span>Asesor</span><small>● En línea</small></div>
+                <div className="person-card-content">
+                  <div className="person-card-label">● Selecciona un asesor</div>
+                  <AdvisorSelect asesores={asesores} asesor={asesor} setAsesor={setAsesor} />
+                  <small>● En línea</small>
+                </div>
                 <b>›</b>
               </article>
               <article className="current-status-card">
@@ -475,7 +498,7 @@ function App() {
               </article>
               <article className="time-card">
                 <div className="time-icon">◷</div>
-                <div><span>Tiempo trabajado</span><strong>{resumen?.tiempo_trabajado ? new Date(resumen.tiempo_trabajado).toISOString().slice(11,19) : "00:00:00"}</strong><small>El tiempo de jornada aparece en el contador.</small></div>
+                <div><span>Tiempo trabajado</span><strong>{formatearDuracion(tiempoJornadaEnVivo)}</strong><small>El tiempo de jornada aparece en el contador.</small></div>
               </article>
             </section>
 
@@ -507,13 +530,13 @@ function App() {
 
               <aside className="dashboard-secondary">
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
+                <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
                 <MessageCard mensaje={mensaje} />
               </aside>
             </div>
 
             <div className="below-dashboard">
               <Dashboard />
-              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
               {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
             </div>
             <Footer />

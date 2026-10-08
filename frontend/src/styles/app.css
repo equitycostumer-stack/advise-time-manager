@@ -83,3 +83,16 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .footer { margin-top:22px; padding:14px 0; border-top:1px solid #d7e3ef; color:#6d8098; font-size:11px; }
 @media (max-width:1100px) { .app-sidebar { width:220px; flex-basis:220px; } .dashboard-top-cards { grid-template-columns:1fr 1fr; } .time-card { grid-column:1/-1; } .dashboard-workspace { grid-template-columns:1fr; } }
 @media (max-width:700px) { .app-shell { display:block; } .app-sidebar { position:static; width:100%; height:auto; min-height:0; } .sidebar-brand { min-height:74px; justify-content:flex-start; padding:12px 18px; } .sidebar-logo { width:54px; max-width:54px; height:48px; } .sidebar-brand-copy strong { font-size:17px; } .sidebar-brand-copy span { font-size:9px; } .sidebar-nav { display:flex; overflow-x:auto; padding:5px 4px; } .sidebar-nav button { flex:0 0 auto; width:auto; padding:10px 12px; border-left:0; border-bottom:3px solid transparent; border-radius:0; font-size:12px; } .sidebar-nav button.active { border-bottom-color:#57c9ff; border-left:0; } .sidebar-footer { display:none; } .app-main .card { padding:0 12px 24px; } .header { margin:0 -12px 16px; padding:10px 14px; min-height:76px; } .header-actions { width:100%; justify-content:space-between; gap:10px; } .header-date { padding-left:39px; } .header-date strong { font-size:19px; } .header-date::before { font-size:29px; } .logout-button { padding:9px 13px; } .dashboard-top-cards { grid-template-columns:1fr; gap:10px; } .time-card { grid-column:auto; } .dashboard-primary { padding:14px; } .dashboard-primary .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .secondary-widgets { grid-template-columns:1fr; } }
+
+/* Prioridad: selector integrado, paneles desplegables y lectura en vivo */
+.person-card-content { min-width:0; flex:1; }
+.person-card-label { color:#18345e; font-size:12px; margin-bottom:2px; }
+.person-card-content .advisor-picker, .person-card-content .advisor-picker > div { display:block; margin:0 !important; padding:0; border:0; box-shadow:none; background:transparent; }
+.person-card-content .advisor-picker label { display:none; }
+.person-card-content .select { width:100%; max-width:245px; margin:0; padding:7px 9px; border:1px solid #cbd8e5; border-radius:7px; color:#17385f; background:#fff; font-size:13px; }
+.person-card-content small { margin-top:7px; }
+.goals-history-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; padding:2px 0; border:0; background:transparent; color:#245b3a; font-size:17px; font-weight:800; cursor:pointer; text-align:left; }
+.goals-history-toggle strong { color:#b8941f; font-size:14px; }
+.goals-history-card { margin-top:0 !important; }
+.dashboard-secondary .ventas-dashboard, .dashboard-secondary > div:has(.goals-history-toggle) { margin-top:0 !important; }
+@media (max-width:700px) { .person-card { padding:15px; } .person-card-content .select { max-width:100%; } }

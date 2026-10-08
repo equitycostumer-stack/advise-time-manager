@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import Login from "./pages/Login";
+import logo from "./assets/Logo.png";
 import CambiarPassword from "./components/CambiarPassword";
 import { useAuth } from "./context/AuthContext";
 import "./styles/app.css";
@@ -303,8 +304,7 @@ function App() {
     <div className="container app-shell">
       <aside className="app-sidebar">
         <div className="sidebar-brand">
-          <div className="sidebar-logo-mark">EL</div>
-          <div><strong>EQUITY LINE</strong><span>Professional Services</span></div>
+          <img src={logo} alt="Equity Line" className="sidebar-logo" />
         </div>
         <div className="sidebar-version">SISTEMA DE CONTROL</div>
         <div className="sidebar-user"><span>BIENVENIDO</span><strong>{usuario?.usuario || "Usuario"}</strong><small>{usuario?.rol || "ASESOR"}</small></div>
@@ -430,50 +430,92 @@ function App() {
           </section>
         ) : (
           <>
-            <AdvisorSelect
-              asesores={asesores}
-              asesor={asesor}
-              setAsesor={setAsesor}
-            />
+            <section className="welcome-panel" aria-label="Resumen principal">
+              <div>
+                <span className="eyebrow">INICIO</span>
+                <h2>Bienvenido al CRM Equity Line</h2>
+                <p>Administra registros, productividad y ventas desde un solo lugar.</p>
+              </div>
+              <div className="welcome-badge">{usuario?.rol || "ASESOR"}</div>
+            </section>
 
-            <Buttons
-              asesor={asesor}
-              estado={estado}
-              inicioJornada={inicioJornada}
-              movimientos={resumen?.movimientos || []}
-              setEstado={setEstado}
-              
-              onMovimientoRegistrado={async () => {
-                await cargarEstado();
-                await cargarResumen();
-              }}
-            />
+            <section className="kpi-grid" aria-label="Indicadores de hoy">
+              <article className="kpi-card kpi-user">
+                <div className="kpi-icon">◉</div>
+                <div><span>ASESOR ACTIVO</span><strong>{asesorSeleccionado?.nombre || "Selecciona un asesor"}</strong><small>{estado}</small></div>
+              </article>
+              <article className="kpi-card kpi-blue">
+                <div className="kpi-icon">▣</div>
+                <div><span>REGISTROS HOY</span><strong>{resumen?.movimientos?.length || 0}</strong><small>Movimientos registrados</small></div>
+              </article>
+              <article className="kpi-card kpi-cyan">
+                <div className="kpi-icon">$</div>
+                <div><span>VENTAS HOY</span><strong>{resumen?.ventas?.length || 0}</strong><small>Ventas registradas</small></div>
+              </article>
+            </section>
 
-            <RegistrarVenta
-              asesor={asesor}
-              asesorNombre={asesorSeleccionado?.nombre}
-              onVentaRegistrada={async () => {
-                // Callback reservado para futuras actualizaciones
-              }}
-            />
+            <div className="advisor-picker">
+              <AdvisorSelect
+                asesores={asesores}
+                asesor={asesor}
+                setAsesor={setAsesor}
+              />
+            </div>
 
-            <StatusCard estado={estado} />
+            <section className="dashboard-top-cards" aria-label="Estado de jornada">
+              <article className="person-card">
+                <div className="person-avatar">●</div>
+                <div><strong>{asesorSeleccionado?.nombre || "Selecciona un asesor"}</strong><span>Asesor</span><small>● En línea</small></div>
+                <b>›</b>
+              </article>
+              <article className="current-status-card">
+                <div className="status-play">▶</div>
+                <div><span>Estado actual</span><strong>{String(estado || "Disponible").replace(/^[^A-Za-zÁÉÍÓÚÑ]+/u, "").toUpperCase()}</strong></div>
+              </article>
+              <article className="time-card">
+                <div className="time-icon">◷</div>
+                <div><span>Tiempo trabajado</span><strong>{resumen?.tiempo_trabajado ? new Date(resumen.tiempo_trabajado).toISOString().slice(11,19) : "00:00:00"}</strong><small>El tiempo de jornada aparece en el contador.</small></div>
+              </article>
+            </section>
 
-            <WorkTimer estado={estado} inicioJornada={inicioJornada} />
+            <div className="dashboard-workspace">
+              <section className="dashboard-primary">
+                <div className="section-heading"><h2>Registra tu movimiento</h2><span>Selecciona una acción</span></div>
+                <Buttons
+                  asesor={asesor}
+                  estado={estado}
+                  inicioJornada={inicioJornada}
+                  movimientos={resumen?.movimientos || []}
+                  setEstado={setEstado}
+                  onMovimientoRegistrado={async () => {
+                    await cargarEstado();
+                    await cargarResumen();
+                  }}
+                />
+                <RegistrarVenta
+                  asesor={asesor}
+                  asesorNombre={asesorSeleccionado?.nombre}
+                  onVentaRegistrada={async () => {}}
+                />
+                <div className="secondary-widgets">
+                  <StatusCard estado={estado} />
+                  <WorkTimer estado={estado} inicioJornada={inicioJornada} />
+                  <BreakTimer estado={estado} inicioEstado={inicioEstado} />
+                </div>
+              </section>
 
-            <BreakTimer estado={estado} inicioEstado={inicioEstado} />
+              <aside className="dashboard-secondary">
+                <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
+                <MessageCard mensaje={mensaje} />
+              </aside>
+            </div>
 
-            <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
-
-            <MessageCard mensaje={mensaje} />
-
+            <div className="below-dashboard">
+              <Dashboard />
+              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
+              {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
+            </div>
             <Footer />
-
-            <Dashboard />
-
-            <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
-
-            {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
           </>
         )}
       </div>

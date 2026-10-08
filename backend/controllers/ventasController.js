@@ -55,4 +55,24 @@ const anularVenta = async (req, res) => {
     catch (error) { console.error("Error anulando venta:", error.code || error.message); return responderError(res, error, "No fue posible anular la venta.", 400); }
 };
 
-module.exports = { registrarVenta, obtenerVentasDelDia, obtenerVentasPorAsesor, obtenerResumenVentasDelDia, obtenerResumenVentasPorAsesor, obtenerResumenVentasPorAsesorPeriodo, anularVenta };
+const listarVentasAdmin = async (req, res) => {
+    try {
+        const { fecha_desde: desde, fecha_hasta: hasta, asesor_id: asesorId, estado } = req.query;
+        return res.json({ ok: true, data: await ventasService.listarVentasAdmin(desde, hasta, asesorId, estado) });
+    } catch (error) {
+        console.error("Error validando ventas:", error.code || error.message);
+        return responderError(res, error, "No fue posible consultar las ventas.", 400);
+    }
+};
+
+const corregirVentaAdmin = async (req, res) => {
+    try {
+        const data = await ventasService.corregirVenta(Number(req.params.id), req.body, req.usuario);
+        return res.json({ ok: true, mensaje: "Venta corregida y auditada correctamente.", data });
+    } catch (error) {
+        console.error("Error corrigiendo venta:", error.code || error.message);
+        return responderError(res, error, "No fue posible corregir la venta.", 400);
+    }
+};
+
+module.exports = { registrarVenta, obtenerVentasDelDia, obtenerVentasPorAsesor, obtenerResumenVentasDelDia, obtenerResumenVentasPorAsesor, obtenerResumenVentasPorAsesorPeriodo, anularVenta, listarVentasAdmin, corregirVentaAdmin };

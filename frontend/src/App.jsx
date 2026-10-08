@@ -22,6 +22,7 @@ import HistoricoDashboard from "./components/HistoricoDashboard";
 import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
 import PanelControlAdmin from "./components/PanelControlAdmin";
 import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
+import ValidarVentas from "./components/ValidarVentas";
 import Usuarios from "./pages/Usuarios";
 
 // ======================================================
@@ -365,6 +366,21 @@ function App() {
           >
             🎯 Centro ejecutivo
           </button>}
+          {usuario?.rol === "ADMINISTRADOR" && <button
+            onClick={() => setVista("validar-ventas")}
+            style={{
+              flex: 1,
+              padding: "12px",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              background: vista === "validar-ventas" ? "#245b3a" : "#e8f7ee",
+              color: vista === "validar-ventas" ? "#fff" : "#245b3a"
+            }}
+          >
+            ✅ Validar ventas
+          </button>}
         </div>
 
         {vista === "auditoria" && usuario?.rol === "ADMINISTRADOR" ? (
@@ -383,6 +399,17 @@ function App() {
               <button type="button" onClick={() => setVista("principal")} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#e9ecef", color: "#333", fontWeight: 700, cursor: "pointer" }}>← Volver a la app</button>
             </div>
             <PanelControlAdmin />
+          </section>
+        ) : vista === "validar-ventas" && usuario?.rol === "ADMINISTRADOR" ? (
+          <section style={{ maxWidth: 1280, margin: "0 auto", padding: "4px 0 24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+              <div>
+                <h2 style={{ margin: 0, color: "#245b3a" }}>✅ Validación administrativa de ventas</h2>
+                <p style={{ margin: "4px 0 0", color: "#66756b" }}>Corrige asesor, valor y recaudo conservando la auditoría.</p>
+              </div>
+              <button type="button" onClick={() => setVista("principal")} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#e9ecef", color: "#333", fontWeight: 700, cursor: "pointer" }}>← Volver a la app</button>
+            </div>
+            <ValidarVentas />
           </section>
         ) : (
           <>

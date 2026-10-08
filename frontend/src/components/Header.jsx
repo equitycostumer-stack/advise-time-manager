@@ -23,7 +23,14 @@ export default function Header() {
 
     return <div className="header">
         <div className="header-brand">
-            <img src={logo} alt={empresa?.nombre_empresa || "EQUITY LINE"} className="logo" />
+            <img
+                src={logo}
+                alt={empresa?.nombre_empresa || "EQUITY LINE"}
+                className="logo"
+                width="72"
+                height="48"
+                style={{ width: "72px", maxWidth: "72px", height: "48px", maxHeight: "48px", objectFit: "contain", display: "block", flex: "0 0 72px" }}
+            />
             <div>
                 <h1 className="title">{empresa?.nombre_corto || "EQUITY LINE"}</h1>
                 <p className="subtitle">Control de Tiempo y Bienestar</p>

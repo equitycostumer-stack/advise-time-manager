@@ -1,75 +1,47 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-export default function AdvisorSelect({
-    asesores,
-    asesor,
-    setAsesor
-}) {
-
+export default function AdvisorSelect({ asesores = [], asesor, setAsesor }) {
     const { usuario } = useAuth();
-
+    const [abierto, setAbierto] = useState(false);
     const esAsesorRestringido = usuario?.rol === "ASESOR";
+    const seleccionado = asesores.find((item) => String(item.id) === String(asesor));
 
-    // ======================================================
-    // Si el usuario logueado es un ASESOR, se autoselecciona
-    // y bloquea su propio asesor_id — no puede operar a
-    // nombre de otro compañero.
-    // ======================================================
     useEffect(() => {
-
-        if (
-            esAsesorRestringido &&
-            usuario?.asesor_id &&
-            asesor !== String(usuario.asesor_id)
-        ) {
+        if (esAsesorRestringido && usuario?.asesor_id && asesor !== String(usuario.asesor_id)) {
             setAsesor(String(usuario.asesor_id));
         }
-
     }, [esAsesorRestringido, usuario, asesor, setAsesor]);
 
+    function elegir(item) {
+        setAsesor(String(item.id));
+        setAbierto(false);
+    }
+
     return (
-
-        <div style={{ marginTop: "25px" }}>
-
-            <label
-                style={{
-                    fontWeight: "bold",
-                    color: "#0B4F8C",
-                    fontSize: "18px"
-                }}
-            >
-                Asesor
-            </label>
-
-            <select
-                className="select"
-                value={asesor}
+        <div className="advisor-dropdown">
+            <button
+                type="button"
+                className="advisor-trigger"
+                onClick={() => !esAsesorRestringido && setAbierto((visible) => !visible)}
                 disabled={esAsesorRestringido}
-                onChange={(e) => setAsesor(e.target.value)}
+                aria-expanded={abierto}
+                aria-haspopup="listbox"
             >
-
-                <option value="">
-                    Seleccione un asesor
-                </option>
-
-                {asesores.map((item) => (
-
-                    <option
-                        key={item.id}
-                        value={item.id}
-                    >
-
-                        {item.nombre}
-
-                    </option>
-
-                ))}
-
-            </select>
-
+                <span>{seleccionado?.nombre || "Selecciona un asesor"}</span>
+                <strong>›</strong>
+            </button>
+            {abierto && !esAsesorRestringido && (
+                <div className="advisor-options" role="listbox" aria-label="Asesores disponibles">
+                    {asesores.length === 0 ? (
+                        <div className="advisor-empty">No hay asesores disponibles</div>
+                    ) : asesores.map((item) => (
+                        <button type="button" role="option" aria-selected={String(item.id) === String(asesor)} key={item.id} onClick={() => elegir(item)}>
+                            {item.nombre}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
-
     );
-
 }

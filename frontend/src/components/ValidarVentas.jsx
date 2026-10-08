@@ -9,7 +9,7 @@ const input = { width: "100%", boxSizing: "border-box", padding: 8, border: "1px
 const boton = { padding: "8px 10px", border: 0, borderRadius: 7, fontWeight: 700, cursor: "pointer" };
 
 export default function ValidarVentas() {
-    const [filtros, setFiltros] = useState({ desde: primerDiaMes(), hasta: fechaHoy(), asesorId: "", estado: "TODAS" });
+    const [filtros, setFiltros] = useState({ desde: primerDiaMes(), hasta: fechaHoy(), asesorId: "", clienteId: "", estado: "TODAS" });
     const [asesores, setAsesores] = useState([]);
     const [ventas, setVentas] = useState([]);
     const [editando, setEditando] = useState(null);
@@ -26,6 +26,7 @@ export default function ValidarVentas() {
         try {
             const params = new URLSearchParams({ fecha_desde: filtros.desde, fecha_hasta: filtros.hasta, estado: filtros.estado });
             if (filtros.asesorId) params.set("asesor_id", filtros.asesorId);
+            if (filtros.clienteId.trim()) params.set("cliente_id", filtros.clienteId.trim());
             const { data } = await api.get(`/ventas/admin/validacion?${params.toString()}`);
             setVentas(data?.data || []);
         } catch (error) { setVentas([]); setMensaje(error.response?.data?.mensaje || "No fue posible consultar las ventas."); }
@@ -61,6 +62,7 @@ export default function ValidarVentas() {
             <label>Desde<input type="date" value={filtros.desde} onChange={(e) => setFiltros({ ...filtros, desde: e.target.value })} style={input} /></label>
             <label>Hasta<input type="date" value={filtros.hasta} onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} style={input} /></label>
             <label>Asesor<select value={filtros.asesorId} onChange={(e) => setFiltros({ ...filtros, asesorId: e.target.value })} style={input}><option value="">Todos</option>{asesores.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</select></label>
+            <label>ID del cliente<input value={filtros.clienteId} onChange={(e) => setFiltros({ ...filtros, clienteId: e.target.value })} placeholder="Escribe el ID del cliente" style={input} /></label>
             <label>Estado<select value={filtros.estado} onChange={(e) => setFiltros({ ...filtros, estado: e.target.value })} style={input}><option value="TODAS">Todas</option><option value="ACTIVA">Activas</option><option value="ANULADA">Anuladas</option></select></label>
             <button type="button" onClick={consultar} disabled={cargando} style={{ ...boton, background: "#245b3a", color: "#fff" }}>{cargando ? "Consultando..." : "🔍 Consultar"}</button>
         </div>

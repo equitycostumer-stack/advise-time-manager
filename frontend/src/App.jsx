@@ -486,8 +486,9 @@ function App() {
               <article className="person-card">
                 <div className="person-avatar">●</div>
                 <div className="person-card-content">
-                  <div className="person-card-label">● Selecciona un asesor</div>
+                  <div className="person-card-label">Asesores</div>
                   <AdvisorSelect asesores={asesores} asesor={asesor} setAsesor={setAsesor} />
+                  {asesorSeleccionado?.nombre && <div className="advisor-current-name">{asesorSeleccionado.nombre}</div>}
                   <small>● En línea</small>
                 </div>
               </article>

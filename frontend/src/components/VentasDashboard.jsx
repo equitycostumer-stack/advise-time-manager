@@ -185,10 +185,10 @@ export default function VentasDashboard({ esAdministrador = false }) {
             ? porAsesor
             : [];
     const ranking = [...rankingFuente].sort((a, b) => {
-        const criterio = configVentas.criterio_ranking || "RECAUDO";
-        const campo = criterio === "CANTIDAD_VENTAS" ? "cantidad_ventas" : criterio === "VALOR_VENDIDO" ? "total_vendido" : "total_recaudo";
-        const diferencia = Number(b[campo] || 0) - Number(a[campo] || 0);
-        return diferencia || Number(b.total_vendido || 0) - Number(a.total_vendido || 0) || String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""));
+        const ventas = Number(b.cantidad_ventas || 0) - Number(a.cantidad_ventas || 0);
+        const recaudo = Number(b.total_recaudo || 0) - Number(a.total_recaudo || 0);
+        const vendido = Number(b.total_vendido || 0) - Number(a.total_vendido || 0);
+        return ventas || recaudo || vendido || String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""));
     });
 
     // ======================================================
@@ -312,7 +312,8 @@ export default function VentasDashboard({ esAdministrador = false }) {
 
             {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
             <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
-                <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Mejores asesores por quincena</h3>
+                <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Ranking de ventas y recaudo</h3>
+                <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 13 }}>Ordenado primero por cantidad de ventas, después por recaudo y luego por valor vendido.</p>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>
                     Periodo calculado automáticamente: {quincenaRanking === "1" ? "del 01 al 15" : "del 16 al último día"} de {new Date(`${mesRanking}-02T12:00:00`).toLocaleDateString("es-CO", { month: "long", year: "numeric" })}.
                 </p>

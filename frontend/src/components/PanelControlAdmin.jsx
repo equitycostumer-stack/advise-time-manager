@@ -205,6 +205,9 @@ export default function PanelControlAdmin() {
     }
 
     async function guardarMeta(fila) {
+        const cumpleMetaVentas = Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) && Number(fila.meta_ventas || 0) > 0;
+        const cumpleMetaRecaudo = Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0) && Number(fila.meta_recaudo || 0) > 0;
+        if (cumpleMetaVentas && cumpleMetaRecaudo) setMensaje(`🎉 ¡Felicitaciones, ${fila.asesor_nombre || "asesor"}! Cumplió su meta de ventas y recaudo.`);
         try {
             await api.put("/metas", {
                 asesor_id: fila.asesor_id,
@@ -225,6 +228,12 @@ export default function PanelControlAdmin() {
         return <section style={{ ...tarjeta, marginTop: 24 }}><strong>⏳ Cargando Centro de Control...</strong></section>;
     }
 
+    const metasCumplidas = filas.filter((fila) => (
+        Number(fila.meta_ventas || 0) > 0 && Number(fila.meta_recaudo || 0) > 0 &&
+        Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) &&
+        Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0)
+    ));
+
     const e = ejecutivo || { asesores: {}, productividad: {}, ventas: {}, incidencias_pendientes: 0 };
     const ventasPanel = esAdministrador ? e.ventas : {
         cantidad: ventasDelDia.length,
@@ -244,7 +253,8 @@ export default function PanelControlAdmin() {
         <div style={{ ...tarjeta, borderTop: "4px solid #b8941f" }}>
             <h2 style={{ margin: 0, color: "#245b3a" }}>{titulo}</h2>
             <p style={{ color: "#66756b", marginBottom: 0 }}>{descripcion}</p>
-            {mensaje && <p style={{ color: "#245b3a", fontWeight: "bold" }}>{mensaje}</p>}
+            {mensaje && <p style={{ color: mensaje.includes("🎉") ? "#176b45" : "#245b3a", fontWeight: "bold" }}>{mensaje}</p>}
+            {metasCumplidas.length > 0 && <div className="goal-celebration" role="status"><strong>🎉 ¡Felicitaciones!</strong><span>{metasCumplidas.map((fila) => fila.asesor_nombre || "Asesor").join(", ")} cumplió su meta de ventas y recaudo.</span><small>Excelente trabajo y compromiso con los resultados.</small></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginTop: 14 }}>
                 {tarjetas.map(([icono, etiqueta, valor]) => <div key={etiqueta} style={{ background: "#f7fbf8", borderRadius: 10, padding: 12 }}><div style={{ color: "#789184", fontSize: 11, fontWeight: 800 }}>{icono} {etiqueta}</div><strong style={{ color: "#245b3a", fontSize: 20 }}>{valor}</strong></div>)}
             </div>

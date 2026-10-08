@@ -28,7 +28,7 @@ export default function AdvisorSelect({ asesores = [], asesor, setAsesor }) {
                 aria-expanded={abierto}
                 aria-haspopup="listbox"
             >
-                <span>{seleccionado?.nombre || "Selecciona un asesor"}</span>
+                <span>Asesores</span>
                 <strong>›</strong>
             </button>
             {abierto && !esAsesorRestringido && (

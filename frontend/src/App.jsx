@@ -300,11 +300,28 @@ function App() {
 
   // Interfaz de usuario
   return (
-    <div className="container">
+    <div className="container app-shell">
+      <aside className="app-sidebar">
+        <div className="sidebar-brand">
+          <div className="sidebar-logo-mark">EL</div>
+          <div><strong>EQUITY LINE</strong><span>Professional Services</span></div>
+        </div>
+        <div className="sidebar-version">SISTEMA DE CONTROL</div>
+        <div className="sidebar-user"><span>BIENVENIDO</span><strong>{usuario?.usuario || "Usuario"}</strong><small>{usuario?.rol || "ASESOR"}</small></div>
+        <nav className="sidebar-nav" aria-label="Navegación principal">
+          <button className={vista === "principal" ? "active" : ""} onClick={() => setVista("principal")}>⌂ <span>Inicio</span></button>
+          <button className={vista === "historico" ? "active" : ""} onClick={() => setVista("historico")}>▣ <span>Histórico</span></button>
+          {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "usuarios" ? "active" : ""} onClick={() => setVista("usuarios")}>♙ <span>Usuarios</span></button>}
+          {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "validar-ventas" ? "active" : ""} onClick={() => setVista("validar-ventas")}>✓ <span>Validar ventas</span></button>}
+          {usuario && <button className={vista === "control" ? "active" : ""} onClick={() => setVista("control")}>◈ <span>Centro ejecutivo</span></button>}
+        </nav>
+        <div className="sidebar-footer">Equity Line<br /><small>Productividad y bienestar</small></div>
+      </aside>
+      <main className="app-main">
       <div className="card">
         <Header />
 
-        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+        <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
           <button
             onClick={() => setVista("principal")}
             style={{
@@ -460,6 +477,7 @@ function App() {
           </>
         )}
       </div>
+      </main>
     </div>
   );
 }

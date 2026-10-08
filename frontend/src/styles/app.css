@@ -107,3 +107,16 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .advisor-options button:hover { background:#eaf4ff; color:#0879cf; }
 .advisor-empty { padding:10px; color:#718198; font-size:12px; }
 @media (max-width:700px) { .advisor-dropdown { max-width:100%; } }
+
+/* Presentación profesional del selector de asesores */
+.person-card { position:relative; overflow:visible; }
+.person-card-content { display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.person-card-label { color:#59708d; font-size:11px; font-weight:800; letter-spacing:.9px; text-transform:uppercase; }
+.person-card-content .advisor-dropdown { max-width:205px; }
+.person-card-content .advisor-trigger { min-height:38px; padding:8px 12px; border:1px solid #b9d2e9; border-radius:9px; background:linear-gradient(135deg,#f8fcff,#edf6ff); box-shadow:0 4px 10px rgba(30,92,145,.08); color:#123b6d; font-size:14px; }
+.person-card-content .advisor-trigger strong { color:#0d78c8; font-size:25px; }
+.person-card-content .advisor-current-name { color:#17385f; font-size:13px; font-weight:700; }
+.goal-celebration { display:flex; flex-direction:column; gap:4px; margin:14px 0 4px; padding:15px 17px; border:1px solid #a8e3bf; border-left:5px solid #19a96b; border-radius:11px; background:linear-gradient(135deg,#effcf4,#dcf8e8); color:#176b45; box-shadow:0 5px 14px rgba(25,169,107,.1); }
+.goal-celebration strong { font-size:17px; }
+.goal-celebration span { font-weight:700; }
+.goal-celebration small { color:#4b8065; }

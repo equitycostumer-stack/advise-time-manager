@@ -24,6 +24,7 @@ import ConfiguracionHorarios from "./components/ConfiguracionHorarios";
 import PanelControlAdmin from "./components/PanelControlAdmin";
 import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
 import ValidarVentas from "./components/ValidarVentas";
+import RegistrosDiarios from "./components/RegistrosDiarios";
 import Usuarios from "./pages/Usuarios";
 
 // ======================================================
@@ -342,6 +343,7 @@ function App() {
           {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "usuarios" ? "active" : ""} onClick={() => setVista("usuarios")}>♙ <span>Usuarios</span></button>}
           {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "validar-ventas" ? "active" : ""} onClick={() => setVista("validar-ventas")}>✓ <span>Validar ventas</span></button>}
           {usuario && <button className={vista === "control" ? "active" : ""} onClick={() => setVista("control")}>◈ <span>Centro ejecutivo</span></button>}
+          {usuario && <button className={vista === "registros-diarios" ? "active" : ""} onClick={() => setVista("registros-diarios")}>▤ <span>Registro diario</span></button>}
         </nav>
         <div className="sidebar-footer">Equity Line<br /><small>Productividad y bienestar</small></div>
       </aside>
@@ -411,6 +413,12 @@ function App() {
           >
             🎯 Centro ejecutivo
           </button>}
+          {usuario && <button
+            onClick={() => setVista("registros-diarios")}
+            style={{ flex: 1, padding: "12px", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", background: vista === "registros-diarios" ? "#0a4f87" : "#eaf5fb", color: vista === "registros-diarios" ? "#fff" : "#0a4f87" }}
+          >
+            📋 Registro diario
+          </button>}
           {usuario?.rol === "ADMINISTRADOR" && <button
             onClick={() => setVista("validar-ventas")}
             style={{
@@ -445,6 +453,8 @@ function App() {
             </div>
             <PanelControlAdmin />
           </section>
+        ) : vista === "registros-diarios" ? (
+          <RegistrosDiarios asesores={asesores} asesorActual={asesorSeleccionado} esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
         ) : vista === "validar-ventas" && usuario?.rol === "ADMINISTRADOR" ? (
           <section style={{ maxWidth: 1280, margin: "0 auto", padding: "4px 0 24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>

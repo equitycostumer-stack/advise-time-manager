@@ -1,0 +1,42 @@
+[1mdiff --git a/frontend/src/App.jsx b/frontend/src/App.jsx[m
+[1mindex c20b8dc..42a1957 100644[m
+[1m--- a/frontend/src/App.jsx[m
+[1m+++ b/frontend/src/App.jsx[m
+[36m@@ -24,6 +24,7 @@[m [mimport ConfiguracionHorarios from "./components/ConfiguracionHorarios";[m
+ import PanelControlAdmin from "./components/PanelControlAdmin";[m
+ import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";[m
+ import ValidarVentas from "./components/ValidarVentas";[m
+[32m+[m[32mimport RegistrosDiarios from "./components/RegistrosDiarios";[m
+ import Usuarios from "./pages/Usuarios";[m
+ [m
+ // ======================================================[m
+[36m@@ -342,6 +343,7 @@[m [mfunction App() {[m
+           {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "usuarios" ? "active" : ""} onClick={() => setVista("usuarios")}>♙ <span>Usuarios</span></button>}[m
+           {usuario?.rol === "ADMINISTRADOR" && <button className={vista === "validar-ventas" ? "active" : ""} onClick={() => setVista("validar-ventas")}>✓ <span>Validar ventas</span></button>}[m
+           {usuario && <button className={vista === "control" ? "active" : ""} onClick={() => setVista("control")}>◈ <span>Centro ejecutivo</span></button>}[m
+[32m+[m[32m          {usuario && <button className={vista === "registros-diarios" ? "active" : ""} onClick={() => setVista("registros-diarios")}>▤ <span>Registro diario</span></button>}[m
+         </nav>[m
+         <div className="sidebar-footer">Equity Line<br /><small>Productividad y bienestar</small></div>[m
+       </aside>[m
+[36m@@ -411,6 +413,12 @@[m [mfunction App() {[m
+           >[m
+             🎯 Centro ejecutivo[m
+           </button>}[m
+[32m+[m[32m          {usuario && <button[m
+[32m+[m[32m            onClick={() => setVista("registros-diarios")}[m
+[32m+[m[32m            style={{ flex: 1, padding: "12px", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", background: vista === "registros-diarios" ? "#0a4f87" : "#eaf5fb", color: vista === "registros-diarios" ? "#fff" : "#0a4f87" }}[m
+[32m+[m[32m          >[m
+[32m+[m[32m            📋 Registro diario[m
+[32m+[m[32m          </button>}[m
+           {usuario?.rol === "ADMINISTRADOR" && <button[m
+             onClick={() => setVista("validar-ventas")}[m
+             style={{[m
+[36m@@ -445,6 +453,8 @@[m [mfunction App() {[m
+             </div>[m
+             <PanelControlAdmin />[m
+           </section>[m
+[32m+[m[32m        ) : vista === "registros-diarios" ? ([m
+[32m+[m[32m          <RegistrosDiarios asesores={asesores} asesorActual={asesorSeleccionado} esAdministrador={usuario?.rol === "ADMINISTRADOR"} />[m
+         ) : vista === "validar-ventas" && usuario?.rol === "ADMINISTRADOR" ? ([m
+           <section style={{ maxWidth: 1280, margin: "0 auto", padding: "4px 0 24px" }}>[m
+             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>[m

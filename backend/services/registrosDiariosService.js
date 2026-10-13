@@ -40,6 +40,7 @@ class RegistrosDiariosService {
         return {
             asesor_id: asesorId,
             fecha: datos.fecha,
+            modo: datos.modo === "REEMPLAZAR" ? "REEMPLAZAR" : "ACUMULAR",
             datos_cantidad: enteroNoNegativo(datos.datos_cantidad, "La cantidad de datos"),
             datos_ids: textoIds(datos.datos_ids, "Los IDs de datos"),
             analisis_cantidad: enteroNoNegativo(datos.analisis_cantidad, "La cantidad de análisis"),

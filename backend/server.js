@@ -91,6 +91,8 @@ app.use("/api/configuracion-empresa", require("./routes/configuracionEmpresa"));
 console.log("✓ configuracion empresa");
 app.use("/api/metas", require("./routes/metas"));
 console.log("✓ metas");
+app.use("/api/registros-diarios", require("./routes/registrosDiarios"));
+console.log("✓ registros diarios");
 
 // La ruta se carga de forma segura mientras se completa su copia al repositorio.
 try {

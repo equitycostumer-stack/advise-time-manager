@@ -18,6 +18,7 @@ class RegistrosDiariosRepository {
     }
 
     async guardar(datos, usuarioId) {
+        const acumular = datos.modo !== "REEMPLAZAR";
         const result = await db.query(`
             INSERT INTO registros_diarios_analistas
                 (asesor_id, fecha, datos_cantidad, datos_ids,
@@ -25,10 +26,20 @@ class RegistrosDiariosRepository {
             VALUES ($1, $2::date, $3, $4, $5, $6, $7, $7)
             ON CONFLICT (asesor_id, fecha)
             DO UPDATE SET
-                datos_cantidad = EXCLUDED.datos_cantidad,
-                datos_ids = EXCLUDED.datos_ids,
-                analisis_cantidad = EXCLUDED.analisis_cantidad,
-                analisis_ids = EXCLUDED.analisis_ids,
+                datos_cantidad = CASE WHEN $8::boolean THEN registros_diarios_analistas.datos_cantidad + EXCLUDED.datos_cantidad ELSE EXCLUDED.datos_cantidad END,
+                datos_ids = CASE
+                    WHEN NOT $8::boolean THEN EXCLUDED.datos_ids
+                    WHEN COALESCE(registros_diarios_analistas.datos_ids, '') = '' THEN EXCLUDED.datos_ids
+                    WHEN COALESCE(EXCLUDED.datos_ids, '') = '' THEN registros_diarios_analistas.datos_ids
+                    ELSE registros_diarios_analistas.datos_ids || E'\\n' || EXCLUDED.datos_ids
+                END,
+                analisis_cantidad = CASE WHEN $8::boolean THEN registros_diarios_analistas.analisis_cantidad + EXCLUDED.analisis_cantidad ELSE EXCLUDED.analisis_cantidad END,
+                analisis_ids = CASE
+                    WHEN NOT $8::boolean THEN EXCLUDED.analisis_ids
+                    WHEN COALESCE(registros_diarios_analistas.analisis_ids, '') = '' THEN EXCLUDED.analisis_ids
+                    WHEN COALESCE(EXCLUDED.analisis_ids, '') = '' THEN registros_diarios_analistas.analisis_ids
+                    ELSE registros_diarios_analistas.analisis_ids || E'\\n' || EXCLUDED.analisis_ids
+                END,
                 actualizado_por = EXCLUDED.actualizado_por,
                 updated_at = NOW()
             RETURNING id, asesor_id, fecha, datos_cantidad, datos_ids,
@@ -40,7 +51,8 @@ class RegistrosDiariosRepository {
             datos.datos_ids,
             datos.analisis_cantidad,
             datos.analisis_ids,
-            usuarioId || null
+            usuarioId || null,
+            acumular
         ]);
         return result.rows[0];
     }

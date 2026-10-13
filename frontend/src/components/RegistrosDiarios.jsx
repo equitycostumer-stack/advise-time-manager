@@ -36,6 +36,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
     const [datosIds, setDatosIds] = useState("");
     const [analisisCantidad, setAnalisisCantidad] = useState("0");
     const [analisisIds, setAnalisisIds] = useState("");
+    const [modo, setModo] = useState("ACUMULAR");
     const [filas, setFilas] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [guardando, setGuardando] = useState(false);
@@ -56,6 +57,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
         setDatosIds(item.datos_ids || "");
         setAnalisisCantidad(String(item.analisis_cantidad ?? 0));
         setAnalisisIds(item.analisis_ids || "");
+        setModo("REEMPLAZAR");
         window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -84,6 +86,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
             await api.put("/registros-diarios", {
                 asesor_id: esAdministrador ? Number(asesorId) : undefined,
                 fecha,
+                modo,
                 datos_cantidad: Number(datosCantidad || 0),
                 datos_ids: datosIds,
                 analisis_cantidad: Number(analisisCantidad || 0),
@@ -92,6 +95,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
             alert("Registro diario guardado correctamente.");
             setFechaDesde(fecha);
             setFechaHasta(fecha);
+            setModo("ACUMULAR");
             await consultar();
         } catch (error) {
             alert(error.response?.data?.mensaje || "No fue posible guardar el registro diario.");
@@ -164,7 +168,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
                     <label style={{ display: "block", marginTop: 10 }}>IDs de análisis o auditorías<textarea value={analisisIds} onChange={(e) => setAnalisisIds(e.target.value)} placeholder="Un ID por línea o separados por coma" rows="4" style={{ ...input, resize: "vertical" }} /></label>
                 </div>
             </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><button type="submit" disabled={guardando} style={{ padding: "11px 17px", border: 0, borderRadius: 8, background: "#0a4f87", color: "#fff", fontWeight: 800, cursor: "pointer" }}>{guardando ? "Guardando..." : "💾 Guardar registro diario"}</button>{asesorSeleccionado && <span style={{ alignSelf: "center", color: "#657785" }}>Registro de {asesorSeleccionado.nombre}</span>}</div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><button type="submit" disabled={guardando} style={{ padding: "11px 17px", border: 0, borderRadius: 8, background: modo === "REEMPLAZAR" ? "#b7791f" : "#0a4f87", color: "#fff", fontWeight: 800, cursor: "pointer" }}>{guardando ? "Guardando..." : modo === "REEMPLAZAR" ? "✏️ Reemplazar registro" : "➕ Acumular registro del día"}</button>{modo === "REEMPLAZAR" && <button type="button" onClick={() => setModo("ACUMULAR")} style={{ padding: "11px 17px", border: 0, borderRadius: 8, background: "#eaf5fb", color: "#0a4f87", fontWeight: 800, cursor: "pointer" }}>Cancelar edición</button>}{asesorSeleccionado && <span style={{ alignSelf: "center", color: "#657785" }}>Registro de {asesorSeleccionado.nombre}</span>}</div>
         </form>
 
         <div style={{ ...card, marginBottom: 16 }}>

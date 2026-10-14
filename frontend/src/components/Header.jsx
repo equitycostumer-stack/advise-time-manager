@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import NotificacionesBell from "./NotificacionesBell";
 import api from "../services/api";
 
-export default function Header() {
+export default function Header({ tema = "light", onCambiarTema }) {
     const { usuario, logout } = useAuth();
     const [fechaHora, setFechaHora] = useState(new Date());
     const [empresa, setEmpresa] = useState(null);
@@ -41,6 +41,17 @@ export default function Header() {
                 <strong>{fechaHora.toLocaleTimeString("es-CO")}</strong>
                 <span>{fechaHora.toLocaleDateString("es-CO", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
             </div>
+            {typeof onCambiarTema === "function" && <button
+                type="button"
+                className="theme-toggle-button"
+                onClick={onCambiarTema}
+                aria-pressed={tema === "dark"}
+                aria-label={tema === "dark" ? "Cambiar al tema claro" : "Activar el tema oscuro"}
+                title={tema === "dark" ? "Cambiar al tema claro" : "Activar el tema oscuro"}
+            >
+                <span aria-hidden="true">{tema === "dark" ? "☀️" : "🌙"}</span>
+                <span>{tema === "dark" ? "Tema claro" : "Tema oscuro"}</span>
+            </button>}
             <NotificacionesBell />
             {usuario && <button onClick={() => { logout(); window.location.reload(); }} className="logout-button">🚪 Cerrar sesión</button>}
         </div>

@@ -152,7 +152,7 @@ export default function RegistrarVenta({
 
     return (
 
-        <div style={{ marginTop: "15px" }}>
+        <div id="registrar-venta" className="register-sale-shortcut-target" style={{ marginTop: "15px" }}>
 
             <button
                 onClick={abrirModal}

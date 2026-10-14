@@ -274,23 +274,28 @@ export default function PanelControlAdmin() {
         ? [["👥", "Asesores", e.asesores.total], ["🟢", "Trabajando", e.asesores.trabajando], ["☕", "En pausa", e.asesores.en_pausa], ["🚨", "Llegadas tarde", e.asesores.llegadas_tarde], ["💰", "Ventas", ventasPanel.cantidad], ["💵", "Vendido", moneda(ventasPanel.total_vendido, config.simbolo_moneda, config.moneda)], ["📥", "Recaudo", moneda(ventasPanel.total_recaudo, config.simbolo_moneda, config.moneda)], ["📌", "Incidencias", e.incidencias_pendientes]]
         : [["🧑‍💼", "Mi estado", asesores[0]?.estado || "DISPONIBLE"], ["🟢", "Trabajando", e.asesores.trabajando], ["☕", "En pausa", e.asesores.en_pausa], ["🚨", "Llegada tarde", e.asesores.llegadas_tarde], ["💰", "Mis ventas", ventasPanel.cantidad], ["💵", "Vendido", moneda(ventasPanel.total_vendido, config.simbolo_moneda, config.moneda)], ["📥", "Mi recaudo", moneda(ventasPanel.total_recaudo, config.simbolo_moneda, config.moneda)], ["📌", "Mis incidencias", e.incidencias_pendientes]];
 
-    return <section style={{ marginTop: 24, display: "grid", gap: 16 }}>
+    return <section className="executive-panel" style={{ marginTop: 24, display: "grid", gap: 16 }}>
         <FelicitacionToast {...felicitacion} onClose={() => setFelicitacion((actual) => ({ ...actual, visible: false }))} />
-        <div style={{ ...tarjeta, borderTop: "4px solid #b8941f" }}>
+        <div className="executive-summary-card" style={{ ...tarjeta, borderTop: "4px solid #b8941f" }}>
             <h2 style={{ margin: 0, color: "#245b3a" }}>{titulo}</h2>
             <p style={{ color: "#66756b", marginBottom: 0 }}>{descripcion}</p>
             {mensaje && <p style={{ color: mensaje.includes("🎉") ? "#176b45" : "#245b3a", fontWeight: "bold" }}>{mensaje}</p>}
             {metasCumplidas.length > 0 && <div className="goal-celebration" role="status"><strong>🎉 ¡Felicitaciones!</strong><span>{metasCumplidas.map((fila) => fila.asesor_nombre || "Asesor").join(", ")} cumplió su meta de ventas y recaudo.</span><small>Excelente trabajo y compromiso con los resultados.</small></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginTop: 14 }}>
-                {tarjetas.map(([icono, etiqueta, valor]) => <div key={etiqueta} style={{ background: "#f7fbf8", borderRadius: 10, padding: 12 }}><div style={{ color: "#789184", fontSize: 11, fontWeight: 800 }}>{icono} {etiqueta}</div><strong style={{ color: "#245b3a", fontSize: 20 }}>{valor}</strong></div>)}
+                {tarjetas.map(([icono, etiqueta, valor]) => (
+                    <div key={etiqueta} className="executive-metric-card" style={{ background: "#f7fbf8", borderRadius: 10, padding: 12 }}>
+                        <div style={{ color: "#789184", fontSize: 11, fontWeight: 800 }}>{icono} {etiqueta}</div>
+                        <strong style={{ color: "#245b3a", fontSize: 20 }}>{valor}</strong>
+                    </div>
+                ))}
             </div>
-            <div style={{ marginTop: 12, color: "#4b5563" }}>Productividad: <strong>{e.productividad.porcentaje || 0}%</strong> · Trabajado: <strong>{duracion(e.productividad.tiempo_trabajado)}</strong> · Productivo: <strong>{duracion(e.productividad.tiempo_productivo)}</strong></div>
+            <div className="executive-productivity-summary" style={{ marginTop: 12, color: "#4b5563" }}>Productividad: <strong>{e.productividad.porcentaje || 0}%</strong> · Trabajado: <strong>{duracion(e.productividad.tiempo_trabajado)}</strong> · Productivo: <strong>{duracion(e.productividad.tiempo_productivo)}</strong></div>
         </div>
 
-        <div style={tarjeta}>
+        <div className="executive-goals-card" style={tarjeta}>
             <h3 style={{ marginTop: 0, color: "#245b3a" }}>{esAdministrador ? "🏆 Metas por asesor" : "🏆 Mi meta individual"}</h3>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-                <div style={{ flex: "1 1 220px", padding: 10, background: "#f7fbf8", borderRadius: 7, color: "#245b3a" }}><strong>Periodo:</strong> {periodo.inicio} al {periodo.fin}<br /><small>Quincena actual · {diasRestantes(periodo)} días restantes · Hora Colombia</small></div>
+                <div className="executive-period-card" style={{ flex: "1 1 220px", padding: 10, background: "#f7fbf8", borderRadius: 7, color: "#245b3a" }}><strong>Periodo:</strong> {periodo.inicio} al {periodo.fin}<br /><small>Quincena actual · {diasRestantes(periodo)} días restantes · Hora Colombia</small></div>
                 <button type="button" onClick={cargar} style={{ alignSelf: "end", padding: "10px 14px", background: "#245b3a", color: "#fff", border: 0, borderRadius: 7, fontWeight: "bold" }}>Actualizar</button>
             </div>
             {!esAdministrador && <>

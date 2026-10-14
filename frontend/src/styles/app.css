@@ -325,3 +325,287 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
     .sale-record-card, .achievement-card { transition:none; }
     .sale-record-card:hover, .achievement-card:hover { transform:none; }
 }
+
+
+/* Restauración de las mejoras locales previas: tema, estado de jornada y vacíos informativos */
+.theme-toggle-button { min-height:42px; display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:9px 13px; border:1px solid rgba(255,255,255,.58); border-radius:24px; background:rgba(4,35,71,.28); color:#fff; font:inherit; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.theme-toggle-button:hover { background:rgba(4,35,71,.48); }
+.theme-toggle-button:focus-visible, .sidebar-nav button:focus-visible, .dashboard-primary button:focus-visible { outline:3px solid #ffd76a; outline-offset:2px; }
+.status-pill { display:inline-flex; align-items:center; gap:5px; width:max-content; max-width:100%; margin-top:7px; padding:5px 9px; border-radius:999px; font-size:10px; font-weight:900; line-height:1.2; }
+.status-pill--available { background:#e4f5ea; color:#17653c; }
+.status-pill--working { background:#e6f1ff; color:#1b5a9b; }
+.status-pill--pause { background:#fff2d7; color:#805308; }
+.status-pill--offline { background:#edf0f4; color:#536273; }
+.current-status-card { transition:background .2s ease, border-color .2s ease, transform .2s ease; }
+.current-status-card--available { background:linear-gradient(135deg,#11aa69,#34c867); }
+.current-status-card--working { background:linear-gradient(135deg,#167aca,#2b9de6); }
+.current-status-card--pause { background:linear-gradient(135deg,#f2b842,#f7cc69); color:#4a3500; }
+.current-status-card--pause span, .current-status-card--pause strong { color:#4a3500; }
+.current-status-card--offline { background:linear-gradient(135deg,#5d6877,#7b8795); }
+.current-status-detail { display:block; margin-top:6px; font-size:10px; line-height:1.35; opacity:.88; }
+.empty-state { display:flex; align-items:center; gap:11px; min-width:0; padding:13px; border:1px dashed #c8d8e6; border-radius:10px; background:#f8fbfe; text-align:left; }
+.empty-state.is-compact { margin:4px 0; padding:9px 11px; }
+.empty-state-icon { flex:0 0 auto; font-size:22px; }
+.empty-state-copy { display:grid; gap:3px; min-width:0; white-space:normal; }
+.empty-state-copy strong { color:#40566e; font-size:12px; }
+.empty-state-copy p { margin:0; color:#718198; font-size:11px; line-height:1.45; white-space:normal; }
+.history-dashboard .empty-state, .history-dashboard .empty-state-copy { white-space:normal; }
+
+@media (max-width:700px) {
+    .theme-toggle-button, .logout-button { min-height:44px; padding:9px 12px; touch-action:manipulation; }
+    .sidebar-nav button { min-height:44px; touch-action:manipulation; }
+    .ventas-chart-scroll, .history-dashboard > div[style*="overflow"] { -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+    .dashboard-primary .grid button { min-height:76px !important; touch-action:manipulation; }
+    .theme-toggle-button { padding:8px 10px; font-size:11px; }
+}
+@media (prefers-reduced-motion:reduce) {
+    button { scroll-behavior:auto !important; transition:none !important; }
+    button:hover:not(:disabled) { transform:none !important; }
+    .current-status-card { transition:none; }
+}
+
+html[data-theme="dark"] {
+    color-scheme:dark;
+    --ink:#e5edf7;
+    --muted:#a6b5c6;
+    --surface:#142235;
+    --page:#0b1421;
+    --line:#30465d;
+}
+html[data-theme="dark"], html[data-theme="dark"] body { background:#0b1421; color:#e5edf7; }
+html[data-theme="dark"] .app-shell, .app-shell[data-theme="dark"] { background:#0b1421; color:#e5edf7; }
+html[data-theme="dark"] .app-main .card { background:#0b1421; color:#e5edf7; }
+html[data-theme="dark"] .person-card,
+html[data-theme="dark"] .time-card,
+html[data-theme="dark"] .dashboard-primary,
+html[data-theme="dark"] .dashboard-secondary > div,
+html[data-theme="dark"] .ventas-trend-card,
+html[data-theme="dark"] .ventas-trend-total,
+html[data-theme="dark"] .activity-timeline-card,
+html[data-theme="dark"] .activity-timeline-marker,
+html[data-theme="dark"] .activity-timeline-empty,
+html[data-theme="dark"] .sales-record-empty,
+html[data-theme="dark"] .sales-record-controls,
+html[data-theme="dark"] .sale-record-card,
+html[data-theme="dark"] .achievement-card,
+html[data-theme="dark"] .goal-progress-hero,
+html[data-theme="dark"] .goal-progress-metric,
+html[data-theme="dark"] .goal-progress-ring-center,
+html[data-theme="dark"] .ranking-podium-card,
+html[data-theme="dark"] .ranking-podium-empty,
+html[data-theme="dark"] .empty-state { background:#142235 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .executive-summary-card,
+html[data-theme="dark"] .executive-goals-card,
+html[data-theme="dark"] .goals-history-card,
+html[data-theme="dark"] .history-dashboard,
+html[data-theme="dark"] .admin-dashboard { background:#101d2d !important; color:#e5edf7 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .executive-panel > .executive-summary-card,
+html[data-theme="dark"] .executive-panel > .executive-goals-card,
+html[data-theme="dark"] .executive-panel > .goals-history-card { background:#142235 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .admin-dashboard .admin-kpi-card,
+html[data-theme="dark"] .admin-dashboard .admin-incidence-card,
+html[data-theme="dark"] .executive-panel .executive-metric-card,
+html[data-theme="dark"] .executive-panel .executive-period-card { background:#1b2d42 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .admin-dashboard details > summary,
+html[data-theme="dark"] .executive-panel th { background:#1b2d42 !important; color:#dce8f5 !important; }
+html[data-theme="dark"] .app-main .card h1,
+html[data-theme="dark"] .app-main .card h2,
+html[data-theme="dark"] .app-main .card h3,
+html[data-theme="dark"] .app-main .card h4,
+html[data-theme="dark"] .app-main .card p,
+html[data-theme="dark"] .app-main .card label,
+html[data-theme="dark"] .app-main .card td,
+html[data-theme="dark"] .app-main .card th,
+html[data-theme="dark"] .app-main .card summary,
+html[data-theme="dark"] .app-main .card .person-card-label,
+html[data-theme="dark"] .app-main .card .advisor-current-name,
+html[data-theme="dark"] .app-main .card .section-heading h2,
+html[data-theme="dark"] .app-main .card .sales-detail-heading .ventas-detail-title,
+html[data-theme="dark"] .app-main .card .activity-timeline-copy strong,
+html[data-theme="dark"] .app-main .card .sale-record-data strong,
+html[data-theme="dark"] .app-main .card .sale-record-total strong,
+html[data-theme="dark"] .app-main .card .achievement-card-copy strong,
+html[data-theme="dark"] .app-main .card .goal-progress-heading h4,
+html[data-theme="dark"] .app-main .card .goal-progress-copy > strong,
+html[data-theme="dark"] .app-main .card .ranking-podium-name,
+html[data-theme="dark"] .app-main .card .empty-state-copy strong { color:#e5edf7 !important; }
+html[data-theme="dark"] .app-main .card small,
+html[data-theme="dark"] .app-main .card .ventas-toolbar p,
+html[data-theme="dark"] .app-main .card .sales-detail-heading p,
+html[data-theme="dark"] .app-main .card .activity-timeline-copy small,
+html[data-theme="dark"] .app-main .card .activity-timeline-time,
+html[data-theme="dark"] .app-main .card .sale-record-note,
+html[data-theme="dark"] .app-main .card .sale-record-data span,
+html[data-theme="dark"] .app-main .card .achievement-card-copy p,
+html[data-theme="dark"] .app-main .card .goal-progress-copy > span,
+html[data-theme="dark"] .app-main .card .goal-progress-copy > small,
+html[data-theme="dark"] .app-main .card .empty-state-copy p { color:#a6b5c6 !important; }
+html[data-theme="dark"] .app-main .card input,
+html[data-theme="dark"] .app-main .card select,
+html[data-theme="dark"] .advisor-trigger,
+html[data-theme="dark"] .advisor-options,
+html[data-theme="dark"] .advisor-options button,
+html[data-theme="dark"] .sales-search-field input,
+html[data-theme="dark"] .sales-state-field select,
+html[data-theme="dark"] .sales-clear-filters { background:#1b2d42 !important; color:#e5edf7 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .advisor-options button:hover { background:#263e58 !important; }
+html[data-theme="dark"] .ventas-filterbar,
+html[data-theme="dark"] .ventas-chart-segment,
+html[data-theme="dark"] .ventas-chart-tooltip,
+html[data-theme="dark"] .activity-timeline-toggle { background:#1b2d42 !important; color:#dce8f5 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .goal-progress-ring-center { background:#142235 !important; }
+html[data-theme="dark"] .ranking-current-position { background:#152d43 !important; color:#d6eaff !important; border-color:#315c7e !important; }
+html[data-theme="dark"] .current-status-card--pause .current-status-detail { color:rgba(56,38,0,.86) !important; }
+html[data-theme="dark"] .status-pill--available { background:#173e2a !important; color:#a6e8bd !important; }
+html[data-theme="dark"] .status-pill--working { background:#173556 !important; color:#add6ff !important; }
+html[data-theme="dark"] .status-pill--pause { background:#4a3718 !important; color:#ffdd95 !important; }
+html[data-theme="dark"] .status-pill--offline { background:#2e3a48 !important; color:#d0d9e3 !important; }
+html[data-theme="dark"] .sales-ranking-current { background:#17324a !important; }
+html[data-theme="dark"] .sale-record-status.is-active { background:#173e2a !important; color:#a6e8bd !important; }
+html[data-theme="dark"] .sale-record-status.is-voided { background:#472524 !important; color:#ffc0ba !important; }
+html[data-theme="dark"] .goal-celebration { background:linear-gradient(135deg,#163b2b,#1d4934) !important; border-color:#2f7652 !important; color:#b5edc8 !important; }
+html[data-theme="dark"] .goal-progress-empty,
+html[data-theme="dark"] .goal-progress-no-target { background:#1b2d42 !important; }
+html[data-theme="dark"] .activity-timeline-marker.is-venta { background:#173e2a !important; }
+html[data-theme="dark"] .activity-timeline-marker.is-venta-anulada { background:#472524 !important; }
+html[data-theme="dark"] .activity-timeline-marker.is-pausa { background:#4a3718 !important; }
+html[data-theme="dark"] .history-dashboard table td,
+html[data-theme="dark"] .admin-dashboard table td,
+html[data-theme="dark"] .executive-panel table td { border-color:#30465d !important; color:#e5edf7 !important; }
+html[data-theme="dark"] .history-dashboard table th,
+html[data-theme="dark"] .admin-dashboard table th,
+html[data-theme="dark"] .executive-panel table th { border-color:#30465d !important; }
+html[data-theme="dark"] .app-main .card small.status-pill--available { color:#a6e8bd !important; }
+html[data-theme="dark"] .app-main .card small.status-pill--working { color:#add6ff !important; }
+html[data-theme="dark"] .app-main .card small.status-pill--pause { color:#ffdd95 !important; }
+html[data-theme="dark"] .app-main .card small.status-pill--offline { color:#d0d9e3 !important; }
+html[data-theme="dark"] .app-main .card .current-status-detail { color:rgba(255,255,255,.84) !important; }
+html[data-theme="dark"] .app-main .card .current-status-card--pause .current-status-detail { color:rgba(56,38,0,.86) !important; }
+html[data-theme="dark"] .admin-dashboard .admin-kpi-card > div:nth-child(2) > div:first-child { color:#a6b5c6 !important; }
+html[data-theme="dark"] .admin-dashboard .admin-kpi-card > div:nth-child(3) { color:#e5edf7 !important; }
+html[data-theme="dark"] .executive-panel .executive-metric-card > div { color:#a6b5c6 !important; }
+html[data-theme="dark"] .executive-panel .executive-metric-card > strong,
+html[data-theme="dark"] .executive-panel .executive-period-card > strong,
+html[data-theme="dark"] .executive-panel .executive-productivity-summary,
+html[data-theme="dark"] .executive-panel .executive-productivity-summary strong { color:#e5edf7 !important; }
+
+
+/* Mejora 1: panel personal de resumen diario */
+.mi-dia-panel { margin:0 0 14px; padding:18px; border:1px solid #d8e7f4; border-radius:15px; background:linear-gradient(130deg,#f5fbff 0%,#f4fbf6 100%); box-shadow:0 7px 20px rgba(35,76,121,.07); }
+.mi-dia-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.mi-dia-eyebrow, .quick-links-eyebrow { color:#1684dc; font-size:10px; font-weight:900; letter-spacing:1.1px; }
+.mi-dia-header h2 { margin:4px 0; color:#173b68; font-size:21px; }
+.mi-dia-header p { margin:0; color:#6b7d91; font-size:12px; }
+.mi-dia-status { display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:9px 12px; border:1px solid transparent; border-radius:999px; font-size:12px; white-space:nowrap; }
+.mi-dia-status > span { font-size:15px; }
+.mi-dia-status--working { background:#e6f1ff; border-color:#c9e0fa; color:#1b5a9b; }
+.mi-dia-status--pause { background:#fff2d7; border-color:#f3dda9; color:#805308; }
+.mi-dia-status--offline { background:#edf0f4; border-color:#d8dfe7; color:#536273; }
+.mi-dia-status--available, .mi-dia-status--neutral { background:#e4f5ea; border-color:#c3e9d0; color:#17653c; }
+.mi-dia-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:16px; }
+.mi-dia-metric { min-width:0; display:grid; align-content:space-between; gap:11px; min-height:82px; padding:12px; border:1px solid #e1eaf2; border-radius:11px; background:#fff; }
+.mi-dia-metric-label { display:flex; align-items:center; gap:6px; color:#62758b; font-size:10px; font-weight:800; }
+.mi-dia-metric-label > span { font-size:14px; }
+.mi-dia-metric strong { color:#173b68; font-size:18px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.mi-dia-metric--money strong { font-size:16px; }
+.mi-dia-guidance { display:flex; align-items:flex-start; gap:8px; margin:12px 0 0; padding:10px 12px; border-radius:9px; background:rgba(22,132,220,.07); color:#4e6680; font-size:11px; line-height:1.5; }
+.mi-dia-guidance > span { flex:0 0 auto; }
+
+/* Mejora 2: accesos favoritos editables, guardados por usuario en este navegador */
+.quick-links-card { margin:0 0 18px; padding:15px 17px; border:1px solid #dce8f3; border-radius:13px; background:#fff; box-shadow:0 5px 15px rgba(35,76,121,.06); }
+.quick-links-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:11px; }
+.quick-links-header h2 { margin:3px 0 0; color:#173b68; font-size:16px; }
+.quick-links-edit { min-height:38px; padding:7px 11px; border:1px solid #bfd6ea; border-radius:8px; background:#f2f8fd; color:#1766a5; font-size:11px; font-weight:800; cursor:pointer; }
+.quick-links-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:9px; }
+.quick-link-button { min-height:50px; display:flex; align-items:center; gap:9px; padding:10px 11px; border:1px solid #d8e6f2; border-radius:10px; background:linear-gradient(135deg,#fff,#f7fbff); color:#294b6d; text-align:left; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+.quick-link-button:hover { border-color:#98c7eb; background:#edf7ff; }
+.quick-link-icon { font-size:17px; }
+.quick-link-arrow { margin-left:auto; color:#1684dc; font-size:15px; }
+.quick-links-options { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.quick-links-option { min-height:40px; display:inline-flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid #d5e2ed; border-radius:9px; background:#f8fafc; color:#486078; font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
+.quick-links-option.is-selected { border-color:#aed5f2; background:#eaf5ff; color:#155d97; }
+.quick-links-option > span { font-size:15px; }
+.quick-links-hint, .quick-links-notice { flex:1 0 100%; margin:2px 0 0; color:#718198; font-size:10px; }
+.quick-links-notice { color:#9b5c00; font-weight:700; }
+
+/* Mejora 3: comparativa de la gráfica */
+.ventas-comparison-card { min-width:185px; padding:10px 12px; border:1px solid #dce8f3; border-radius:11px; background:#f7fbff; }
+.ventas-comparison-eyebrow { display:block; margin-bottom:7px; color:#718198; font-size:9px; font-weight:900; letter-spacing:.6px; }
+.ventas-comparison-values { display:flex; gap:15px; }
+.ventas-comparison-values > div { display:grid; gap:3px; }
+.ventas-comparison-values small, .ventas-comparison-footnote { color:#718198; font-size:9px; }
+.ventas-comparison-change { font-size:14px; white-space:nowrap; }
+.ventas-comparison-change.is-up { color:#147446; }
+.ventas-comparison-change.is-down { color:#b33b35; }
+.ventas-comparison-change.is-neutral { color:#536273; }
+.ventas-comparison-loading, .ventas-comparison-unavailable { display:block; margin:0 0 5px; color:#60748c; font-size:11px; }
+.ventas-comparison-footnote { display:block; margin-top:7px; }
+
+/* Mejora 4: rangos rápidos de consulta en el histórico */
+.history-presets { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:16px 0 10px; }
+.history-presets-label { margin-right:2px; color:#536a82; font-size:11px; font-weight:800; }
+.history-presets button { min-height:38px; padding:7px 11px; border:1px solid #cfdeeb; border-radius:8px; background:#f7fbff; color:#365878; font:inherit; font-size:11px; font-weight:750; cursor:pointer; }
+.history-presets button:hover:not(:disabled), .history-presets button[aria-pressed="true"] { border-color:#1684dc; background:#eaf5ff; color:#155d97; }
+.history-presets button:disabled { cursor:wait; opacity:.65; }
+.history-date-controls { scroll-margin-top:20px; }
+#registro-movimiento, #registrar-venta, #ventas-dia { scroll-margin-top:20px; }
+
+@media (max-width:700px) {
+    .mi-dia-panel { padding:14px; }
+    .mi-dia-header { flex-direction:column; }
+    .mi-dia-status { white-space:normal; }
+    .mi-dia-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .quick-links-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .quick-link-button { min-height:54px; padding:9px; }
+    .ventas-comparison-card { width:100%; }
+    .history-presets { gap:6px; }
+    .history-presets button { min-height:42px; }
+}
+@media (max-width:420px) {
+    .mi-dia-header h2 { font-size:18px; }
+    .mi-dia-metrics { gap:7px; }
+    .mi-dia-metric { min-height:76px; padding:9px; }
+    .mi-dia-metric strong { font-size:16px; }
+    .mi-dia-metric--money strong { font-size:14px; }
+    .quick-links-card { padding:12px; }
+    .quick-links-grid { grid-template-columns:1fr 1fr; }
+    .quick-link-button { font-size:10px; }
+    .history-presets-label { flex:1 0 100%; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    .mi-dia-panel, .quick-link-button, .history-presets button, .ventas-comparison-card { transition:none !important; }
+    button:hover:not(:disabled) { transform:none !important; }
+}
+
+html[data-theme="dark"] .mi-dia-panel,
+html[data-theme="dark"] .quick-links-card,
+html[data-theme="dark"] .ventas-comparison-card { background:#142235 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .mi-dia-header h2,
+html[data-theme="dark"] .quick-links-header h2,
+html[data-theme="dark"] .mi-dia-metric strong,
+html[data-theme="dark"] .quick-link-button,
+html[data-theme="dark"] .quick-links-option,
+html[data-theme="dark"] .ventas-comparison-values strong { color:#e5edf7 !important; }
+html[data-theme="dark"] .mi-dia-header p,
+html[data-theme="dark"] .mi-dia-metric-label,
+html[data-theme="dark"] .mi-dia-guidance,
+html[data-theme="dark"] .quick-links-hint,
+html[data-theme="dark"] .ventas-comparison-footnote,
+html[data-theme="dark"] .ventas-comparison-values small { color:#a6b5c6 !important; }
+html[data-theme="dark"] .mi-dia-metric,
+html[data-theme="dark"] .quick-link-button,
+html[data-theme="dark"] .quick-links-option,
+html[data-theme="dark"] .history-presets button { background:#1b2d42 !important; border-color:#30465d !important; }
+html[data-theme="dark"] .mi-dia-guidance { background:#1b2d42 !important; }
+html[data-theme="dark"] .quick-link-button:hover,
+html[data-theme="dark"] .quick-links-option.is-selected,
+html[data-theme="dark"] .history-presets button[aria-pressed="true"] { background:#173556 !important; border-color:#396a90 !important; }
+html[data-theme="dark"] .history-presets-label { color:#a6b5c6 !important; }
+html[data-theme="dark"] .history-presets button { color:#dce8f5 !important; }
+html[data-theme="dark"] .ventas-comparison-eyebrow,
+html[data-theme="dark"] .ventas-comparison-loading,
+html[data-theme="dark"] .ventas-comparison-unavailable { color:#a6b5c6 !important; }
+html[data-theme="dark"] .ventas-comparison-change.is-up { color:#93e0b2 !important; }
+html[data-theme="dark"] .ventas-comparison-change.is-down { color:#ffaaa4 !important; }
+html[data-theme="dark"] .ventas-comparison-change.is-neutral { color:#d0d9e3 !important; }

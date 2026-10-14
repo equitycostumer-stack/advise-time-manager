@@ -30,6 +30,15 @@ function obtenerRango(periodo) {
     return { desde: `${anio}-${String(mes).padStart(2, "0")}-${inicio}`, hasta: hoy };
 }
 
+function obtenerRangoAnterior(periodo) {
+    const actual = obtenerRango(periodo);
+    const inicio = new Date(`${actual.desde}T12:00:00Z`).getTime();
+    const fin = new Date(`${actual.hasta}T12:00:00Z`).getTime();
+    const duracion = Math.max(1, Math.round((fin - inicio) / 86400000) + 1);
+    const hasta = desplazarFecha(actual.desde, -1);
+    return { desde: desplazarFecha(hasta, -(duracion - 1)), hasta };
+}
+
 function etiquetaFecha(fechaISO) {
     return new Intl.DateTimeFormat("es-CO", {
         timeZone: "UTC",
@@ -89,6 +98,26 @@ function formatoCompacto(valor, simbolo) {
     return `${simbolo || "$"}${Number(valor || 0).toLocaleString("es-CO", { notation: "compact", maximumFractionDigits: 1 })}`;
 }
 
+function resumirVentas(ventas) {
+    const activas = ventas.filter((venta) => venta.estado === "ACTIVA");
+    return activas.reduce((resumen, venta) => ({
+        cantidad: resumen.cantidad + 1,
+        vendido: resumen.vendido + Number(venta.valor || 0),
+        recaudo: resumen.recaudo + Number(venta.recaudo || 0)
+    }), { cantidad: 0, vendido: 0, recaudo: 0 });
+}
+
+function obtenerVariacion(actual, anterior) {
+    if (anterior <= 0) {
+        return actual > 0 ? { texto: "Nuevo", clase: "up" } : { texto: "→ 0%", clase: "neutral" };
+    }
+    const cambio = ((actual - anterior) / anterior) * 100;
+    return {
+        texto: `${cambio > 0 ? "↑" : cambio < 0 ? "↓" : "→"} ${Math.abs(cambio).toFixed(1)}%`,
+        clase: cambio > 0 ? "up" : cambio < 0 ? "down" : "neutral"
+    };
+}
+
 const OPCIONES_PERIODO = [
     ["hoy", "Hoy"],
     ["semana", "7 días"],
@@ -98,20 +127,33 @@ const OPCIONES_PERIODO = [
 export default function VentasChart({ simboloMoneda = "$", refreshKey = 0 }) {
     const [periodo, setPeriodo] = useState("semana");
     const [metrica, setMetrica] = useState("vendido");
-    const [carga, setCarga] = useState({ periodo: null, refreshKey: null, ventas: [], error: "" });
+    const [carga, setCarga] = useState({ periodo: null, refreshKey: null, ventas: [], ventasAnteriores: [], error: "", errorComparacion: false });
     const [puntoActivo, setPuntoActivo] = useState(null);
 
     useEffect(() => {
         let vigente = true;
         const rango = obtenerRango(periodo);
+        const rangoAnterior = obtenerRangoAnterior(periodo);
 
-        api.get("/reportes/ventas", { params: rango })
-            .then(({ data }) => {
-                if (vigente) setCarga({ periodo, refreshKey, ventas: Array.isArray(data?.data) ? data.data : [], error: "" });
+        Promise.all([
+            api.get("/reportes/ventas", { params: rango }),
+            api.get("/reportes/ventas", { params: rangoAnterior })
+                .then(({ data }) => ({ ventas: Array.isArray(data?.data) ? data.data : [], error: false }))
+                .catch(() => ({ ventas: [], error: true }))
+        ])
+            .then(([respuestaActual, respuestaAnterior]) => {
+                if (vigente) setCarga({
+                    periodo,
+                    refreshKey,
+                    ventas: Array.isArray(respuestaActual.data?.data) ? respuestaActual.data.data : [],
+                    ventasAnteriores: respuestaAnterior.ventas,
+                    error: "",
+                    errorComparacion: respuestaAnterior.error
+                });
             })
             .catch((errorConsulta) => {
                 if (vigente) {
-                    setCarga({ periodo, refreshKey, ventas: [], error: errorConsulta.response?.data?.mensaje || "No fue posible cargar la gráfica." });
+                    setCarga({ periodo, refreshKey, ventas: [], ventasAnteriores: [], error: errorConsulta.response?.data?.mensaje || "No fue posible cargar la gráfica.", errorComparacion: true });
                 }
             })
 
@@ -122,10 +164,15 @@ export default function VentasChart({ simboloMoneda = "$", refreshKey = 0 }) {
     const cargando = !cargaActual;
     const ventas = cargaActual ? carga.ventas : VENTAS_VACIAS;
     const error = cargaActual ? carga.error : "";
+    const ventasAnteriores = cargaActual ? carga.ventasAnteriores : VENTAS_VACIAS;
+    const errorComparacion = cargaActual && carga.errorComparacion;
     const puntos = useMemo(() => crearPuntos(ventas, periodo), [ventas, periodo]);
+    const resumenAnterior = useMemo(() => resumirVentas(ventasAnteriores), [ventasAnteriores]);
     const claveMetrica = metrica === "vendido" ? "vendido" : "recaudo";
     const total = puntos.reduce((suma, punto) => suma + punto[claveMetrica], 0);
     const cantidad = puntos.reduce((suma, punto) => suma + punto.cantidad, 0);
+    const variacionCantidad = obtenerVariacion(cantidad, resumenAnterior.cantidad);
+    const variacionMonto = obtenerVariacion(total, resumenAnterior[claveMetrica]);
     const maximo = Math.max(1, ...puntos.map((punto) => punto[claveMetrica]));
     const seleccionado = puntos.find((punto) => punto.clave === puntoActivo);
     const ancho = Math.max(720, puntos.length * 54 + 72);
@@ -150,6 +197,18 @@ export default function VentasChart({ simboloMoneda = "$", refreshKey = 0 }) {
                     <small>{nombreMetrica}</small>
                     <strong>{formatearMoneda(total, simboloMoneda)}</strong>
                     <span>{cantidad} {cantidad === 1 ? "venta" : "ventas"} activas</span>
+                </div>
+                <div className="ventas-comparison-card" aria-live="polite">
+                    <span className="ventas-comparison-eyebrow">VS. PERIODO ANTERIOR</span>
+                    {cargando ? <strong className="ventas-comparison-loading">Calculando…</strong> : errorComparacion ? (
+                        <p className="ventas-comparison-unavailable">Comparación no disponible.</p>
+                    ) : (
+                        <div className="ventas-comparison-values">
+                            <div><small>Ventas</small><strong className={`ventas-comparison-change is-${variacionCantidad.clase}`}>{variacionCantidad.texto}</strong></div>
+                            <div><small>{nombreMetrica}</small><strong className={`ventas-comparison-change is-${variacionMonto.clase}`}>{variacionMonto.texto}</strong></div>
+                        </div>
+                    )}
+                    <small className="ventas-comparison-footnote">Intervalo inmediatamente anterior</small>
                 </div>
             </div>
 

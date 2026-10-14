@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import EmptyState from "./EmptyState";
 import ExportarWord from "./ExportarWord";
 import ExportarHistorial from "./ExportarHistorial";
 import Alertas from "./Alertas";
@@ -96,7 +97,7 @@ function KpiCard({ icon, label, value, accent = palette.gold }) {
         "#dc3545": "#fff0f1"
     };
     return (
-        <div style={{
+        <div className="admin-kpi-card" style={{
             position: "relative",
             overflow: "hidden",
             background: "rgba(255,255,255,.96)",
@@ -121,7 +122,7 @@ function KpiCard({ icon, label, value, accent = palette.gold }) {
 function IncidenciaCard({ inc }) {
     const revisada = inc.revisada === 1 || inc.revisada === true;
     return (
-        <div style={{
+        <div className="admin-incidence-card" style={{
             border: `1px solid ${palette.border}`,
             borderRadius: "9px",
             padding: "14px",
@@ -293,7 +294,7 @@ export default function Dashboard() {
     const inputStyle = { padding: "9px", borderRadius: "7px", border: "1px solid #555", background: palette.surface2, color: palette.black, width: "100%", boxSizing: "border-box" };
 
     return (
-        <div style={{ marginTop: 30, background: "#ffffff", color: palette.black, border: `1px solid ${palette.border}`, borderRadius: "14px", padding: "20px", boxSizing: "border-box" }}>
+        <div className="admin-dashboard" style={{ marginTop: 30, background: "#ffffff", color: palette.black, border: `1px solid ${palette.border}`, borderRadius: "14px", padding: "20px", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
                 <div>
                     <h2 style={{ color: palette.gold, margin: 0 }}>📊 Dashboard en tiempo real</h2>
@@ -398,7 +399,7 @@ export default function Dashboard() {
                         <hr style={{ borderColor: palette.border, margin: "18px 0" }} />
                         <ExportarHistorial historial={historial} asesor={asesorSeleccionado} />
                         <button onClick={() => setMostrarHistorialIncidencias(true)} style={{ width: "100%", marginTop: "14px", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>🚨 Ver Historial de Incidencias</button>
-                        {historial.length === 0 ? <p style={{ color: palette.muted, textAlign: "center", padding: "20px" }}>📭 No hay movimientos hoy.</p> : historial.map((m) => <div key={m.id} style={{ padding: "12px 0", borderBottom: `1px solid ${palette.border}` }}><strong>{m.tipo || "Movimiento"}</strong><br /><span style={{ color: palette.muted }}>{formatearHoraColombia(m.fecha_hora)}</span></div>)}
+                        {historial.length === 0 ? <EmptyState compact icon="🕘" title="Aún no hay movimientos" description="Los registros de jornada de este asesor aparecerán aquí cuando estén disponibles." /> : historial.map((m) => <div key={m.id} style={{ padding: "12px 0", borderBottom: `1px solid ${palette.border}` }}><strong>{m.tipo || "Movimiento"}</strong><br /><span style={{ color: palette.muted }}>{formatearHoraColombia(m.fecha_hora)}</span></div>)}
                         {mostrarHistorialIncidencias && <HistorialIncidenciasModal asesorId={asesorSeleccionado.id} asesores={asesores} onClose={() => setMostrarHistorialIncidencias(false)} />}
                     </div>
                 </div>

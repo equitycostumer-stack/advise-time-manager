@@ -25,6 +25,7 @@ import PanelControlAdmin from "./components/PanelControlAdmin";
 import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
 import ValidarVentas from "./components/ValidarVentas";
 import RegistrosDiarios from "./components/RegistrosDiarios";
+import ReconocimientoGlobal from "./components/ReconocimientoToast";
 import Usuarios from "./pages/Usuarios";
 
 // ======================================================
@@ -348,8 +349,9 @@ function App() {
         <div className="sidebar-footer">Equity Line<br /><small>Productividad y bienestar</small></div>
       </aside>
       <main className="app-main">
-      <div className="card">
+        <div className="card">
         <Header />
+        <ReconocimientoGlobal />
 
         <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
           <button

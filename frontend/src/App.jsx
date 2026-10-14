@@ -13,10 +13,8 @@ import AdvisorSelect from "./components/AdvisorSelect";
 import Buttons from "./components/Buttons";
 import RegistrarVenta from "./components/RegistrarVenta";
 import VentasDashboard from "./components/VentasDashboard";
-import StatusCard from "./components/StatusCard";
 import MessageCard from "./components/MessageCard";
 import Footer from "./components/Footer";
-import WorkTimer from "./components/WorkTimer";
 import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
@@ -533,19 +531,18 @@ function App() {
                   asesorNombre={asesorSeleccionado?.nombre}
                   onVentaRegistrada={async () => {}}
                 />
-                <div className="secondary-widgets">
-                  <StatusCard estado={estado} />
-                  <WorkTimer estado={estado} inicioJornada={inicioJornada} />
-                  <BreakTimer estado={estado} inicioEstado={inicioEstado} />
-                </div>
+                <BreakTimer estado={estado} inicioEstado={inicioEstado} />
               </section>
 
               <aside className="dashboard-secondary">
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
-                <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
                 <MessageCard mensaje={mensaje} />
               </aside>
             </div>
+
+            <section className="sales-dashboard-section" aria-label="Ventas y ranking">
+              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
+            </section>
 
             <div className="below-dashboard">
               <Dashboard />

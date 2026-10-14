@@ -29,6 +29,14 @@ export default function VentasDashboard({ esAdministrador = false }) {
 
     const [ventasDia, setVentasDia] = useState([]);
 
+    const [filtroAsesorId, setFiltroAsesorId] = useState("todos");
+
+    const [actualizandoPanel, setActualizandoPanel] = useState(false);
+
+    const [ultimaActualizacion, setUltimaActualizacion] = useState(null);
+
+    const [errorVentas, setErrorVentas] = useState("");
+
     const [anulando, setAnulando] = useState(null);
 
     const [desplegado, setDesplegado] = useState(false);
@@ -43,7 +51,9 @@ export default function VentasDashboard({ esAdministrador = false }) {
     // CARGAR DATOS
     // ======================================================
 
-    async function cargarVentas() {
+    async function cargarVentas({ manual = false } = {}) {
+
+        if (manual) setActualizandoPanel(true);
 
         try {
 
@@ -71,10 +81,17 @@ export default function VentasDashboard({ esAdministrador = false }) {
                     : []
             );
 
+            setUltimaActualizacion(new Date());
+            setErrorVentas("");
+
         } catch (error) {
 
             console.error("Error cargando ventas:", error);
+            setErrorVentas("No se pudieron actualizar las ventas. Intenta de nuevo.");
 
+        } finally {
+
+            if (manual) setActualizandoPanel(false);
         }
 
     }
@@ -101,6 +118,13 @@ export default function VentasDashboard({ esAdministrador = false }) {
         } finally {
             setCargandoRanking(false);
         }
+    }
+
+    async function actualizarPanel() {
+        await Promise.all([
+            cargarVentas({ manual: true }),
+            cargarRankingQuincenal()
+        ]);
     }
 
     // ======================================================
@@ -177,6 +201,16 @@ export default function VentasDashboard({ esAdministrador = false }) {
 
     }
 
+    const asesoresFiltrados = filtroAsesorId === "todos"
+        ? porAsesor
+        : porAsesor.filter((asesor) => String(asesor.asesor_id) === filtroAsesorId);
+    const ventasDiaFiltradas = filtroAsesorId === "todos"
+        ? ventasDia
+        : ventasDia.filter((venta) => String(venta.asesor_id) === filtroAsesorId);
+    const resumenDiaVisible = filtroAsesorId === "todos"
+        ? resumenDia
+        : porAsesor.find((asesor) => String(asesor.asesor_id) === filtroAsesorId)
+            || { cantidad_ventas: 0, total_vendido: 0 };
     const periodoActual = obtenerPeriodoInicial();
     const esPeriodoVigente = mesRanking === periodoActual.mes && quincenaRanking === periodoActual.quincena;
     const rankingFuente = rankingQuincenal.length > 0
@@ -198,8 +232,11 @@ export default function VentasDashboard({ esAdministrador = false }) {
     return (
 
         <div
+            className="ventas-dashboard"
             style={{
-                marginTop: 40,
+                marginTop: 0,
+                minWidth: 0,
+                width: "100%",
                 background: "#ffffff",
                 border: "1px solid #dddddd",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
@@ -209,6 +246,9 @@ export default function VentasDashboard({ esAdministrador = false }) {
         >
 
             <button
+                type="button"
+                aria-expanded={desplegado}
+                aria-controls="ventas-del-dia-contenido"
                 onClick={() => setDesplegado(!desplegado)}
                 style={{
                     width: "100%",
@@ -231,7 +271,20 @@ export default function VentasDashboard({ esAdministrador = false }) {
 
             {desplegado && (
 
-            <div style={{ marginTop: "20px" }}>
+            <div id="ventas-del-dia-contenido" style={{ marginTop: "20px", minWidth: 0 }}>
+
+            <div className="ventas-toolbar" aria-live="polite">
+                <p>
+                    {ultimaActualizacion
+                        ? `Actualizado a las ${new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(ultimaActualizacion)}`
+                        : "Cargando información de ventas…"}
+                </p>
+                <button type="button" className="ventas-refresh-button" onClick={actualizarPanel} disabled={actualizandoPanel}>
+                    {actualizandoPanel ? "Actualizando…" : "🔄 Actualizar ventas"}
+                </button>
+            </div>
+
+            {errorVentas && <p role="alert" style={{ margin: "0 0 16px", padding: "10px 12px", borderRadius: 8, background: "#fff1f0", color: "#a3271b" }}>{errorVentas}</p>}
 
             <div
                 style={{
@@ -251,7 +304,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                         textAlign: "center"
                     }}
                 >
-                    <h2 style={{ color: "#212529", margin: 0 }}>{resumenDia.cantidad_ventas}</h2>
+                    <h2 style={{ color: "#212529", margin: 0 }}>{resumenDiaVisible.cantidad_ventas}</h2>
                     <small>💰 Ventas</small>
                 </div>
 
@@ -264,10 +317,21 @@ export default function VentasDashboard({ esAdministrador = false }) {
                         textAlign: "center"
                     }}
                 >
-                    <h2 style={{ color: "#212529", margin: 0 }}>{formatearMoneda(resumenDia.total_vendido)}</h2>
+                    <h2 style={{ color: "#212529", margin: 0 }}>{formatearMoneda(resumenDiaVisible.total_vendido)}</h2>
                     <small>💵 Total vendido</small>
                 </div>
 
+            </div>
+
+            <div className="ventas-filterbar">
+                <label htmlFor="filtro-asesor-ventas">Filtrar resumen y detalle por asesor</label>
+                <select id="filtro-asesor-ventas" value={filtroAsesorId} onChange={(evento) => setFiltroAsesorId(evento.target.value)}>
+                    <option value="todos">Todos los asesores</option>
+                    {porAsesor.map((asesor) => (
+                        <option key={asesor.asesor_id} value={String(asesor.asesor_id)}>{asesor.asesor_nombre}</option>
+                    ))}
+                </select>
+                <small>El ranking quincenal sigue mostrando al equipo completo.</small>
             </div>
 
             <div
@@ -278,7 +342,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                 }}
             >
 
-                {porAsesor.map((a) => (
+                {asesoresFiltrados.map((a) => (
 
                     <div
                         key={a.asesor_id}
@@ -326,7 +390,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                     <p style={{ color: "#666", margin: 0 }}>No hay ventas activas en la quincena seleccionada.</p>
                 ) : (
                     <div style={{ overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "560px" }}>
+                        <table className="ventas-ranking-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: "560px" }}>
                             <thead>
                                 <tr>
                                     {["Posición", "Asesor", "Ventas", "Total vendido", "Recaudo quincenal"].map((encabezado) => (
@@ -337,7 +401,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                             <tbody>
                                 {ranking.map((a, indice) => (
                                     <tr key={a.asesor_id}>
-                                        <td style={{ padding: "9px", color: indice === 0 ? "#D4AF37" : "#F4F4F4", fontWeight: "bold" }}>{indice === 0 ? "🥇 1" : indice === 1 ? "🥈 2" : indice === 2 ? "🥉 3" : indice + 1}</td>
+                                        <td style={{ padding: "9px", color: indice === 0 ? "#9a7412" : "#35465e", fontWeight: "bold" }}>{indice === 0 ? "🥇 1" : indice === 1 ? "🥈 2" : indice === 2 ? "🥉 3" : indice + 1}</td>
                                         <td style={{ padding: "9px", color: "#0d6efd", fontWeight: "bold" }}>{a.asesor_nombre}</td>
                                         <td style={{ padding: "9px" }}>{a.cantidad_ventas || 0}</td>
                                         <td style={{ padding: "9px" }}>{formatearMoneda(a.total_vendido)}</td>
@@ -355,23 +419,26 @@ export default function VentasDashboard({ esAdministrador = false }) {
                 LISTADO INDIVIDUAL DE VENTAS DEL DÍA
             ===================================================== */}
 
-            <h3 style={{ marginTop: "30px", color: "#0d6efd" }}>
+            <h3 className="ventas-detail-title" style={{ marginTop: "30px", color: "#0d6efd" }}>
                 📋 Detalle de ventas de hoy
             </h3>
 
-            {ventasDia.length === 0 ? (
+            {filtroAsesorId !== "todos" && <p style={{ margin: "-8px 0 8px", color: "#64748b", fontSize: 13 }}>Mostrando {ventasDiaFiltradas.length} de {ventasDia.length} ventas para el asesor seleccionado.</p>}
 
-                <p style={{ color: "#666666" }}>
-                    No hay ventas registradas hoy.
-                </p>
+            {ventasDiaFiltradas.length === 0 ? (
+
+            <p style={{ color: "#666666" }}>
+                {ventasDia.length === 0 ? "No hay ventas registradas hoy." : "Este asesor no tiene ventas registradas hoy."}
+            </p>
 
             ) : (
 
                 <div style={{ marginTop: "10px" }}>
 
-                    {ventasDia.map((v) => (
+                    {ventasDiaFiltradas.map((v) => (
 
                         <div
+                            className="venta-dia-item"
                             key={v.id}
                             style={{
                                 display: "flex",
@@ -383,7 +450,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                             }}
                         >
 
-                            <div>
+                            <div className="venta-dia-info">
 
                                 <strong style={{ color: "#0d6efd" }}>{v.asesor_nombre}</strong>
                                 {" — "}

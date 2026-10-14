@@ -53,6 +53,7 @@ export default function RegistrarVenta({
     const [observacion, setObservacion] = useState("");
     const [enviando, setEnviando] = useState(false);
     const [celebrando, setCelebrando] = useState(false);
+    const [detalleCelebracion, setDetalleCelebracion] = useState(null);
 
     // ======================================================
     // ABRIR / CERRAR MODAL
@@ -88,6 +89,7 @@ export default function RegistrarVenta({
     async function registrar() {
 
         const valorNumerico = Number(valor);
+        const recaudoNumerico = recaudo === "" ? 0 : Number(recaudo);
 
         if (!valorNumerico || valorNumerico <= 0) {
             alert("Ingrese un valor de venta válido.");
@@ -102,7 +104,7 @@ export default function RegistrarVenta({
                 asesor_id: Number(asesor),
                 cliente_id: clienteId || null,
                 valor: valorNumerico,
-                recaudo: recaudo === "" ? 0 : Number(recaudo),
+                recaudo: recaudoNumerico,
                 observacion: observacion || null
             });
 
@@ -113,10 +115,14 @@ export default function RegistrarVenta({
             }
 
             setAbierto(false);
+            setDetalleCelebracion({ valor: valorNumerico, recaudo: recaudoNumerico });
             setCelebrando(true);
             reproducirSonidoCelebracion();
             window.dispatchEvent(new Event("venta-registrada"));
-            window.setTimeout(() => setCelebrando(false), 3200);
+            window.setTimeout(() => {
+                setCelebrando(false);
+                setDetalleCelebracion(null);
+            }, 3200);
 
             if (typeof onVentaRegistrada === "function") {
                 await onVentaRegistrada();
@@ -344,6 +350,7 @@ export default function RegistrarVenta({
 
             {celebrando && (
                 <div
+                    className="sale-celebration-overlay"
                     role="status"
                     aria-live="polite"
                     style={{
@@ -358,6 +365,8 @@ export default function RegistrarVenta({
                     {CONFETI.map((pieza) => (
                         <span
                             key={pieza.id}
+                            className="sale-confetti"
+                            aria-hidden="true"
                             style={{
                                 position: "absolute",
                                 top: "-24px",
@@ -371,11 +380,13 @@ export default function RegistrarVenta({
                             }}
                         />
                     ))}
-                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#ffffff", color: "#212529", border: "3px solid #D4AF37", borderRadius: "16px", padding: "24px 30px", textAlign: "center", boxShadow: "0 12px 35px rgba(0,0,0,.3)", animation: "ventaCelebracionEntrada .3s ease-out" }}>
+                    <div className="sale-celebration-toast" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#ffffff", color: "#212529", border: "3px solid #D4AF37", borderRadius: "16px", padding: "24px 30px", textAlign: "center", boxShadow: "0 12px 35px rgba(0,0,0,.3)", animation: "ventaCelebracionEntrada .3s ease-out" }}>
                         <div style={{ fontSize: "42px" }}>🎉</div>
                         <strong style={{ display: "block", color: "#0d6efd", fontSize: "20px", marginTop: "5px" }}>¡Felicitaciones!</strong>
                         <span style={{ display: "block", marginTop: "6px" }}>{asesorNombre || "Asesor"}</span>
-                        <small style={{ display: "block", marginTop: "8px", color: "#198754", fontWeight: "bold" }}>Venta registrada correctamente</small>
+                        <strong className="sale-celebration-amount">Venta de ${Number(detalleCelebracion?.valor || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</strong>
+                        <span className="sale-celebration-collection">Recaudo registrado: ${Number(detalleCelebracion?.recaudo || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+                        <small style={{ display: "block", marginTop: "8px", color: "#198754", fontWeight: "bold" }}>Venta guardada correctamente</small>
                     </div>
                 </div>
             )}

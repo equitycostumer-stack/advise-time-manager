@@ -541,7 +541,12 @@ function App() {
             </div>
 
             <section className="sales-dashboard-section" aria-label="Ventas y ranking">
-              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
+              <VentasDashboard
+                esAdministrador={usuario?.rol === "ADMINISTRADOR"}
+                movimientos={resumen?.movimientos || []}
+                asesorSeleccionadoId={asesor}
+                asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
+              />
             </section>
 
             <div className="below-dashboard">

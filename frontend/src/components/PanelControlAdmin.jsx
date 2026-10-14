@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { FelicitacionToast } from "./ReconocimientoToast";
 
 function hoyColombia() {
     const partes = new Intl.DateTimeFormat("en-CA", {
@@ -97,6 +98,8 @@ export default function PanelControlAdmin() {
     const [cargando, setCargando] = useState(true);
     const [mensaje, setMensaje] = useState("");
     const [historialVisible, setHistorialVisible] = useState(false);
+    const [felicitacion, setFelicitacion] = useState({ visible: false, nombre: "asesora", mensaje: "Tus resultados inspiran al equipo." });
+    const felicitacionesMostradas = useRef(new Set());
 
     const cargar = useCallback(async () => {
         setCargando(true);
@@ -200,6 +203,26 @@ export default function PanelControlAdmin() {
         })
         : [filaPersonal], [asesores, esAdministrador, filaPersonal, metas, periodo]);
 
+    useEffect(() => {
+        const cumplidas = filas.filter((fila) => (
+            Number(fila.meta_ventas || 0) > 0 && Number(fila.meta_recaudo || 0) > 0 &&
+            Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) &&
+            Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0)
+        ));
+        const nueva = cumplidas.find((fila) => {
+            const clave = `${periodo.inicio}:${periodo.fin}:${fila.asesor_id}`;
+            return !felicitacionesMostradas.current.has(clave);
+        });
+        if (nueva) {
+            felicitacionesMostradas.current.add(`${periodo.inicio}:${periodo.fin}:${nueva.asesor_id}`);
+            setFelicitacion({
+                visible: true,
+                nombre: nueva.asesor_nombre || "asesora",
+                mensaje: "¡Cumpliste tus metas de ventas y recaudo! Tu disciplina inspira a todo el equipo."
+            });
+        }
+    }, [filas, periodo.inicio, periodo.fin]);
+
     function cambiarMeta(asesorId, campo, valor) {
         setMetas((actual) => actual.map((meta) => Number(meta.asesor_id) === Number(asesorId) ? { ...meta, [campo]: valor } : meta));
     }
@@ -250,6 +273,7 @@ export default function PanelControlAdmin() {
         : [["🧑‍💼", "Mi estado", asesores[0]?.estado || "DISPONIBLE"], ["🟢", "Trabajando", e.asesores.trabajando], ["☕", "En pausa", e.asesores.en_pausa], ["🚨", "Llegada tarde", e.asesores.llegadas_tarde], ["💰", "Mis ventas", ventasPanel.cantidad], ["💵", "Vendido", moneda(ventasPanel.total_vendido, config.simbolo_moneda, config.moneda)], ["📥", "Mi recaudo", moneda(ventasPanel.total_recaudo, config.simbolo_moneda, config.moneda)], ["📌", "Mis incidencias", e.incidencias_pendientes]];
 
     return <section style={{ marginTop: 24, display: "grid", gap: 16 }}>
+        <FelicitacionToast {...felicitacion} onClose={() => setFelicitacion((actual) => ({ ...actual, visible: false }))} />
         <div style={{ ...tarjeta, borderTop: "4px solid #b8941f" }}>
             <h2 style={{ margin: 0, color: "#245b3a" }}>{titulo}</h2>
             <p style={{ color: "#66756b", marginBottom: 0 }}>{descripcion}</p>

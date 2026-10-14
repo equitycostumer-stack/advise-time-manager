@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import api from "../services/api";
+import { FelicitacionToast } from "./ReconocimientoToast";
 
 function fechaColombia() {
     return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
@@ -40,6 +41,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
     const [filas, setFilas] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [guardando, setGuardando] = useState(false);
+    const [felicitacion, setFelicitacion] = useState({ visible: false, nombre: "asesora", mensaje: "Tu trabajo de hoy suma al resultado del equipo." });
 
     useEffect(() => {
         if (!esAdministrador && asesorActual?.id) setAsesorId(String(asesorActual.id));
@@ -96,6 +98,15 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
             setFechaDesde(fecha);
             setFechaHasta(fecha);
             setModo("ACUMULAR");
+            const nombre = asesorSeleccionado?.nombre || "asesora";
+            const tieneDatos = Number(datosCantidad || 0) > 0;
+            const tieneAnalisis = Number(analisisCantidad || 0) > 0;
+            const detalle = tieneDatos && tieneAnalisis
+                ? "Registraste datos y análisis. ¡Tu aporte hace la diferencia!"
+                : tieneDatos
+                    ? "Registraste nuevos datos. ¡Excelente avance!"
+                    : "Registraste nuevos análisis. ¡Gran trabajo!";
+            setFelicitacion({ visible: true, nombre, mensaje: detalle });
             await consultar();
         } catch (error) {
             alert(error.response?.data?.mensaje || "No fue posible guardar el registro diario.");
@@ -145,6 +156,7 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
     const card = { background: "#fff", border: "1px solid #dce6ed", borderRadius: 14, padding: 18, boxShadow: "0 8px 20px rgba(14,55,94,.06)" };
 
     return <section style={{ maxWidth: 1400, margin: "0 auto", padding: "4px 0 30px", color: "#1f2937" }}>
+        <FelicitacionToast {...felicitacion} onClose={() => setFelicitacion((actual) => ({ ...actual, visible: false }))} />
         <div style={{ ...card, borderTop: "5px solid #0a8fbd", marginBottom: 16 }}>
             <h2 style={{ margin: "0 0 5px", color: "#0a4f87" }}>📋 Registro diario de datos y análisis</h2>
             <p style={{ margin: 0, color: "#667887" }}>Registre únicamente cantidades e IDs de datos adquiridos y análisis o auditorías de reportes de crédito realizados.</p>

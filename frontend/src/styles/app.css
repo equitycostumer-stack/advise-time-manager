@@ -834,3 +834,8 @@ html[data-theme="dark"] #root ::selection { color:#000 !important; background:#f
 @media (prefers-reduced-motion:reduce) {
     html[data-theme="dark"] #root button { transition:none !important; }
 }
+html[data-theme="dark"] #root button { border:1px solid #414141 !important; }
+html[data-theme="dark"] #root button:hover:not(:disabled),
+html[data-theme="dark"] #root button[aria-pressed="true"],
+html[data-theme="dark"] #root button[aria-expanded="true"] { border-color:#d4af37 !important; }
+html[data-theme="dark"] #root form { border:1px solid #303030 !important; box-shadow:0 16px 44px rgba(0,0,0,.75) !important; }

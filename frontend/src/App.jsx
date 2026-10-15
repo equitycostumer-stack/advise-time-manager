@@ -24,6 +24,7 @@ import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
 import ValidarVentas from "./components/ValidarVentas";
 import RegistrosDiarios from "./components/RegistrosDiarios";
 import ReconocimientoGlobal from "./components/ReconocimientoToast";
+import LogrosRecientes from "./components/LogrosRecientes";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
 import AtajosRapidos from "./components/AtajosRapidos";
@@ -608,6 +609,7 @@ function App() {
               <aside className="dashboard-secondary">
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
                 <MessageCard mensaje={mensaje} />
+                <LogrosRecientes />
               </aside>
             </div>
 

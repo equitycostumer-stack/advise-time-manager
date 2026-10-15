@@ -422,7 +422,11 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
                         </p>
 
                         <p style={{ margin: "4px 0" }}>
-                            💵 Total: <strong>{formatearMoneda(a.total_vendido)}</strong>
+                            💵 Total vendido: <strong>{formatearMoneda(a.total_vendido)}</strong>
+                        </p>
+
+                        <p style={{ margin: "4px 0", color: "#198754" }}>
+                            📥 Recaudo: <strong>{formatearMoneda(a.total_recaudo)}</strong>
                         </p>
 
                     </div>

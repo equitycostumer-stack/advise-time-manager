@@ -47,7 +47,16 @@ function calcularDuracion(inicio, fin) {
     return horas > 0 ? `${horas}h ${minutosRestantes}min` : `${minutosRestantes} min`;
 }
 
-const hoy = () => new Date().toISOString().split("T")[0];
+const hoy = () => {
+    const partes = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(new Date());
+    const valores = Object.fromEntries(partes.map(({ type, value }) => [type, value]));
+    return `${valores.year}-${valores.month}-${valores.day}`;
+};
 
 export default function HistorialIncidenciasModal({
     onClose,
@@ -226,7 +235,10 @@ export default function HistorialIncidenciasModal({
                                     ) : (
                                         <p style={{ margin: "4px 0", fontSize: "13px", color: "#C9C9C9" }}><strong>Hora:</strong> {formatearHoraColombia(i.fecha_hora)}</p>
                                     )}
-                                    {revisada && <div style={{ marginTop: "8px", background: "rgba(212,175,55,.1)", padding: "8px", borderRadius: "6px", fontSize: "13px" }}><p style={{ margin: "2px 0" }}><strong>Coach revisor:</strong> {i.revisada_por}</p><p style={{ margin: "2px 0" }}><strong>Comentario:</strong> {i.comentario}</p></div>}
+                                    {(i.revisada_por || i.comentario) && <div style={{ marginTop: "8px", background: "rgba(212,175,55,.1)", padding: "8px", borderRadius: "6px", fontSize: "13px" }}>
+                                        {i.revisada_por && <p style={{ margin: "2px 0" }}><strong>{i.tipo === "PAUSA DE LLAMADAS" ? "Registrada por:" : "Coach revisor:"}</strong> {i.revisada_por}</p>}
+                                        {i.comentario && <p style={{ margin: "2px 0", overflowWrap: "anywhere" }}><strong>{i.tipo === "PAUSA DE LLAMADAS" ? "Comentario del asesor:" : "Comentario:"}</strong> {i.comentario}</p>}
+                                    </div>}
                                 </div>
                             );
                         })}

@@ -145,10 +145,10 @@ function IncidenciaCard({ inc }) {
             ) : (
                 <p style={{ margin: "5px 0", color: palette.black, fontSize: "13px" }}><strong>Hora:</strong> {formatearHoraColombia(inc.fecha_hora)}</p>
             )}
-            {revisada && (
+            {(inc.revisada_por || inc.comentario) && (
                 <div style={{ marginTop: "9px", padding: "9px", borderRadius: "6px", background: "#e2f0d9", fontSize: "13px" }}>
-                    <p style={{ margin: "2px 0" }}><strong>Coach revisor:</strong> {inc.revisada_por || "—"}</p>
-                    <p style={{ margin: "2px 0" }}><strong>Comentario:</strong> {inc.comentario || "—"}</p>
+                    {inc.revisada_por && <p style={{ margin: "2px 0" }}><strong>{inc.tipo === "PAUSA DE LLAMADAS" ? "Registrada por:" : "Coach revisor:"}</strong> {inc.revisada_por}</p>}
+                    {inc.comentario && <p style={{ margin: "2px 0", overflowWrap: "anywhere" }}><strong>{inc.tipo === "PAUSA DE LLAMADAS" ? "Comentario del asesor:" : "Comentario:"}</strong> {inc.comentario}</p>}
                 </div>
             )}
         </div>
@@ -168,6 +168,8 @@ export default function Dashboard() {
         porcentaje: 0
     });
     const [historial, setHistorial] = useState([]);
+    const [incidenciasAsesor, setIncidenciasAsesor] = useState([]);
+    const [cargandoHistorialAsesor, setCargandoHistorialAsesor] = useState(false);
     const [asesorSeleccionado, setAsesorSeleccionado] = useState(null);
     const [ahora, setAhora] = useState(() => Date.now());
     const [mostrarHistorialIncidencias, setMostrarHistorialIncidencias] = useState(false);
@@ -208,17 +210,40 @@ export default function Dashboard() {
     }, []);
 
     async function verHistorial(asesor) {
+        setAsesorSeleccionado(asesor);
+        setHistorial([]);
+        setIncidenciasAsesor([]);
+        setCargandoHistorialAsesor(true);
+
         try {
-            const historialRes = await api.get(`/movimientos/historial/${asesor.id}`);
+            const [historialResultado, incidenciasResultado] = await Promise.allSettled([
+                api.get(`/movimientos/historial/${asesor.id}`),
+                api.get(`/incidencias/asesor/${asesor.id}`)
+            ]);
+
+            if (historialResultado.status === "rejected") {
+                throw historialResultado.reason;
+            }
+
             let movimientos = [];
-            if (Array.isArray(historialRes.data)) movimientos = historialRes.data;
-            else if (Array.isArray(historialRes.data?.data)) movimientos = historialRes.data.data;
-            else if (Array.isArray(historialRes.data?.data?.movimientos)) movimientos = historialRes.data.data.movimientos;
+            const datosHistorial = historialResultado.value.data;
+            if (Array.isArray(datosHistorial)) movimientos = datosHistorial;
+            else if (Array.isArray(datosHistorial?.data)) movimientos = datosHistorial.data;
+            else if (Array.isArray(datosHistorial?.data?.movimientos)) movimientos = datosHistorial.data.movimientos;
             setHistorial(movimientos);
-            setAsesorSeleccionado(asesor);
+
+            if (incidenciasResultado.status === "fulfilled") {
+                const datosIncidencias = incidenciasResultado.value.data;
+                const listaIncidencias = datosIncidencias?.incidencias || datosIncidencias || [];
+                setIncidenciasAsesor(Array.isArray(listaIncidencias) ? listaIncidencias : []);
+            } else {
+                console.error("No fue posible cargar las pausas del asesor:", incidenciasResultado.reason);
+            }
         } catch (error) {
             console.error("❌ ERROR CARGANDO HISTORIAL", error);
             alert("No fue posible cargar el historial.");
+        } finally {
+            setCargandoHistorialAsesor(false);
         }
     }
 
@@ -366,6 +391,7 @@ export default function Dashboard() {
                                     <div style={{ background: "#f3f8f4", borderRadius: "10px", padding: "10px" }}><div style={{ color: "#789184", fontSize: "11px", fontWeight: "700", textTransform: "uppercase" }}>En estado</div><strong style={{ color: "#245b3a", fontSize: "14px", fontVariantNumeric: "tabular-nums" }}>{a.inicio_estado && estado !== "SALIDA" ? tiempo : "--:--:--"}</strong></div>
                                 </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 14px", borderTop: "1px solid #e4efe7" }}><span style={{ color: "#789184", fontSize: "13px", fontWeight: "700" }}>Puntualidad</span><span style={{ color: a.llego_tarde ? "#dc3545" : "#198754", fontWeight: "800", fontSize: "13px" }}>{a.llego_tarde ? `🔴 ${a.minutos_retraso ?? 0} min tarde` : "🟢 Puntual"}</span></div>
+                                {estado === "TRABAJANDO" && segundos >= 7200 && <div className="productivity-streak">🔥 Racha de productividad: más de 2 horas enfocada</div>}
                                 <button onClick={() => verHistorial(a)} style={{ width: "100%", padding: "11px 14px", background: "#245b3a", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer", boxShadow: "0 5px 12px rgba(36,91,58,.18)" }}>📋 Abrir historial</button>
                                 {usuario?.rol === "ADMINISTRADOR" && <button onClick={() => reiniciarJornada(a)} style={{ width: "100%", marginTop: "8px", padding: "11px 14px", background: "#dc3545", color: "#ffffff", border: "none", borderRadius: "10px", fontWeight: "800", cursor: "pointer" }}>🔄 Reiniciar jornada</button>}
                             </div>
@@ -398,6 +424,24 @@ export default function Dashboard() {
                         <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center" }}><h2 style={{ color: palette.gold, margin: 0 }}>📋 Historial de {asesorSeleccionado.nombre}</h2><button onClick={() => setAsesorSeleccionado(null)} style={{ background: palette.red, color: "#fff", border: "none", borderRadius: "6px", padding: "8px 12px", cursor: "pointer" }}>Cerrar</button></div>
                         <hr style={{ borderColor: palette.border, margin: "18px 0" }} />
                         <ExportarHistorial historial={historial} asesor={asesorSeleccionado} />
+                        <section aria-label="Pausas de llamadas del día" style={{ marginTop: "16px", padding: "14px", border: `1px solid ${palette.border}`, borderRadius: "10px", background: palette.surface2 }}>
+                            <h3 style={{ margin: "0 0 10px", color: palette.gold }}>📵 Pausas de llamadas de hoy</h3>
+                            {cargandoHistorialAsesor ? (
+                                <p role="status" style={{ margin: 0, color: palette.muted }}>Cargando movimientos y pausas...</p>
+                            ) : incidenciasAsesor.filter((inc) => inc.tipo === "PAUSA DE LLAMADAS").length === 0 ? (
+                                <p style={{ margin: 0, color: palette.muted }}>No hay pausas de llamadas registradas hoy.</p>
+                            ) : (
+                                <div style={{ display: "grid", gap: "10px" }}>
+                                    {incidenciasAsesor.filter((inc) => inc.tipo === "PAUSA DE LLAMADAS").map((inc) => (
+                                        <article key={inc.id} style={{ padding: "11px", border: `1px solid ${palette.border}`, borderRadius: "8px", background: palette.surface }}>
+                                            <strong>Motivo: {inc.descripcion || inc.detalle || "—"}</strong>
+                                            <p style={{ margin: "5px 0", color: palette.muted }}>Inicio: {formatearHoraColombia(inc.fecha_hora)} · Fin: {inc.fecha_fin ? formatearHoraColombia(inc.fecha_fin) : "En curso"}{inc.fecha_fin ? ` · Duración: ${calcularDuracion(inc.fecha_hora, inc.fecha_fin)}` : ""}</p>
+                                            <p style={{ margin: "5px 0 0", overflowWrap: "anywhere" }}><strong>Comentario del asesor:</strong> {inc.comentario?.trim() || "Sin comentario"}</p>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
                         <button onClick={() => setMostrarHistorialIncidencias(true)} style={{ width: "100%", marginTop: "14px", padding: "10px", background: palette.gold, color: "#ffffff", border: "none", borderRadius: "7px", fontWeight: "bold", cursor: "pointer" }}>🚨 Ver Historial de Incidencias</button>
                         {historial.length === 0 ? <EmptyState compact icon="🕘" title="Aún no hay movimientos" description="Los registros de jornada de este asesor aparecerán aquí cuando estén disponibles." /> : historial.map((m) => <div key={m.id} style={{ padding: "12px 0", borderBottom: `1px solid ${palette.border}` }}><strong>{m.tipo || "Movimiento"}</strong><br /><span style={{ color: palette.muted }}>{formatearHoraColombia(m.fecha_hora)}</span></div>)}
                         {mostrarHistorialIncidencias && <HistorialIncidenciasModal asesorId={asesorSeleccionado.id} asesores={asesores} onClose={() => setMostrarHistorialIncidencias(false)} />}

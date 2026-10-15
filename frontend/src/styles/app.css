@@ -630,3 +630,207 @@ html[data-theme="dark"] .ventas-comparison-unavailable { color:#a6b5c6 !importan
 html[data-theme="dark"] .ventas-comparison-change.is-up { color:#93e0b2 !important; }
 html[data-theme="dark"] .ventas-comparison-change.is-down { color:#ffaaa4 !important; }
 html[data-theme="dark"] .ventas-comparison-change.is-neutral { color:#d0d9e3 !important; }
+
+/* Tema oscuro negro: superficies negras y contraste alto en toda la app */
+html[data-theme="dark"] {
+    color-scheme:dark;
+    --ink:#f5f5f5;
+    --muted:#c8c8c8;
+    --surface:#050505;
+    --page:#000;
+    --line:#303030;
+}
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] #root,
+html[data-theme="dark"] .container,
+html[data-theme="dark"] .app-shell,
+html[data-theme="dark"] .app-main,
+html[data-theme="dark"] .app-main .card,
+html[data-theme="dark"] #root > div[style*="min-height"] {
+    background:#000 !important;
+    background-image:none !important;
+    color:#f5f5f5 !important;
+}
+html[data-theme="dark"] .app-sidebar,
+html[data-theme="dark"] .sidebar-brand,
+html[data-theme="dark"] .sidebar-footer,
+html[data-theme="dark"] .header {
+    background:#000 !important;
+    background-image:none !important;
+    border-color:#292929 !important;
+    color:#f5f5f5 !important;
+}
+html[data-theme="dark"] .app-sidebar { box-shadow:1px 0 0 #292929; }
+html[data-theme="dark"] .sidebar-brand-copy,
+html[data-theme="dark"] .sidebar-brand-copy span,
+html[data-theme="dark"] .sidebar-nav button,
+html[data-theme="dark"] .sidebar-footer,
+html[data-theme="dark"] .sidebar-footer small,
+html[data-theme="dark"] .header-date,
+html[data-theme="dark"] .header-date strong,
+html[data-theme="dark"] .header-date span { color:#f5f5f5 !important; }
+html[data-theme="dark"] .sidebar-nav button.active,
+html[data-theme="dark"] .sidebar-nav button:hover { background:#141414 !important; border-color:#d4af37 !important; color:#fff !important; }
+
+html[data-theme="dark"] .advisor-picker,
+html[data-theme="dark"] .dashboard-top-cards > *,
+html[data-theme="dark"] .dashboard-primary,
+html[data-theme="dark"] .dashboard-secondary > *,
+html[data-theme="dark"] .below-dashboard > *,
+html[data-theme="dark"] .mi-dia-panel,
+html[data-theme="dark"] .quick-links-card,
+html[data-theme="dark"] .ventas-dashboard,
+html[data-theme="dark"] .ventas-trend-card,
+html[data-theme="dark"] .ventas-trend-total,
+html[data-theme="dark"] .ventas-comparison-card,
+html[data-theme="dark"] .activity-timeline-card,
+html[data-theme="dark"] .activity-timeline-empty,
+html[data-theme="dark"] .sales-detail-count,
+html[data-theme="dark"] .sales-record-controls,
+html[data-theme="dark"] .sale-record-card,
+html[data-theme="dark"] .sales-record-empty,
+html[data-theme="dark"] .advisor-achievements,
+html[data-theme="dark"] .achievement-card,
+html[data-theme="dark"] .goal-progress-hero,
+html[data-theme="dark"] .goal-progress-metric,
+html[data-theme="dark"] .goal-progress-empty,
+html[data-theme="dark"] .goal-progress-no-target,
+html[data-theme="dark"] .ranking-podium-card,
+html[data-theme="dark"] .ranking-podium-empty,
+html[data-theme="dark"] .logros-recientes,
+html[data-theme="dark"] .history-dashboard,
+html[data-theme="dark"] .admin-dashboard,
+html[data-theme="dark"] .executive-panel > *,
+html[data-theme="dark"] .executive-panel .executive-metric-card,
+html[data-theme="dark"] .executive-panel .executive-period-card,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .goals-history-card {
+    background:#050505 !important;
+    background-image:none !important;
+    border-color:#303030 !important;
+    color:#f5f5f5 !important;
+    box-shadow:none !important;
+}
+html[data-theme="dark"] .admin-dashboard .admin-kpi-card,
+html[data-theme="dark"] .admin-dashboard .admin-incidence-card,
+html[data-theme="dark"] .executive-summary-card,
+html[data-theme="dark"] .executive-goals-card,
+html[data-theme="dark"] .executive-metric-card,
+html[data-theme="dark"] .executive-period-card { background:#050505 !important; }
+html[data-theme="dark"] .executive-panel > *,
+html[data-theme="dark"] .history-dashboard,
+html[data-theme="dark"] .admin-dashboard,
+html[data-theme="dark"] .ventas-dashboard,
+html[data-theme="dark"] .app-main .card section,
+html[data-theme="dark"] .app-main .card article,
+html[data-theme="dark"] .app-main .card aside {
+    background-color:#050505 !important;
+    background-image:none !important;
+}
+html[data-theme="dark"] .app-main .card [style*="grid-template-columns"] > div,
+html[data-theme="dark"] .ventas-dashboard #ventas-del-dia-contenido > div[style*="grid-template-columns"] > div,
+html[data-theme="dark"] .ventas-dashboard #ventas-del-dia-contenido div:has(.ventas-ranking-table) {
+    background:#050505 !important;
+    background-image:none !important;
+    border-color:#303030 !important;
+    color:#f5f5f5 !important;
+}
+html[data-theme="dark"] .executive-panel table td div[style*="height: 7px"] { background:#292929 !important; }
+html[data-theme="dark"] .admin-dashboard .admin-kpi-card > div:nth-child(2) > div:nth-child(2) { background:#151515 !important; border:1px solid #303030; }
+
+html[data-theme="dark"] #root :is(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,legend,caption,summary,li,dt,dd,td,th,blockquote),
+html[data-theme="dark"] #root [style*="color:"] {
+    color:#f3f3f3 !important;
+}
+html[data-theme="dark"] #root :is(small,.muted,.ventas-toolbar p,.history-presets-label,.quick-links-hint,.quick-links-notice,.mi-dia-guidance,.ventas-comparison-eyebrow,.ventas-comparison-footnote,.ventas-comparison-loading,.ventas-comparison-unavailable,.activity-timeline-time,.sale-record-note,.sale-record-data span,.achievement-card-copy p,.achievement-card-state,.goal-progress-copy > span,.goal-progress-copy > small,.empty-state-copy p) {
+    color:#c8c8c8 !important;
+}
+html[data-theme="dark"] #root a { color:#f1d36b !important; }
+html[data-theme="dark"] #root hr { border-color:#303030 !important; }
+html[data-theme="dark"] #root table,
+html[data-theme="dark"] #root thead,
+html[data-theme="dark"] #root tbody,
+html[data-theme="dark"] #root tfoot,
+html[data-theme="dark"] #root tr,
+html[data-theme="dark"] #root th,
+html[data-theme="dark"] #root td {
+    background:#000 !important;
+    border-color:#303030 !important;
+}
+html[data-theme="dark"] #root th { color:#f5f5f5 !important; }
+html[data-theme="dark"] #root td { color:#ededed !important; }
+
+html[data-theme="dark"] #root button {
+    background:#0b0b0b !important;
+    background-image:none !important;
+    color:#f5f5f5 !important;
+    border-color:#414141 !important;
+}
+html[data-theme="dark"] #root button:hover:not(:disabled),
+html[data-theme="dark"] #root button[aria-pressed="true"],
+html[data-theme="dark"] #root button[aria-expanded="true"] {
+    background:#1a1a1a !important;
+    color:#fff !important;
+    border-color:#d4af37 !important;
+}
+html[data-theme="dark"] #root input,
+html[data-theme="dark"] #root select,
+html[data-theme="dark"] #root textarea,
+html[data-theme="dark"] #root option,
+html[data-theme="dark"] #root form {
+    background:#050505 !important;
+    color:#f5f5f5 !important;
+    border-color:#454545 !important;
+}
+html[data-theme="dark"] #root input::placeholder,
+html[data-theme="dark"] #root textarea::placeholder { color:#bdbdbd !important; opacity:1; }
+html[data-theme="dark"] #root input[type="checkbox"],
+html[data-theme="dark"] #root input[type="radio"] { accent-color:#d4af37; }
+html[data-theme="dark"] #root :is(input,select,textarea,button,a,[tabindex]):focus-visible {
+    outline:2px solid #f2d36b !important;
+    outline-offset:2px;
+}
+html[data-theme="dark"] #root [role="dialog"] { background:rgba(0,0,0,.88) !important; }
+html[data-theme="dark"] #root [role="dialog"] > div { background:#050505 !important; color:#f5f5f5 !important; border-color:#383838 !important; }
+html[data-theme="dark"] #root .advisor-options,
+html[data-theme="dark"] #root .advisor-options button,
+html[data-theme="dark"] #root .ventas-filterbar,
+html[data-theme="dark"] #root .ventas-chart-segment,
+html[data-theme="dark"] #root .ventas-chart-tooltip,
+html[data-theme="dark"] #root .ventas-chart-scroll,
+html[data-theme="dark"] #root .history-date-controls,
+html[data-theme="dark"] #root .sales-search-field input,
+html[data-theme="dark"] #root .sales-state-field select,
+html[data-theme="dark"] #root .sales-clear-filters,
+html[data-theme="dark"] #root .quick-link-button,
+html[data-theme="dark"] #root .quick-links-option,
+html[data-theme="dark"] #root .history-presets button,
+html[data-theme="dark"] #root .ventas-chart-segment button {
+    background:#080808 !important;
+    color:#f5f5f5 !important;
+    border-color:#393939 !important;
+}
+html[data-theme="dark"] #root .status-pill--available,
+html[data-theme="dark"] #root .sale-record-status.is-active { background:#101f15 !important; color:#b7f2c7 !important; border-color:#285a37 !important; }
+html[data-theme="dark"] #root .status-pill--working { background:#101923 !important; color:#c3e1ff !important; border-color:#294967 !important; }
+html[data-theme="dark"] #root .status-pill--pause { background:#211a0b !important; color:#ffe2a1 !important; border-color:#5f491d !important; }
+html[data-theme="dark"] #root .status-pill--offline { background:#171717 !important; color:#dedede !important; border-color:#454545 !important; }
+html[data-theme="dark"] #root .sale-record-status.is-voided { background:#24100f !important; color:#ffc1bb !important; border-color:#68332e !important; }
+html[data-theme="dark"] #root .current-status-card--pause,
+html[data-theme="dark"] #root .current-status-card--working,
+html[data-theme="dark"] #root .current-status-card--available,
+html[data-theme="dark"] #root .current-status-card--offline { background:#050505 !important; color:#f5f5f5 !important; }
+html[data-theme="dark"] #root .current-status-detail { color:#d8d8d8 !important; }
+html[data-theme="dark"] #root .goal-progress-ring-center { background:#050505 !important; }
+html[data-theme="dark"] #root .goal-celebration { background:#101910 !important; border-color:#365a3b !important; color:#d2f0d6 !important; }
+html[data-theme="dark"] #root .ventas-comparison-change.is-up { color:#a9efbf !important; }
+html[data-theme="dark"] #root .ventas-comparison-change.is-down { color:#ffb7ae !important; }
+html[data-theme="dark"] #root .ventas-comparison-change.is-neutral { color:#eeeeee !important; }
+html[data-theme="dark"] #root .ventas-chart-svg text { fill:#f2f2f2 !important; }
+html[data-theme="dark"] #root .ventas-chart-svg line { stroke:#3b3b3b !important; }
+html[data-theme="dark"] #root ::selection { color:#000 !important; background:#f2d36b !important; }
+
+@media (prefers-reduced-motion:reduce) {
+    html[data-theme="dark"] #root button { transition:none !important; }
+}

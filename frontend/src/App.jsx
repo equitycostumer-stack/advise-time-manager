@@ -26,6 +26,7 @@ import AuditoriaAdministrativa from "./components/AuditoriaAdministrativa";
 import ValidarVentas from "./components/ValidarVentas";
 import RegistrosDiarios from "./components/RegistrosDiarios";
 import ReconocimientoGlobal from "./components/ReconocimientoToast";
+import LogrosRecientes from "./components/LogrosRecientes";
 import Usuarios from "./pages/Usuarios";
 
 // ======================================================
@@ -533,21 +534,17 @@ function App() {
                   asesorNombre={asesorSeleccionado?.nombre}
                   onVentaRegistrada={async () => {}}
                 />
-                <div className="secondary-widgets">
-                  <StatusCard estado={estado} />
-                  <WorkTimer estado={estado} inicioJornada={inicioJornada} />
-                  <BreakTimer estado={estado} inicioEstado={inicioEstado} />
-                </div>
               </section>
 
               <aside className="dashboard-secondary">
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
-                <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
                 <MessageCard mensaje={mensaje} />
+                <LogrosRecientes />
               </aside>
             </div>
 
             <div className="below-dashboard">
+              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
               <Dashboard />
               {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
             </div>

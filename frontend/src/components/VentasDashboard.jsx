@@ -198,8 +198,9 @@ export default function VentasDashboard({ esAdministrador = false }) {
     return (
 
         <div
+            className="ventas-dashboard"
             style={{
-                marginTop: 40,
+                marginTop: 0,
                 background: "#ffffff",
                 border: "1px solid #dddddd",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
@@ -236,7 +237,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                    gridTemplateColumns: "repeat(2, minmax(220px, 1fr))",
                     gap: "15px",
                     marginBottom: "25px"
                 }}
@@ -273,7 +274,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
                     gap: "20px"
                 }}
             >
@@ -301,7 +302,11 @@ export default function VentasDashboard({ esAdministrador = false }) {
                         </p>
 
                         <p style={{ margin: "4px 0" }}>
-                            💵 Total: <strong>{formatearMoneda(a.total_vendido)}</strong>
+                            💵 Total vendido: <strong>{formatearMoneda(a.total_vendido)}</strong>
+                        </p>
+
+                        <p style={{ margin: "4px 0", color: "#198754" }}>
+                            📥 Recaudo: <strong>{formatearMoneda(a.total_recaudo)}</strong>
                         </p>
 
                     </div>
@@ -311,7 +316,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
             </div>
 
             {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
-            <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
+            <div className="ranking-ventas" style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "18px" }}>
                 <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Ranking de ventas y recaudo</h3>
                 <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 13 }}>Ordenado primero por cantidad de ventas, después por recaudo y luego por valor vendido.</p>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>
@@ -326,7 +331,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                     <p style={{ color: "#666", margin: 0 }}>No hay ventas activas en la quincena seleccionada.</p>
                 ) : (
                     <div style={{ overflowX: "auto" }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "560px" }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "680px", tableLayout: "auto" }}>
                             <thead>
                                 <tr>
                                     {["Posición", "Asesor", "Ventas", "Total vendido", "Recaudo quincenal"].map((encabezado) => (
@@ -337,7 +342,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                             <tbody>
                                 {ranking.map((a, indice) => (
                                     <tr key={a.asesor_id}>
-                                        <td style={{ padding: "9px", color: indice === 0 ? "#D4AF37" : "#F4F4F4", fontWeight: "bold" }}>{indice === 0 ? "🥇 1" : indice === 1 ? "🥈 2" : indice === 2 ? "🥉 3" : indice + 1}</td>
+                                        <td style={{ padding: "9px", color: indice < 3 ? "#b8860b" : "#4b5563", fontWeight: "bold" }}>{indice === 0 ? "🥇 1" : indice === 1 ? "🥈 2" : indice === 2 ? "🥉 3" : indice + 1}</td>
                                         <td style={{ padding: "9px", color: "#0d6efd", fontWeight: "bold" }}>{a.asesor_nombre}</td>
                                         <td style={{ padding: "9px" }}>{a.cantidad_ventas || 0}</td>
                                         <td style={{ padding: "9px" }}>{formatearMoneda(a.total_vendido)}</td>
@@ -372,6 +377,7 @@ export default function VentasDashboard({ esAdministrador = false }) {
                     {ventasDia.map((v) => (
 
                         <div
+                            className="venta-detalle-item"
                             key={v.id}
                             style={{
                                 display: "flex",

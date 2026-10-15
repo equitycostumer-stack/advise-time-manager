@@ -120,3 +120,29 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .goal-celebration strong { font-size:17px; }
 .goal-celebration span { font-weight:700; }
 .goal-celebration small { color:#4b8065; }
+
+/* Ventas a ancho completo: evita que el ranking se comprima dentro de la columna lateral. */
+.ventas-dashboard { width: 100%; max-width: none; overflow: visible; }
+.ventas-dashboard > div { min-width: 0; }
+.ventas-dashboard table th, .ventas-dashboard table td { white-space: nowrap; }
+.ventas-dashboard .venta-detalle-item { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; }
+.ventas-dashboard .venta-detalle-item > div { min-width: 0; overflow-wrap: anywhere; }
+.logros-recientes { padding: 18px; background: linear-gradient(145deg, #fff, #f5fbff); border: 1px solid #d8e8f4; border-radius: 12px; box-shadow: 0 6px 16px rgba(49,90,131,.08); }
+.logros-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.logros-eyebrow { display:block; color:#6b849f; font-size:10px; font-weight:800; letter-spacing:1px; }
+.logros-header h3 { margin:4px 0 0; color:#123b6d; font-size:18px; }
+.logros-live { color:#159b62; font-size:10px; font-weight:800; white-space:nowrap; }
+.logros-lista { display:grid; gap:8px; margin-top:14px; }
+.logro-item { display:flex; align-items:center; gap:10px; padding:9px; border-radius:9px; background:#fff; border:1px solid #e2edf5; }
+.logro-icon { width:28px; height:28px; display:grid; place-items:center; flex:0 0 28px; border-radius:50%; background:#e8f7ee; color:#159b62; font-weight:900; }
+.logro-copy { min-width:0; flex:1; display:flex; flex-direction:column; gap:2px; }
+.logro-copy strong { color:#17385f; font-size:13px; overflow-wrap:anywhere; }
+.logro-copy span { color:#6b7f95; font-size:11px; }
+.logro-star { color:#d4af37; font-size:18px; }
+.logros-empty { margin:14px 0 0; color:#6b7f95; font-size:13px; }
+.productivity-streak { margin: 0 0 12px; padding: 8px 10px; border-radius: 9px; background: linear-gradient(90deg, #fff8d9, #fffdf1); border: 1px solid #e5c45c; color: #795b0b; font-size: 12px; font-weight: 800; }
+@media (max-width:700px) {
+  .ventas-dashboard > div:first-of-type { grid-template-columns: 1fr !important; }
+  .ventas-dashboard .venta-detalle-item { grid-template-columns: 1fr; }
+  .ventas-dashboard .venta-detalle-item button { justify-self: start; }
+}

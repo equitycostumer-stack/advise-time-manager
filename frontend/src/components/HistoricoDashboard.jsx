@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import EmptyState from "./EmptyState";
 
 // ======================================================
 // FORMATEAR MILISEGUNDOS -> HH:MM:SS
@@ -69,10 +70,35 @@ function hoyColombia() {
 
 }
 
+function desplazarFecha(fechaISO, dias) {
+    const fecha = new Date(`${fechaISO}T12:00:00Z`);
+    fecha.setUTCDate(fecha.getUTCDate() + dias);
+    return fecha.toISOString().slice(0, 10);
+}
+
+const RANGOS_RAPIDOS = [
+    ["hoy", "Hoy"],
+    ["ultimos7", "Últimos 7 días"],
+    ["quincena", "Quincena actual"],
+    ["mes", "Mes actual"]
+];
+
+function obtenerRangoRapido(periodo) {
+    const hoy = hoyColombia();
+    const [anio, mes, dia] = hoy.split("-").map(Number);
+    const inicioMes = `${anio}-${String(mes).padStart(2, "0")}-01`;
+
+    if (periodo === "hoy") return { desde: hoy, hasta: hoy };
+    if (periodo === "ultimos7") return { desde: desplazarFecha(hoy, -6), hasta: hoy };
+    if (periodo === "mes") return { desde: inicioMes, hasta: hoy };
+    return { desde: dia <= 15 ? inicioMes : `${anio}-${String(mes).padStart(2, "0")}-16`, hasta: hoy };
+}
+
 export default function HistoricoDashboard() {
 
     const [desde, setDesde] = useState(hoyColombia());
     const [hasta, setHasta] = useState(hoyColombia());
+    const [periodoRapido, setPeriodoRapido] = useState(null);
 
     const [asistencia, setAsistencia] = useState([]);
     const [ventas, setVentas] = useState([]);
@@ -84,14 +110,14 @@ export default function HistoricoDashboard() {
     // CONSULTAR
     // ======================================================
 
-    async function consultar() {
+    async function consultarRango(fechaDesde = desde, fechaHasta = hasta) {
 
-        if (!desde || !hasta) {
+        if (!fechaDesde || !fechaHasta) {
             alert("Seleccione ambas fechas.");
             return;
         }
 
-        if (desde > hasta) {
+        if (fechaDesde > fechaHasta) {
             alert("La fecha 'Desde' no puede ser posterior a 'Hasta'.");
             return;
         }
@@ -101,8 +127,8 @@ export default function HistoricoDashboard() {
         try {
 
             const [resAsistencia, resVentas] = await Promise.all([
-                api.get(`/reportes/asistencia?desde=${desde}&hasta=${hasta}`),
-                api.get(`/reportes/ventas?desde=${desde}&hasta=${hasta}`)
+                api.get(`/reportes/asistencia?desde=${fechaDesde}&hasta=${fechaHasta}`),
+                api.get(`/reportes/ventas?desde=${fechaDesde}&hasta=${fechaHasta}`)
             ]);
 
             setAsistencia(
@@ -134,6 +160,18 @@ export default function HistoricoDashboard() {
 
         }
 
+    }
+
+    async function consultar() {
+        await consultarRango(desde, hasta);
+    }
+
+    function aplicarRangoRapido(periodo) {
+        const rango = obtenerRangoRapido(periodo);
+        setDesde(rango.desde);
+        setHasta(rango.hasta);
+        setPeriodoRapido(periodo);
+        void consultarRango(rango.desde, rango.hasta);
     }
 
     // ======================================================
@@ -176,6 +214,7 @@ export default function HistoricoDashboard() {
     return (
 
         <div
+            className="history-dashboard"
             style={{
                 marginTop: 20,
                 background: "#fff",
@@ -186,11 +225,27 @@ export default function HistoricoDashboard() {
 
             <h2>📊 Histórico Multi-Día</h2>
 
+            <div className="history-presets" role="group" aria-label="Rangos rápidos del histórico">
+                <span className="history-presets-label">Consultar rápido:</span>
+                {RANGOS_RAPIDOS.map(([periodo, etiqueta]) => (
+                    <button
+                        key={periodo}
+                        type="button"
+                        aria-pressed={periodoRapido === periodo}
+                        disabled={cargando}
+                        onClick={() => aplicarRangoRapido(periodo)}
+                    >
+                        {etiqueta}
+                    </button>
+                ))}
+            </div>
+
             {/* =====================================================
                 SELECTOR DE FECHAS
             ===================================================== */}
 
             <div
+                className="history-date-controls"
                 style={{
                     display: "flex",
                     gap: "15px",
@@ -208,7 +263,7 @@ export default function HistoricoDashboard() {
                     <input
                         type="date"
                         value={desde}
-                        onChange={(e) => setDesde(e.target.value)}
+                        onChange={(e) => { setDesde(e.target.value); setPeriodoRapido(null); }}
                         style={{
                             padding: "8px",
                             borderRadius: "6px",
@@ -224,7 +279,7 @@ export default function HistoricoDashboard() {
                     <input
                         type="date"
                         value={hasta}
-                        onChange={(e) => setHasta(e.target.value)}
+                        onChange={(e) => { setHasta(e.target.value); setPeriodoRapido(null); }}
                         style={{
                             padding: "8px",
                             borderRadius: "6px",
@@ -341,7 +396,12 @@ export default function HistoricoDashboard() {
 
                                     <tr>
                                         <td style={td} colSpan={12}>
-                                            No hay registros en este rango.
+                                            <EmptyState
+                                                compact
+                                                icon="📅"
+                                                title="Sin jornadas en este rango"
+                                                description="Amplía las fechas o consulta otro periodo para encontrar registros."
+                                            />
                                         </td>
                                     </tr>
 
@@ -405,7 +465,12 @@ export default function HistoricoDashboard() {
 
                                     <tr>
                                         <td style={td} colSpan={6}>
-                                            No hay ventas en este rango.
+                                            <EmptyState
+                                                compact
+                                                icon="💰"
+                                                title="No hay ventas para este periodo"
+                                                description="Prueba con un rango de fechas distinto; las ventas registradas aparecerán aquí."
+                                            />
                                         </td>
                                     </tr>
 

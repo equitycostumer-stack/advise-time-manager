@@ -38,6 +38,7 @@ export default function Buttons({
     const [motivoPausa, setMotivoPausa] = useState("");
     const [comentarioPausa, setComentarioPausa] = useState("");
     const [enviandoPausa, setEnviandoPausa] = useState(false);
+    const [finalizandoPausa, setFinalizandoPausa] = useState(false);
     const [pausaActivaId, setPausaActivaId] = useState(null);
 
     useEffect(() => {
@@ -223,11 +224,21 @@ export default function Buttons({
 
         try {
 
-            await api.post("/incidencias/pausa", {
+            const { data } = await api.post("/incidencias/pausa", {
                 asesor_id: Number(asesor),
                 motivo: motivoPausa,
                 comentario: comentarioPausa
             });
+
+            setPausaActivaId(data?.id || null);
+            window.dispatchEvent(new Event("datos-actualizados"));
+            if (typeof onMovimientoRegistrado === "function") {
+                try {
+                    await onMovimientoRegistrado();
+                } catch (errorActualizacion) {
+                    console.error("La pausa quedó registrada, pero no se pudo refrescar el resumen:", errorActualizacion);
+                }
+            }
 
             alert("✅ Pausa registrada.");
 
@@ -259,13 +270,22 @@ export default function Buttons({
 
         if (!pausaActivaId) return;
 
+        setFinalizandoPausa(true);
+
         try {
 
             await api.put(`/incidencias/pausa/${pausaActivaId}/fin`);
 
-            alert("✅ Llamadas reanudadas.");
-
             setPausaActivaId(null);
+            window.dispatchEvent(new Event("datos-actualizados"));
+            if (typeof onMovimientoRegistrado === "function") {
+                try {
+                    await onMovimientoRegistrado();
+                } catch (errorActualizacion) {
+                    console.error("Las llamadas se reanudaron, pero no se pudo refrescar el resumen:", errorActualizacion);
+                }
+            }
+            alert("✅ Llamadas reanudadas.");
 
         } catch (error) {
 
@@ -276,6 +296,8 @@ export default function Buttons({
                 "No fue posible cerrar la pausa."
             );
 
+        } finally {
+            setFinalizandoPausa(false);
         }
 
     }
@@ -671,16 +693,16 @@ export default function Buttons({
             {/* PAUSA DE LLAMADAS */}
             {/* ====================================== */}
 
-                        <button
+            <button
                 style={estilo("#6C757D", "PAUSA")}
-                disabled={!trabajando && !pausaActivaId}
+                disabled={enviandoPausa || finalizandoPausa || (!trabajando && !pausaActivaId)}
                 onClick={() =>
                     pausaActivaId
                         ? finalizarPausaLlamadas()
                         : setMostrarModalPausa(true)
                 }
             >
-                {pausaActivaId ? "▶ REANUDÉ LLAMADAS" : "📵 PAUSA DE LLAMADAS"}
+                {finalizandoPausa ? "Reanudando..." : pausaActivaId ? "▶ REANUDÉ LLAMADAS" : "📵 PAUSA DE LLAMADAS"}
             </button>
 
         </div>

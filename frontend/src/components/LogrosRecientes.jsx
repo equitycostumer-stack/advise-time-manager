@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function LogrosRecientes() {
+  const { usuario } = useAuth();
   const [ventas, setVentas] = useState([]);
 
   useEffect(() => {
@@ -23,10 +25,10 @@ export default function LogrosRecientes() {
   }, []);
 
   return (
-    <section className="logros-recientes" aria-label="Logros recientes del equipo">
+    <section className="logros-recientes" aria-label={usuario?.rol === "ADMINISTRADOR" ? "Logros recientes del equipo" : "Tus logros recientes"}>
       <div className="logros-header">
         <div>
-          <span className="logros-eyebrow">MOMENTUM DEL EQUIPO</span>
+          <span className="logros-eyebrow">{usuario?.rol === "ADMINISTRADOR" ? "MOMENTUM DEL EQUIPO" : "TUS LOGROS DE HOY"}</span>
           <h3>🏅 Logros recientes</h3>
         </div>
         <span className="logros-live">● EN VIVO</span>

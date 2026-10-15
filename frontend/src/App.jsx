@@ -13,10 +13,8 @@ import AdvisorSelect from "./components/AdvisorSelect";
 import Buttons from "./components/Buttons";
 import RegistrarVenta from "./components/RegistrarVenta";
 import VentasDashboard from "./components/VentasDashboard";
-import StatusCard from "./components/StatusCard";
 import MessageCard from "./components/MessageCard";
 import Footer from "./components/Footer";
-import WorkTimer from "./components/WorkTimer";
 import BreakTimer from "./components/BreakTimer";
 import ResumenJornada from "./components/ResumenJornada";
 import HistoricoDashboard from "./components/HistoricoDashboard";
@@ -28,6 +26,8 @@ import RegistrosDiarios from "./components/RegistrosDiarios";
 import ReconocimientoGlobal from "./components/ReconocimientoToast";
 import LogrosRecientes from "./components/LogrosRecientes";
 import Usuarios from "./pages/Usuarios";
+import PanelMiDia from "./components/PanelMiDia";
+import AtajosRapidos from "./components/AtajosRapidos";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -153,6 +153,31 @@ function formatearDuracion(segundos = 0) {
   return [horas, minutos, segundosRestantes].map((valor) => String(valor).padStart(2, "0")).join(":");
 }
 
+function normalizarEstado(estado) {
+  return String(estado || "Disponible")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .trim()
+    .toUpperCase();
+}
+
+function claseEstado(estado) {
+  const valor = normalizarEstado(estado);
+  if (valor.includes("TRABAJANDO")) return "working";
+  if (valor.includes("SALIDA") || valor.includes("FINALIZ")) return "offline";
+  if (["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION", "PAUSA"].some((tipo) => valor.includes(tipo))) return "pause";
+  return "available";
+}
+
+function iconoEstado(estado) {
+  return { available: "🟢", working: "⚡", pause: "☕", offline: "🔴" }[claseEstado(estado)];
+}
+
+function nombreEstado(estado) {
+  return String(estado || "Disponible").replace(/^[^\p{L}\p{N}]+/u, "").trim();
+}
+
 // ======================================================
 // APP
 // ======================================================
@@ -168,7 +193,23 @@ function App() {
   const [resumen, setResumen] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [vista, setVista] = useState(() => new URLSearchParams(window.location.search).get("vista") || "principal");
+  const [tema, setTema] = useState(() => {
+    try {
+      return localStorage.getItem("equity-line-theme") === "dark" ? "dark" : "light";
+    } catch {
+      return "light";
+    }
+  });
   const [tiempoJornadaEnVivo, setTiempoJornadaEnVivo] = useState(0);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = tema;
+    try {
+      localStorage.setItem("equity-line-theme", tema);
+    } catch {
+      // La app sigue funcionando aunque el navegador no permita guardar preferencias.
+    }
+  }, [tema]);
 
   useEffect(() => {
     if (!inicioJornada || String(estado).toUpperCase().includes("SALIDA")) {
@@ -298,6 +339,22 @@ function App() {
     }
   }
 
+  function irASeccion(id) {
+    const desplazarse = () => {
+      const elemento = document.getElementById(id);
+      if (!elemento) return;
+      const movimientoReducido = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      elemento.scrollIntoView({ behavior: movimientoReducido ? "auto" : "smooth", block: "start" });
+    };
+
+    if (vista !== "principal") {
+      setVista("principal");
+      window.setTimeout(desplazarse, 80);
+      return;
+    }
+    desplazarse();
+  }
+
   // --- COMPROBACIONES DE AUTENTICACIÓN (Renderizado condicional) ---
   if (!localStorage.getItem("token")) {
     return <Login />;
@@ -331,7 +388,7 @@ function App() {
 
   // Interfaz de usuario
   return (
-    <div className="container app-shell">
+    <div className="container app-shell" data-theme={tema}>
       <aside className="app-sidebar">
         <div className="sidebar-brand">
           <img src={logo} alt="Equity Line" className="sidebar-logo" />
@@ -351,7 +408,7 @@ function App() {
       </aside>
       <main className="app-main">
         <div className="card">
-        <Header />
+        <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} />
         <ReconocimientoGlobal />
 
         <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
@@ -483,7 +540,7 @@ function App() {
             <section className="kpi-grid" aria-label="Indicadores de hoy">
               <article className="kpi-card kpi-user">
                 <div className="kpi-icon">◉</div>
-                <div><span>ASESOR ACTIVO</span><strong>{asesorSeleccionado?.nombre || "Selecciona un asesor"}</strong><small>{estado}</small></div>
+                <div><span>ASESOR ACTIVO</span><strong>{asesorSeleccionado?.nombre || "Selecciona un asesor"}</strong><small className={`status-pill status-pill--${claseEstado(estado)}`}><span aria-hidden="true">{iconoEstado(estado)}</span>{nombreEstado(estado)}</small></div>
               </article>
               <article className="kpi-card kpi-blue">
                 <div className="kpi-icon">▣</div>
@@ -495,6 +552,18 @@ function App() {
               </article>
             </section>
 
+            <PanelMiDia
+              asesorNombre={asesorSeleccionado?.nombre}
+              estado={estado}
+              resumen={resumen}
+              tiempoJornada={tiempoJornadaEnVivo}
+            />
+            <AtajosRapidos
+              usuarioClave={usuario?.usuario || usuario?.id || "equipo"}
+              onNavigate={setVista}
+              onIrASeccion={irASeccion}
+            />
+
             <section className="dashboard-top-cards" aria-label="Estado de jornada">
               <article className="person-card">
                 <div className="person-avatar">●</div>
@@ -505,9 +574,9 @@ function App() {
                   <small>● En línea</small>
                 </div>
               </article>
-              <article className="current-status-card">
-                <div className="status-play">▶</div>
-                <div><span>Estado actual</span><strong>{String(estado || "Disponible").replace(/^[^A-Za-zÁÉÍÓÚÑ]+/u, "").toUpperCase()}</strong></div>
+              <article className={`current-status-card current-status-card--${claseEstado(estado)}`} aria-live="polite">
+                <div className="status-play" aria-hidden="true">{iconoEstado(estado)}</div>
+                <div><span>Estado actual</span><strong>{nombreEstado(estado)}</strong><small className="current-status-detail">Estado de jornada actualizado</small></div>
               </article>
               <article className="time-card">
                 <div className="time-icon">◷</div>
@@ -516,7 +585,7 @@ function App() {
             </section>
 
             <div className="dashboard-workspace">
-              <section className="dashboard-primary">
+              <section className="dashboard-primary" id="registro-movimiento">
                 <div className="section-heading"><h2>Registra tu movimiento</h2><span>Selecciona una acción</span></div>
                 <Buttons
                   asesor={asesor}
@@ -534,6 +603,7 @@ function App() {
                   asesorNombre={asesorSeleccionado?.nombre}
                   onVentaRegistrada={async () => {}}
                 />
+                <BreakTimer estado={estado} inicioEstado={inicioEstado} />
               </section>
 
               <aside className="dashboard-secondary">
@@ -543,8 +613,16 @@ function App() {
               </aside>
             </div>
 
+            <section className="sales-dashboard-section" id="ventas-dia" aria-label="Ventas y ranking">
+              <VentasDashboard
+                esAdministrador={usuario?.rol === "ADMINISTRADOR"}
+                movimientos={resumen?.movimientos || []}
+                asesorSeleccionadoId={asesor}
+                asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
+              />
+            </section>
+
             <div className="below-dashboard">
-              <VentasDashboard esAdministrador={usuario?.rol === "ADMINISTRADOR"} />
               <Dashboard />
               {usuario?.rol === "ADMINISTRADOR" && <ConfiguracionHorarios />}
             </div>

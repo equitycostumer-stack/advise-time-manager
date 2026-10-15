@@ -3,7 +3,7 @@ jest.mock("../config/db", () => ({
 }));
 
 const db = require("../config/db");
-const { revisarIncidencia } = require("./incidenciasController");
+const { revisarIncidencia, registrarPausaLlamadas } = require("./incidenciasController");
 
 function crearRespuesta() {
     return {
@@ -78,6 +78,36 @@ describe("incidenciasController.revisarIncidencia", () => {
         expect(res.json).toHaveBeenCalledWith({
             ok: false,
             mensaje: "Incidencia no encontrada."
+        });
+    });
+});
+
+describe("incidenciasController.registrarPausaLlamadas", () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it("guarda el comentario enviado por el asesor y devuelve el ID de la pausa", async () => {
+        db.query.mockResolvedValue({ rows: [{ id: 42 }] });
+        const req = {
+            body: {
+                asesor_id: 9,
+                motivo: "Gestión administrativa",
+                comentario: "Atendiendo un trámite presencial"
+            }
+        };
+        const res = crearRespuesta();
+
+        await registrarPausaLlamadas(req, res);
+
+        expect(db.query).toHaveBeenCalledWith(
+            expect.stringContaining("INSERT INTO incidencias"),
+            [9, "Gestión administrativa", expect.any(String), "Auto-registro (asesor)", "Atendiendo un trámite presencial"]
+        );
+        expect(res.json).toHaveBeenCalledWith({
+            ok: true,
+            mensaje: "Pausa registrada correctamente.",
+            id: 42
         });
     });
 });

@@ -5,7 +5,6 @@ export default function AdvisorSelect({ asesores = [], asesor, setAsesor }) {
     const { usuario } = useAuth();
     const [abierto, setAbierto] = useState(false);
     const esAsesorRestringido = usuario?.rol === "ASESOR";
-    const seleccionado = asesores.find((item) => String(item.id) === String(asesor));
 
     useEffect(() => {
         if (esAsesorRestringido && usuario?.asesor_id && asesor !== String(usuario.asesor_id)) {

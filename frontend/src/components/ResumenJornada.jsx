@@ -45,7 +45,7 @@ function fila(nombre, valor) {
 }
 
 export default function ResumenJornada({ resumen, asesor }) {
-    const [ventasDelDia, setVentasDelDia] = useState([]);
+    const [, setVentasDelDia] = useState([]);
 
     useEffect(() => {
         if (!asesor?.id) {
@@ -79,16 +79,6 @@ export default function ResumenJornada({ resumen, asesor }) {
     }, [asesor?.id]);
 
     if (!resumen) return null;
-
-    function formatearMoneda(valor) {
-        return (Number(valor) || 0).toLocaleString("es-CO", {
-            style: "currency",
-            currency: "COP",
-            maximumFractionDigits: 0
-        });
-    }
-
-    const totalVentas = ventasDelDia.reduce((total, venta) => total + (Number(venta.valor) || 0), 0);
 
     return (
         <div

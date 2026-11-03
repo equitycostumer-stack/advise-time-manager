@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, HeadingLevel, WidthType } from "docx";
 import { saveAs } from "file-saver";
 import api from "../services/api";
 import { FelicitacionToast } from "./ReconocimientoToast";
@@ -41,6 +42,8 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
     const [filas, setFilas] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [guardando, setGuardando] = useState(false);
+    const [descargandoWord, setDescargandoWord] = useState(false);
+    const [mensajeWord, setMensajeWord] = useState("");
     const [felicitacion, setFelicitacion] = useState({ visible: false, nombre: "asesora", mensaje: "Tu trabajo de hoy suma al resultado del equipo." });
 
     useEffect(() => {
@@ -71,9 +74,13 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
             const params = new URLSearchParams({ fecha_desde: fechaDesde, fecha_hasta: fechaHasta });
             if (esAdministrador && asesorId) params.set("asesor_id", asesorId);
             const { data } = await api.get(`/registros-diarios?${params.toString()}`);
-            setFilas(normalizarFilas(data));
+            const registros = normalizarFilas(data);
+            setFilas(registros);
+            return registros;
         } catch (error) {
+            setFilas([]);
             alert(error.response?.data?.mensaje || "No fue posible consultar los registros diarios.");
+            return null;
         } finally {
             setCargando(false);
         }
@@ -125,16 +132,26 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
     }
 
     async function descargarWord() {
-        if (!filas.length) return alert("Primero consulte un rango con registros.");
+        if (descargandoWord) return;
+        setDescargandoWord(true);
+        setMensajeWord("");
         try {
-            const { Document, Packer, Paragraph, Table, TableRow, TableCell, HeadingLevel, WidthType } = await import("docx");
+            const registros = await consultar();
+            if (registros === null) {
+                setMensajeWord("No se pudieron consultar los registros. Intente de nuevo.");
+                return;
+            }
+            if (!registros.length) {
+                setMensajeWord("No hay registros en ese periodo para exportar.");
+                return;
+            }
             const celda = (texto, encabezado = false) => new TableCell({ children: [new Paragraph({ children: [{ text: String(texto ?? ""), bold: encabezado }] })] });
             const encabezados = ["Fecha", "Asesora", "Datos", "IDs de datos", "Análisis", "IDs de análisis"];
             const tabla = new Table({
                 width: { size: 100, type: WidthType.PERCENTAGE },
                 rows: [
                     new TableRow({ children: encabezados.map((x) => celda(x, true)) }),
-                    ...filas.map((item) => new TableRow({ children: [
+                    ...registros.map((item) => new TableRow({ children: [
                         celda(item.fecha), celda(item.asesor_nombre), celda(item.datos_cantidad),
                         celda(item.datos_ids), celda(item.analisis_cantidad), celda(item.analisis_ids)
                     ] }))
@@ -147,34 +164,38 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
                 tabla
             ] }] });
             saveAs(await Packer.toBlob(documento), `Registros_diarios_${fechaDesde}_${fechaHasta}.docx`);
+            setMensajeWord("Documento Word preparado; la descarga se inició.");
         } catch (error) {
-            alert(`No fue posible generar Word: ${error.message}`);
+            console.error("No fue posible generar el Word de registros diarios:", error);
+            setMensajeWord(`No fue posible generar Word: ${error.message || "error inesperado"}`);
+        } finally {
+            setDescargandoWord(false);
         }
     }
 
     const input = { width: "100%", padding: "10px", border: "1px solid #cbd5df", borderRadius: 8, boxSizing: "border-box" };
     const card = { background: "#fff", border: "1px solid #dce6ed", borderRadius: 14, padding: 18, boxShadow: "0 8px 20px rgba(14,55,94,.06)" };
 
-    return <section style={{ maxWidth: 1400, margin: "0 auto", padding: "4px 0 30px", color: "#1f2937" }}>
+    return <section className="registros-diarios" style={{ maxWidth: 1400, margin: "0 auto", padding: "4px 0 30px", color: "#1f2937" }}>
         <FelicitacionToast {...felicitacion} onClose={() => setFelicitacion((actual) => ({ ...actual, visible: false }))} />
-        <div style={{ ...card, borderTop: "5px solid #0a8fbd", marginBottom: 16 }}>
+        <div className="rd-card" style={{ ...card, borderTop: "5px solid #0a8fbd", marginBottom: 16 }}>
             <h2 style={{ margin: "0 0 5px", color: "#0a4f87" }}>📋 Registro diario de datos y análisis</h2>
             <p style={{ margin: 0, color: "#667887" }}>Registre únicamente cantidades e IDs de datos adquiridos y análisis o auditorías de reportes de crédito realizados.</p>
         </div>
 
-        <form onSubmit={guardar} style={{ ...card, display: "grid", gap: 15, marginBottom: 16 }}>
+        <form className="rd-card" onSubmit={guardar} style={{ ...card, display: "grid", gap: 15, marginBottom: 16 }}>
             <h3 style={{ margin: 0, color: "#0a4f87" }}>✍️ Cargar registro del día</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 }}>
                 <label>Fecha<input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={input} required /></label>
                 {esAdministrador ? <label>Asesora<select value={asesorId} onChange={(e) => setAsesorId(e.target.value)} style={input} required><option value="">Seleccione una asesora</option>{asesores.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</select></label> : <label>Asesora<input value={asesorActual?.nombre || "Asesora vinculada"} style={{ ...input, background: "#f3f7fa" }} readOnly /></label>}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 15 }}>
-                <div style={{ padding: 14, borderRadius: 10, background: "#eef9fc", border: "1px solid #b8e5f0" }}>
+                <div className="rd-panel rd-panel--data" style={{ padding: 14, borderRadius: 10, background: "#eef9fc", border: "1px solid #b8e5f0" }}>
                     <h4 style={{ margin: "0 0 10px", color: "#087b9f" }}>📥 Datos adquiridos del día</h4>
                     <label>Cantidad<input type="number" min="0" value={datosCantidad} onChange={(e) => setDatosCantidad(e.target.value)} style={input} /></label>
                     <label style={{ display: "block", marginTop: 10 }}>IDs de datos adquiridos<textarea value={datosIds} onChange={(e) => setDatosIds(e.target.value)} placeholder="Un ID por línea o separados por coma" rows="4" style={{ ...input, resize: "vertical" }} /></label>
                 </div>
-                <div style={{ padding: 14, borderRadius: 10, background: "#fff8e8", border: "1px solid #f0d78e" }}>
+                <div className="rd-panel rd-panel--analysis" style={{ padding: 14, borderRadius: 10, background: "#fff8e8", border: "1px solid #f0d78e" }}>
                     <h4 style={{ margin: "0 0 10px", color: "#956f00" }}>🔎 Análisis realizados del día</h4>
                     <label>Cantidad<input type="number" min="0" value={analisisCantidad} onChange={(e) => setAnalisisCantidad(e.target.value)} style={input} /></label>
                     <label style={{ display: "block", marginTop: 10 }}>IDs de análisis o auditorías<textarea value={analisisIds} onChange={(e) => setAnalisisIds(e.target.value)} placeholder="Un ID por línea o separados por coma" rows="4" style={{ ...input, resize: "vertical" }} /></label>
@@ -183,18 +204,19 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><button type="submit" disabled={guardando} style={{ padding: "11px 17px", border: 0, borderRadius: 8, background: modo === "REEMPLAZAR" ? "#b7791f" : "#0a4f87", color: "#fff", fontWeight: 800, cursor: "pointer" }}>{guardando ? "Guardando..." : modo === "REEMPLAZAR" ? "✏️ Reemplazar registro" : "➕ Acumular registro del día"}</button>{modo === "REEMPLAZAR" && <button type="button" onClick={() => setModo("ACUMULAR")} style={{ padding: "11px 17px", border: 0, borderRadius: 8, background: "#eaf5fb", color: "#0a4f87", fontWeight: 800, cursor: "pointer" }}>Cancelar edición</button>}{asesorSeleccionado && <span style={{ alignSelf: "center", color: "#657785" }}>Registro de {asesorSeleccionado.nombre}</span>}</div>
         </form>
 
-        <div style={{ ...card, marginBottom: 16 }}>
+        <div className="rd-card" style={{ ...card, marginBottom: 16 }}>
             <h3 style={{ margin: "0 0 12px", color: "#0a4f87" }}>🗓 Consultar registros anteriores</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, alignItems: "end" }}>
                 <label>Desde<input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} style={input} /></label>
                 <label>Hasta<input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} style={input} /></label>
                 {esAdministrador && <label>Asesora<select value={asesorId} onChange={(e) => setAsesorId(e.target.value)} style={input}><option value="">Todas</option>{asesores.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</select></label>}
-                <button type="button" onClick={consultar} disabled={cargando} style={{ padding: 11, border: 0, borderRadius: 8, background: "#0a8fbd", color: "#fff", fontWeight: 800, cursor: "pointer" }}>{cargando ? "Consultando..." : "🔍 Consultar"}</button>
+                <button type="button" onClick={consultar} disabled={cargando || descargandoWord} style={{ padding: 11, border: 0, borderRadius: 8, background: "#0a8fbd", color: "#fff", fontWeight: 800, cursor: cargando || descargandoWord ? "wait" : "pointer" }}>{cargando || descargandoWord ? "Consultando..." : "🔍 Consultar"}</button>
             </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={descargarWord} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#245b3a", color: "#fff", fontWeight: 800, cursor: "pointer" }}>📄 Descargar Word</button><button type="button" onClick={descargarExcel} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#198754", color: "#fff", fontWeight: 800, cursor: "pointer" }}>📊 Descargar Excel</button></div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={descargarWord} disabled={descargandoWord} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#245b3a", color: "#fff", fontWeight: 800, cursor: descargandoWord ? "wait" : "pointer", opacity: descargandoWord ? 0.75 : 1 }}>{descargandoWord ? "Preparando Word…" : "📄 Descargar Word"}</button><button type="button" onClick={descargarExcel} style={{ padding: "9px 13px", border: 0, borderRadius: 8, background: "#198754", color: "#fff", fontWeight: 800, cursor: "pointer" }}>📊 Descargar Excel</button></div>
+            {mensajeWord && <p role="status" aria-live="polite" style={{ margin: "8px 0 0", color: "#526273", fontSize: 13 }}>{mensajeWord}</p>}
         </div>
 
-        <div style={{ ...card, overflowX: "auto" }}>
+        <div className="rd-card" style={{ ...card, overflowX: "auto" }}>
             <h3 style={{ margin: "0 0 12px", color: "#0a4f87" }}>{filas.length} registro(s) encontrado(s)</h3>
             <table style={{ width: "100%", minWidth: 900, borderCollapse: "collapse", fontSize: 13 }}><thead><tr>{["Fecha", "Asesora", "Datos", "IDs de datos adquiridos", "Análisis", "IDs de análisis", "Acción"].map((x) => <th key={x} style={{ textAlign: "left", padding: 10, background: "#eaf5fb", color: "#0a4f87" }}>{x}</th>)}</tr></thead><tbody>{filas.map((item) => <tr key={item.id}><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", whiteSpace: "nowrap" }}>{item.fecha}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", fontWeight: 700 }}>{item.asesor_nombre}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", textAlign: "center" }}>{item.datos_cantidad}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", whiteSpace: "pre-wrap", maxWidth: 240 }}>{item.datos_ids || "—"}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", textAlign: "center" }}>{item.analisis_cantidad}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2", whiteSpace: "pre-wrap", maxWidth: 240 }}>{item.analisis_ids || "—"}</td><td style={{ padding: 10, borderBottom: "1px solid #e8eef2" }}><button type="button" onClick={() => cargarFilaEnFormulario(item)} style={{ padding: "7px 10px", border: 0, borderRadius: 6, background: "#ffc107", color: "#222", fontWeight: 700, cursor: "pointer" }}>✏ Editar</button></td></tr>)}</tbody></table>
         </div>

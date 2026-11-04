@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import RankingPodium from "./RankingPodium";
 import VentasChart from "./VentasChart";
 import ActivityTimeline from "./ActivityTimeline";
+import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, ordenarRankingQuincenal } from "../utils/periodosVentas";
 
 function ahoraColombia() {
     const partes = new Intl.DateTimeFormat("en-CA", {
@@ -81,6 +82,9 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
     const [mesRanking, setMesRanking] = useState(periodoInicial.mes);
     const [quincenaRanking, setQuincenaRanking] = useState(periodoInicial.quincena);
     const [rankingQuincenal, setRankingQuincenal] = useState([]);
+    const [mejorAsesoraAnterior, setMejorAsesoraAnterior] = useState(null);
+    const [cargandoMejorAsesora, setCargandoMejorAsesora] = useState(true);
+    const [errorMejorAsesora, setErrorMejorAsesora] = useState("");
     const [cargandoRanking, setCargandoRanking] = useState(false);
     const [configVentas, setConfigVentas] = useState({ moneda: "USD", simbolo_moneda: "$", ranking_activo: true, ranking_visible_asesores: true, criterio_ranking: "RECAUDO" });
 
@@ -157,11 +161,30 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
         }
     }
 
+    async function cargarMejorAsesoraAnterior() {
+        const periodo = calcularPeriodoQuincenaAnterior(ahoraColombia());
+        setCargandoMejorAsesora(true);
+        try {
+            const { data } = await api.get(`/ventas/resumen/asesores/periodo?fecha_desde=${periodo.desde}&fecha_hasta=${periodo.hasta}`);
+            const asesoresConVentas = (Array.isArray(data?.data) ? data.data : [])
+                .filter((asesor) => Number(asesor.cantidad_ventas || 0) > 0);
+            setMejorAsesoraAnterior(ordenarRankingQuincenal(asesoresConVentas)[0] || null);
+            setErrorMejorAsesora("");
+        } catch (error) {
+            console.error("Error cargando a la mejor asesora de la quincena anterior:", error);
+            setMejorAsesoraAnterior(null);
+            setErrorMejorAsesora("No fue posible consultar las ventas de la quincena anterior.");
+        } finally {
+            setCargandoMejorAsesora(false);
+        }
+    }
+
     async function actualizarPanel() {
         setRevisionGrafica((revision) => revision + 1);
         await Promise.all([
             cargarVentas({ manual: true }),
-            cargarRankingQuincenal()
+            cargarRankingQuincenal(),
+            cargarMejorAsesoraAnterior()
         ]);
     }
 
@@ -208,6 +231,7 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
 
         cargarVentas();
         cargarRankingQuincenal();
+        cargarMejorAsesoraAnterior();
 
         const intervalo = setInterval(() => {
             cargarVentas();
@@ -222,6 +246,7 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
         const actualizarDespuesDeVenta = () => {
             cargarVentas();
             cargarRankingQuincenal();
+            cargarMejorAsesoraAnterior();
             setRevisionGrafica((revision) => revision + 1);
         };
         window.addEventListener("venta-registrada", actualizarDespuesDeVenta);
@@ -276,12 +301,8 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
         : esPeriodoVigente
             ? porAsesor
             : [];
-    const ranking = [...rankingFuente].sort((a, b) => {
-        const ventas = Number(b.cantidad_ventas || 0) - Number(a.cantidad_ventas || 0);
-        const recaudo = Number(b.total_recaudo || 0) - Number(a.total_recaudo || 0);
-        const vendido = Number(b.total_vendido || 0) - Number(a.total_vendido || 0);
-        return ventas || recaudo || vendido || String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""));
-    });
+    const ranking = ordenarRankingQuincenal(rankingFuente);
+    const etiquetaQuincenaAnterior = etiquetarPeriodoQuincenal(calcularPeriodoQuincenaAnterior(ahoraColombia()));
 
     // ======================================================
     // INTERFAZ
@@ -447,6 +468,24 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
 
             {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
             <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
+                <section className="previous-fortnight-winner" aria-label="Mejor asesora de la quincena anterior">
+                    <div className="previous-fortnight-winner__icon" aria-hidden="true">🏆</div>
+                    <div className="previous-fortnight-winner__content" aria-live="polite">
+                        <p className="previous-fortnight-winner__eyebrow">Mejor asesora de la quincena anterior</p>
+                        <strong className="previous-fortnight-winner__name">
+                            {cargandoMejorAsesora ? "Consultando resultados…" : errorMejorAsesora || mejorAsesoraAnterior?.asesor_nombre || "Aún no hay ventas activas en este periodo"}
+                        </strong>
+                        <p className="previous-fortnight-winner__period">{etiquetaQuincenaAnterior} · seleccionada automáticamente</p>
+                        {mejorAsesoraAnterior && !cargandoMejorAsesora && (
+                            <div className="previous-fortnight-winner__stats">
+                                <span>{Number(mejorAsesoraAnterior.cantidad_ventas || 0)} ventas</span>
+                                <span>Vendido: {formatearMoneda(mejorAsesoraAnterior.total_vendido)}</span>
+                                <span>Recaudo: {formatearMoneda(mejorAsesoraAnterior.total_recaudo)}</span>
+                            </div>
+                        )}
+                        <small className="previous-fortnight-winner__criteria">Criterio: más ventas; empate por recaudo y después total vendido.</small>
+                    </div>
+                </section>
                 <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Ranking de ventas y recaudo</h3>
                 <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 13 }}>Ordenado primero por cantidad de ventas, después por recaudo y luego por valor vendido.</p>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>

@@ -1,6 +1,6 @@
 # Auditoría integral y optimización de `advise-time-manager`
 
-**Fecha de consolidación:** 3 de noviembre de 2026
+**Fecha de consolidación:** 4 de noviembre de 2026
 **Alcance:** auditoría de frontend, backend, esquema SQL versionado, seguridad, rendimiento, calidad, accesibilidad y despliegue, complementada con las correcciones y verificaciones descritas abajo.
 **Modalidad:** la línea base fue una revisión estática. En el seguimiento se ejecutaron pruebas unitarias, lint, compilación y chequeo de sintaxis; no se hicieron escrituras ni se consultó una base de datos de producción.
 
@@ -8,7 +8,7 @@
 
 La auditoría inicial consolidó **45 hallazgos: 0 críticos, 4 altos, 29 medios y 12 bajos**; el riesgo reportado fue **alto en despliegue/observabilidad** y **medio en las demás áreas**. Esos conteos representan la línea base, no el número de problemas que permanecen abiertos tras las correcciones de esta sesión. Los defectos funcionales prioritarios de metas y ventas retroactivas se atendieron; siguen pendientes decisiones y riesgos de infraestructura descritos más adelante.
 
-Respecto de las solicitudes funcionales: se corrigió la edición inicial de metas y la consulta de actividad para asesores sin meta; se añadieron fecha y hora efectivas para ventas anteriores, con motivo obligatorio, rechazo de fechas futuras y evento de auditoría transaccional. La acción de eliminar una venta de hoy retira el registro de los totales activos mediante anulación auditable (sin borrado físico), limitada a administrador o asesor dueño y con autorización comprobada bajo bloqueo de fila. La aplicación de estos cambios a un esquema desplegado requiere validar la columna de acción de `ventas_cambios_auditoria`, pues no se pudo leer el esquema real.
+Respecto de las solicitudes funcionales: se corrigió la edición inicial de metas y la consulta de actividad para asesores sin meta; se añadieron fecha y hora efectivas para ventas anteriores, con motivo obligatorio, rechazo de fechas futuras y evento de auditoría transaccional. La acción de eliminar una venta de hoy retira el registro de los totales activos mediante anulación auditable (sin borrado físico), limitada a administrador o asesor dueño y con autorización comprobada bajo bloqueo de fila. El backend quedó desplegado y registró conexión a PostgreSQL; no se pudo consultar el esquema directamente, así que siguen sin verificarse el `DEFAULT` real de `creado` y otras restricciones de la base.
 
 La inspección encontró controles valiosos: autorización de metas en backend, validación de quincenas, persistencia transaccional con auditoría, comprobaciones de propiedad en operaciones de ventas, filtros de fecha, validación de algunas fechas, y tratamiento de contraseñas con bcrypt en el flujo normal. Esas fortalezas no eliminan los riesgos de tokens que conservan permisos obsoletos, operaciones de cuenta sin auditoría visible, respuestas de salud que no comprueban la base de datos y ausencia de cobertura directa suficiente para ventas y metas.
 
@@ -20,8 +20,10 @@ La inspección encontró controles valiosos: autorización de metas en backend, 
 | Ventas retroactivas | Se acepta fecha anterior y hora efectiva HH:MM, se exige motivo de 5–500 caracteres, se rechazan fechas futuras y el servidor conserva su hora actual para ventas de hoy. La creación y el evento específico `REGISTRO_RETROACTIVO` (metadata JSON en la auditoría, usando la acción existente `EDICION`) se guardan dentro de una transacción; si falla la auditoría, se revierte el alta. El código no sobrescribe `creado`; no se pudo confirmar el DEFAULT de esa columna en la base real. No se fijó un límite máximo de antigüedad porque no se especificó una política comercial. |
 | Eliminar venta de hoy | Botón limitado al administrador o al asesor propietario. El servidor bloquea la fila, verifica propietario/estado y registra la anulación con motivo dentro de la transacción. La venta se conserva como anulada para auditoría. |
 | Errores y cobertura | Las validaciones funcionales responden 4xx y los errores inesperados de las rutas modificadas responden 500 genérico. Se añadieron pruebas directas de metas y fechas de ventas. |
-| Rendimiento de carga | DOCX/XLSX se descargan mediante importaciones dinámicas, fuera del bundle inicial. En el build de esta sesión el JS principal pasó de 1,098.25 kB a 454.77 kB; los chunks de exportación se cargan al usarlos. |
+| Rendimiento de carga | DOCX/XLSX se descargan mediante importaciones dinámicas, fuera del bundle inicial. En el build final de esta sesión el JS principal pasó de 1,098.25 kB a 454.88 kB (58.6% menos); los chunks de exportación se cargan al usarlos. |
 | Verificación local | 6 suites y 31 pruebas aprobadas; build de producción aprobado; sintaxis JavaScript backend aprobada; lint sin errores y con 30 avisos existentes de React Hooks/pureza y Fast Refresh. No se usaron datos de producción. |
+| Producción | Commit `b14bf49` en `main`; Vercel quedó `READY`, Render quedó `live`, ambas URLs y el health del backend respondieron HTTP 200. Render confirmó conexión a PostgreSQL en el arranque; Vercel no mostró errores runtime en la ventana de una hora consultada. |
+| Dependencias backend | `npm audit --omit=dev` reportó 7 vulnerabilidades runtime: 1 crítica, 5 altas y 1 moderada; incluye `proxy-addr`, `express`, `nodemailer`, `body-parser`, `engine.io`, `path-to-regexp` y `qs`. El audit total del servicio reportó 10 (incluye dev); las correcciones disponibles no se aplicaron automáticamente para evitar cambios no validados. |
 
 ## Conteo consolidado
 
@@ -154,7 +156,7 @@ La lista original se conserva como línea base. Estado tras la implementación:
 6. **Completado en código:** acción limitada por UI y autorización/estado ligados a bloqueo de fila en backend. No se simuló concurrencia contra una base real.
 7. **Completado para controladores de metas y ventas tocados:** validaciones tipadas 4xx y error genérico 500 para fallos imprevistos; quedan otros controladores por homogeneizar.
 8. **Parcial:** carga diferida DOCX/XLSX redujo el JS inicial; persisten polling frecuente, renders por segundo, logo rasterizado grande y otras importaciones globales.
-9. **Diferido:** no se actualizaron dependencias. Requiere rama/entorno de prueba y revisión de advisories.
+9. **Pendiente prioritario de seguridad:** `npm audit --omit=dev` reporta 7 vulnerabilidades runtime (1 crítica, 5 altas, 1 moderada) y marca actualizaciones disponibles. No se aplicaron de forma automática: deben actualizarse en una rama de prueba, ejecutar las suites/build y desplegar con verificación, con especial atención al `proxy-addr` crítico y a Express/Nodemailer.
 10. **Diferido:** no se añadió CI; se necesita decidir qué verificaciones son bloqueantes para el equipo.
 
 ## Qué debe quedar diferido por aprobación o decisión técnica
@@ -177,4 +179,4 @@ La lista original se conserva como línea base. Estado tras la implementación:
 
 ## Límites y cautelas
 
-La auditoría inicial fue estática. En el seguimiento sí se ejecutaron 31 pruebas unitarias (6 suites), build, lint y chequeo de sintaxis; no se ejecutaron escrituras en base de datos. El conector Supabase no estuvo disponible y no había una cadena de conexión local, así que no se verificaron tipos, restricciones ni datos reales del esquema. Tampoco se verificaron en esta sesión los logs/runtime ni el deployment tras estos cambios, copias de seguridad, concurrencia real o explotación de dependencias. La ausencia de DDL versionado no prueba que falte en producción; la ausencia de evidencia externa no prueba que una protección no exista.
+La auditoría inicial fue estática. En el seguimiento se ejecutaron 31 pruebas unitarias (6 suites), build, lint y chequeo de sintaxis; no se ejecutaron escrituras en base de datos. El deployment de Vercel y Render sí se verificó para `b14bf49`: Vercel `READY`, Render `live`, health HTTP 200 y conexión a PostgreSQL reportada en los logs de arranque; no se hallaron errores runtime Vercel en la hora consultada. El conector SQL de Supabase no estuvo disponible y no había cadena de conexión local, por lo que no se pudieron consultar tipos, restricciones ni datos del esquema. Tampoco se verificaron copias de seguridad, concurrencia real ni explotación de los advisories de dependencias. La ausencia de DDL versionado no prueba que falte en producción; la ausencia de evidencia externa no prueba que una protección no exista.

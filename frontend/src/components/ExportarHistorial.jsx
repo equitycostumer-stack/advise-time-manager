@@ -1,13 +1,14 @@
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-
 export default function ExportarHistorial({ historial, asesor }) {
 
-    function exportar() {
+    async function exportar() {
 
         if (!historial.length) return;
 
-        const datos = historial.map((m) => ({
+        try {
+            const [XLSX, fileSaver] = await Promise.all([import("xlsx"), import("file-saver")]);
+            const { saveAs } = fileSaver;
+
+            const datos = historial.map((m) => ({
 
             Hora: new Date(m.fecha_hora).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -21,24 +22,28 @@ export default function ExportarHistorial({ historial, asesor }) {
 
         }));
 
-        const hoja = XLSX.utils.json_to_sheet(datos);
+            const hoja = XLSX.utils.json_to_sheet(datos);
 
-        const libro = XLSX.utils.book_new();
+            const libro = XLSX.utils.book_new();
 
-        XLSX.utils.book_append_sheet(libro, hoja, "Historial");
+            XLSX.utils.book_append_sheet(libro, hoja, "Historial");
 
-        const excel = XLSX.write(libro, {
-            bookType: "xlsx",
-            type: "array"
-        });
+            const excel = XLSX.write(libro, {
+                bookType: "xlsx",
+                type: "array"
+            });
 
-        saveAs(
+            saveAs(
 
             new Blob([excel]),
 
             `Historial_${asesor.nombre}.xlsx`
 
-        );
+            );
+        } catch (error) {
+            console.error("No fue posible exportar el historial:", error);
+            window.alert("No fue posible generar el archivo Excel. Intente nuevamente.");
+        }
 
     }
 

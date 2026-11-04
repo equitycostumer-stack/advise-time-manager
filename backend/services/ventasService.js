@@ -6,6 +6,12 @@ const ventasRepository = require("../repositories/ventasRepository");
 const movimientosRepository = require("../repositories/movimientosRepository");
 const configuracionVentasRepository = require("../repositories/configuracionVentasRepository");
 
+function errorHttp(mensaje, status = 400) {
+    const error = new Error(mensaje);
+    error.status = status;
+    return error;
+}
+
 function obtenerAsesorIdPermitido(usuario) {
     if (usuario?.rol === "ADMINISTRADOR") return null;
     const asesorId = Number(usuario?.asesor_id);
@@ -26,12 +32,29 @@ class VentasService {
         return !Number.isNaN(fecha.getTime()) && this.generarFechaColombia(fecha).slice(0, 10) === valor;
     }
 
+    resolverFechaVenta(datos) {
+        const hoy = this.generarFechaColombia().slice(0, 10);
+        const fechaVenta = datos.fecha_venta ? String(datos.fecha_venta).trim() : hoy;
+        if (!this.validarFechaISO(fechaVenta)) throw errorHttp("La fecha de venta no es válida.");
+        if (fechaVenta > hoy) throw errorHttp("No se pueden registrar ventas con una fecha futura.");
+        if (fechaVenta === hoy) {
+            return { fechaHora: this.generarFechaColombia(), retroactiva: false, motivo: null };
+        }
+
+        const horaVenta = String(datos.hora_venta || "").trim();
+        if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(horaVenta)) {
+            throw errorHttp("Para una venta anterior, indique la hora efectiva en formato HH:MM.");
+        }
+        const motivo = this.validarMotivo(datos.motivo_registro_retroactivo);
+        return { fechaHora: `${fechaVenta} ${horaVenta}:00`, retroactiva: true, motivo };
+    }
+
     async registrarVenta(datos) {
         const asesorId = Number(datos.asesor_id);
-        if (!Number.isInteger(asesorId) || asesorId <= 0) throw new Error("Debe seleccionar un asesor.");
+        if (!Number.isInteger(asesorId) || asesorId <= 0) throw errorHttp("Debe seleccionar un asesor.");
         const valor = Number(datos.valor);
         if (!Number.isFinite(valor) || valor <= 0 || valor > 100000000000) {
-            throw new Error("El valor de la venta debe ser un número mayor a cero y válido.");
+            throw errorHttp("El valor de la venta debe ser un número mayor a cero y válido.");
         }
         const clienteId = datos.cliente_id ? String(datos.cliente_id).trim().slice(0, 120) : null;
         const observacion = datos.observacion ? String(datos.observacion).trim().slice(0, 500) : null;
@@ -40,17 +63,17 @@ class VentasService {
         };
         const recaudo = datos.recaudo === "" || datos.recaudo == null ? 0 : Number(datos.recaudo);
         if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > 100000000000) {
-            throw new Error("El recaudo debe ser un número válido mayor o igual a cero.");
+            throw errorHttp("El recaudo debe ser un número válido mayor o igual a cero.");
         }
-        if (!configuracion.permitir_recaudo && recaudo > 0) throw new Error("El registro de recaudo está desactivado por configuración.");
-        if (!configuracion.permitir_recaudo_cero && recaudo === 0) throw new Error("Debe registrar un recaudo mayor a cero.");
-        if (configuracion.recaudo_no_supera_venta && recaudo > valor) throw new Error("El recaudo no puede superar el valor de la venta.");
+        if (!configuracion.permitir_recaudo && recaudo > 0) throw errorHttp("El registro de recaudo está desactivado por configuración.");
+        if (!configuracion.permitir_recaudo_cero && recaudo === 0) throw errorHttp("Debe registrar un recaudo mayor a cero.");
+        if (configuracion.recaudo_no_supera_venta && recaudo > valor) throw errorHttp("El recaudo no puede superar el valor de la venta.");
         const asesor = await movimientosRepository.obtenerAsesor(asesorId);
-        if (!asesor) throw new Error("El asesor no existe.");
-        if (!asesor.activo) throw new Error("El asesor está inactivo.");
-        const fechaHora = this.generarFechaColombia();
-        await ventasRepository.crearVenta(asesorId, clienteId, valor, recaudo, fechaHora, observacion);
-        return { ok: true, mensaje: "Venta registrada correctamente.", asesor: { id: asesor.id, nombre: asesor.nombre }, cliente_id: clienteId, valor, recaudo, fecha_hora: fechaHora };
+        if (!asesor) throw errorHttp("El asesor no existe.");
+        if (!asesor.activo) throw errorHttp("El asesor está inactivo.");
+        const fecha = this.resolverFechaVenta(datos);
+        await ventasRepository.crearVenta(asesorId, clienteId, valor, recaudo, fecha.fechaHora, observacion, datos.usuario || null, fecha.motivo);
+        return { ok: true, mensaje: "Venta registrada correctamente.", asesor: { id: asesor.id, nombre: asesor.nombre }, cliente_id: clienteId, valor, recaudo, fecha_hora: fecha.fechaHora, retroactiva: fecha.retroactiva };
     }
 
     async obtenerVentasDelDia(usuario) {
@@ -62,7 +85,7 @@ class VentasService {
     }
 
     async obtenerVentasPorAsesor(asesorId) {
-        if (!Number.isInteger(Number(asesorId)) || Number(asesorId) <= 0) throw new Error("Debe indicar el asesor.");
+        if (!Number.isInteger(Number(asesorId)) || Number(asesorId) <= 0) throw errorHttp("Debe indicar el asesor.");
         return ventasRepository.obtenerVentasPorAsesor(Number(asesorId));
     }
 
@@ -84,11 +107,7 @@ class VentasService {
 
     validarMotivo(motivo) {
         const texto = String(motivo || "").trim();
-        if (texto.length < 5 || texto.length > 500) {
-            const error = new Error("Debe indicar un motivo de entre 5 y 500 caracteres.");
-            error.status = 400;
-            throw error;
-        }
+        if (texto.length < 5 || texto.length > 500) throw errorHttp("Debe indicar un motivo de entre 5 y 500 caracteres.");
         return texto;
     }
 
@@ -110,18 +129,18 @@ class VentasService {
 
     async corregirVenta(id, datos, usuario) {
         const ventaId = Number(id);
-        if (!Number.isInteger(ventaId) || ventaId <= 0) throw new Error("La venta indicada no es válida.");
+        if (!Number.isInteger(ventaId) || ventaId <= 0) throw errorHttp("La venta indicada no es válida.");
         const motivo = this.validarMotivo(datos.motivo);
         const asesorId = Number(datos.asesor_id);
         const valor = Number(datos.valor);
         const recaudo = Number(datos.recaudo);
-        if (!Number.isInteger(asesorId) || asesorId <= 0) throw new Error("Debe seleccionar un asesor válido.");
-        if (!Number.isFinite(valor) || valor <= 0 || valor > 100000000000) throw new Error("El valor de la venta no es válido.");
-        if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > 100000000000) throw new Error("El recaudo no es válido.");
+        if (!Number.isInteger(asesorId) || asesorId <= 0) throw errorHttp("Debe seleccionar un asesor válido.");
+        if (!Number.isFinite(valor) || valor <= 0 || valor > 100000000000) throw errorHttp("El valor de la venta no es válido.");
+        if (!Number.isFinite(recaudo) || recaudo < 0 || recaudo > 100000000000) throw errorHttp("El recaudo no es válido.");
         const configuracion = (await configuracionVentasRepository.obtener()) || { recaudo_no_supera_venta: true };
-        if (configuracion.recaudo_no_supera_venta && recaudo > valor) throw new Error("El recaudo no puede superar el valor de la venta.");
+        if (configuracion.recaudo_no_supera_venta && recaudo > valor) throw errorHttp("El recaudo no puede superar el valor de la venta.");
         const asesor = await movimientosRepository.obtenerAsesor(asesorId);
-        if (!asesor || !asesor.activo) throw new Error("El asesor seleccionado no existe o está inactivo.");
+        if (!asesor || !asesor.activo) throw errorHttp("El asesor seleccionado no existe o está inactivo.");
         const clienteId = datos.cliente_id ? String(datos.cliente_id).trim().slice(0, 120) : null;
         const observacion = datos.observacion ? String(datos.observacion).trim().slice(0, 500) : null;
         const original = await ventasRepository.obtenerVentaPorId(ventaId);
@@ -144,16 +163,10 @@ class VentasService {
     }
 
     async anularVenta(id, usuario = null, motivo = "") {
-        if (!Number.isInteger(Number(id)) || Number(id) <= 0) throw new Error("Debe indicar la venta a anular.");
+        if (!Number.isInteger(Number(id)) || Number(id) <= 0) throw errorHttp("Debe indicar la venta a anular.");
         const motivoNormalizado = String(motivo || "").trim();
         if (motivoNormalizado.length < 5 || motivoNormalizado.length > 500) {
-            const error = new Error("Debe indicar un motivo de entre 5 y 500 caracteres para anular la venta."); error.status = 400; throw error;
-        }
-        const venta = await ventasRepository.obtenerVentaPorId(Number(id));
-        if (!venta) throw new Error("La venta no existe.");
-        if (venta.estado === "ANULADA") throw new Error("La venta ya está anulada.");
-        if (usuario && usuario.rol !== "ADMINISTRADOR" && Number(venta.asesor_id) !== Number(usuario.asesor_id)) {
-            const error = new Error("No tiene permiso para anular ventas de otro asesor."); error.status = 403; throw error;
+            throw errorHttp("Debe indicar un motivo de entre 5 y 500 caracteres para anular la venta.");
         }
         await ventasRepository.anularVenta(Number(id), usuario, motivoNormalizado);
         return { ok: true, mensaje: "Venta anulada correctamente." };

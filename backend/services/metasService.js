@@ -12,6 +12,10 @@ function error(mensaje, status = 400) {
     const resultado = new Error(mensaje); resultado.status = status; return resultado;
 }
 
+function valorPresente(valor) {
+    return valor !== null && valor !== undefined && !(typeof valor === "string" && valor.trim() === "");
+}
+
 class MetasService {
     validarPeriodo(inicio, fin) {
         if (!fechaValida(inicio) || !fechaValida(fin) || inicio > fin) throw error("El periodo debe contener fechas válidas.");
@@ -30,6 +34,8 @@ class MetasService {
         if (periodoTipo !== "QUINCENA") throw error("Las metas solo se manejan por quincena.");
         this.validarPeriodo(datos.periodo_inicio, datos.periodo_fin);
         const asesorId = Number(datos.asesor_id);
+        if (!valorPresente(datos.meta_ventas)) throw error("Ingrese una meta de ventas; use 0 si no desea fijar una meta.");
+        if (!valorPresente(datos.meta_recaudo)) throw error("Ingrese una meta de recaudo; use 0 si no desea fijar una meta.");
         const metaVentas = Number(datos.meta_ventas);
         const metaRecaudo = Number(datos.meta_recaudo);
         if (!Number.isInteger(asesorId) || asesorId <= 0) throw error("Debe seleccionar un asesor.");

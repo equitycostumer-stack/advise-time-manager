@@ -11,12 +11,33 @@ class VentasRepository {
         return resultado.rows || resultado;
     }
 
-    async crearVenta(asesorId, clienteId, valor, recaudo, fechaHora, observacion = null) {
-        const filas = await this.ejecutar(`
-            INSERT INTO ventas (asesor_id, cliente_id, valor, recaudo, fecha_hora, observacion, estado)
-            VALUES (?, ?, ?, ?, ?, ?, 'ACTIVA') RETURNING id
-        `, [asesorId, clienteId, valor, recaudo, fechaHora, observacion]);
-        return filas[0].id;
+    async crearVenta(asesorId, clienteId, valor, recaudo, fechaHora, observacion = null, usuario = null, motivoRetroactivo = null) {
+        const client = await db.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const resultado = await client.query(`
+                INSERT INTO ventas (asesor_id, cliente_id, valor, recaudo, fecha_hora, observacion, estado)
+                VALUES ($1, $2, $3, $4, $5, $6, 'ACTIVA')
+                RETURNING id, asesor_id, cliente_id, valor, recaudo, fecha_hora, observacion, estado
+            `, [asesorId, clienteId, valor, recaudo, fechaHora, observacion]);
+            const venta = resultado.rows[0];
+
+            if (motivoRetroactivo) {
+                await client.query(`
+                    INSERT INTO ventas_cambios_auditoria
+                        (venta_id, accion, datos_anteriores, datos_nuevos, motivo, cambiado_por)
+                    VALUES ($1, 'EDICION', '{}'::jsonb, $2::jsonb, $3, $4)
+                `, [venta.id, JSON.stringify({ ...venta, tipo_evento: "REGISTRO_RETROACTIVO" }), motivoRetroactivo, usuario?.id || null]);
+            }
+
+            await client.query("COMMIT");
+            return venta.id;
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     async obtenerVentaPorId(id) {
@@ -129,11 +150,28 @@ class VentasRepository {
         const client = await db.pool.connect();
         try {
             await client.query("BEGIN");
+            const actual = await client.query(`
+                SELECT id, asesor_id, cliente_id, valor, recaudo, fecha_hora, observacion, estado
+                FROM ventas WHERE id = $1 FOR UPDATE
+            `, [id]);
+            if (!actual.rows[0]) {
+                const error = new Error("La venta no existe."); error.status = 404; throw error;
+            }
+            const ventaActual = actual.rows[0];
+            if (ventaActual.estado !== "ACTIVA") {
+                const error = new Error("La venta ya está anulada."); error.status = 409; throw error;
+            }
+            const esAdministrador = usuario?.rol === "ADMINISTRADOR";
+            const asesorUsuario = Number(usuario?.asesor_id);
+            if (!esAdministrador && (!Number.isInteger(asesorUsuario) || asesorUsuario !== Number(ventaActual.asesor_id))) {
+                const error = new Error("No tiene permiso para anular ventas de otro asesor."); error.status = 403; throw error;
+            }
             const result = await client.query(`
                 UPDATE ventas SET estado = 'ANULADA'
                 WHERE id = $1 AND estado = 'ACTIVA'
+                  AND ($2::boolean IS TRUE OR asesor_id = $3::integer)
                 RETURNING id, asesor_id, cliente_id, valor, recaudo, estado
-            `, [id]);
+            `, [id, esAdministrador, Number.isInteger(asesorUsuario) ? asesorUsuario : null]);
             if (!result.rows[0]) { const error = new Error("La venta no existe o ya está anulada."); error.status = 409; throw error; }
             const venta = result.rows[0];
             await client.query(`INSERT INTO ventas_anulaciones_auditoria

@@ -1,14 +1,24 @@
 const db = require("../config/db");
+
 class MetasRepository {
     async listar(periodoInicio, periodoFin, asesorId = null) {
         const result = await db.query(`
-            SELECT m.id, m.asesor_id, a.nombre AS asesor_nombre, m.periodo_tipo,
-                   m.periodo_inicio, m.periodo_fin, m.meta_ventas, m.meta_recaudo,
+            SELECT m.id, a.id AS asesor_id, a.nombre AS asesor_nombre,
+                   COALESCE(m.periodo_tipo, 'QUINCENA') AS periodo_tipo,
+                   COALESCE(m.periodo_inicio, $1::date) AS periodo_inicio,
+                   COALESCE(m.periodo_fin, $2::date) AS periodo_fin,
+                   COALESCE(m.meta_ventas, 0) AS meta_ventas,
+                   COALESCE(m.meta_recaudo, 0) AS meta_recaudo,
                    COALESCE(v.cantidad_ventas, 0) AS ventas_actuales,
                    COALESCE(v.total_recaudo, 0) AS recaudo_actual,
-                   COALESCE(v.total_vendido, 0) AS vendido_actual, m.updated_at
-            FROM metas_asesores m
-            INNER JOIN asesores a ON a.id = m.asesor_id
+                   COALESCE(v.total_vendido, 0) AS vendido_actual,
+                   m.updated_at
+            FROM asesores a
+            LEFT JOIN metas_asesores m
+              ON m.asesor_id = a.id
+             AND m.periodo_tipo = 'QUINCENA'
+             AND m.periodo_inicio = $1::date
+             AND m.periodo_fin = $2::date
             LEFT JOIN (
                 SELECT asesor_id, COUNT(*) AS cantidad_ventas,
                        COALESCE(SUM(valor), 0) AS total_vendido,
@@ -18,13 +28,14 @@ class MetasRepository {
                   AND fecha_hora >= $1::date
                   AND fecha_hora < ($2::date + INTERVAL '1 day')
                 GROUP BY asesor_id
-            ) v ON v.asesor_id = m.asesor_id
-            WHERE m.periodo_inicio = $1::date AND m.periodo_fin = $2::date
-              AND ($3::integer IS NULL OR m.asesor_id = $3::integer)
+            ) v ON v.asesor_id = a.id
+            WHERE a.activo = 1
+              AND ($3::integer IS NULL OR a.id = $3::integer)
             ORDER BY a.nombre ASC
         `, [periodoInicio, periodoFin, asesorId]);
         return result.rows;
     }
+
     async guardar(datos, usuarioId) {
         const client = await db.pool.connect();
         try {
@@ -55,6 +66,7 @@ class MetasRepository {
             client.release();
         }
     }
+
     async historial(periodoInicio, periodoFin, asesorId = null) {
         const result = await db.query(`
             SELECT h.id, h.meta_id, h.asesor_id, a.nombre AS asesor_nombre,
@@ -71,4 +83,5 @@ class MetasRepository {
         return result.rows;
     }
 }
+
 module.exports = new MetasRepository();

@@ -1,6 +1,19 @@
 import { useState } from "react";
 import api from "../services/api";
 
+function ahoraColombia() {
+    const partes = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date()).reduce((resultado, parte) => ({ ...resultado, [parte.type]: parte.value }), {});
+    const hora = partes.hour === "24" ? "00" : partes.hour;
+    return {
+        fecha: `${partes.year}-${partes.month}-${partes.day}`,
+        hora: `${hora}:${partes.minute}`
+    };
+}
+
 const CONFETI = Array.from({ length: 36 }, (_, indice) => ({
     id: indice,
     left: `${(indice * 37) % 100}%`,
@@ -51,6 +64,9 @@ export default function RegistrarVenta({
     const [recaudo, setRecaudo] = useState("");
     const [clienteId, setClienteId] = useState("");
     const [observacion, setObservacion] = useState("");
+    const [fechaVenta, setFechaVenta] = useState("");
+    const [horaVenta, setHoraVenta] = useState("");
+    const [motivoRetroactivo, setMotivoRetroactivo] = useState("");
     const [enviando, setEnviando] = useState(false);
     const [celebrando, setCelebrando] = useState(false);
     const [detalleCelebracion, setDetalleCelebracion] = useState(null);
@@ -70,6 +86,10 @@ export default function RegistrarVenta({
         setRecaudo("");
         setClienteId("");
         setObservacion("");
+        const ahora = ahoraColombia();
+        setFechaVenta(ahora.fecha);
+        setHoraVenta(ahora.hora);
+        setMotivoRetroactivo("");
         setAbierto(true);
 
     }
@@ -90,9 +110,27 @@ export default function RegistrarVenta({
 
         const valorNumerico = Number(valor);
         const recaudoNumerico = recaudo === "" ? 0 : Number(recaudo);
+        const fechaHoy = ahoraColombia().fecha;
+        const esRetroactiva = Boolean(fechaVenta && fechaVenta < fechaHoy);
 
-        if (!valorNumerico || valorNumerico <= 0) {
+        if (!Number.isFinite(valorNumerico) || valorNumerico <= 0) {
             alert("Ingrese un valor de venta válido.");
+            return;
+        }
+        if (!Number.isFinite(recaudoNumerico) || recaudoNumerico < 0) {
+            alert("El recaudo debe ser un número válido mayor o igual a cero.");
+            return;
+        }
+        if (!fechaVenta || fechaVenta > fechaHoy) {
+            alert("Seleccione una fecha de venta válida que no sea futura.");
+            return;
+        }
+        if (esRetroactiva && motivoRetroactivo.trim().length < 5) {
+            alert("Para registrar una venta anterior, indique un motivo de al menos 5 caracteres.");
+            return;
+        }
+        if (esRetroactiva && !horaVenta) {
+            alert("Indique la hora efectiva de la venta anterior.");
             return;
         }
 
@@ -105,7 +143,12 @@ export default function RegistrarVenta({
                 cliente_id: clienteId || null,
                 valor: valorNumerico,
                 recaudo: recaudoNumerico,
-                observacion: observacion || null
+                observacion: observacion || null,
+                fecha_venta: fechaVenta,
+                ...(esRetroactiva ? {
+                    hora_venta: horaVenta,
+                    motivo_registro_retroactivo: motivoRetroactivo.trim()
+                } : {})
             });
 
             if (!data?.ok) {
@@ -218,6 +261,54 @@ export default function RegistrarVenta({
                         </p>
 
                         <p style={{ marginBottom: "4px" }}>
+                            <strong>Fecha de venta</strong>
+                        </p>
+                        <input
+                            type="date"
+                            value={fechaVenta}
+                            max={ahoraColombia().fecha}
+                            onChange={(e) => setFechaVenta(e.target.value)}
+                            aria-label="Fecha efectiva de la venta"
+                            style={{
+                                width: "100%", padding: "10px", borderRadius: "8px",
+                                border: "1px solid #555", fontSize: "15px", background: "#1b1b1b",
+                                color: "#F4F4F4", marginBottom: "15px", boxSizing: "border-box"
+                            }}
+                        />
+                        {fechaVenta && fechaVenta < ahoraColombia().fecha && (
+                            <div style={{ padding: 10, marginBottom: 15, border: "1px solid #8a6d1d", borderRadius: 8, background: "#211d12" }}>
+                                <p style={{ margin: "0 0 6px" }}><strong>Registro retroactivo</strong></p>
+                                <label htmlFor="hora-venta-retroactiva">Hora efectiva de la venta</label>
+                                <input
+                                    id="hora-venta-retroactiva"
+                                    type="time"
+                                    value={horaVenta}
+                                    onChange={(e) => setHoraVenta(e.target.value)}
+                                    required
+                                    style={{
+                                        width: "100%", padding: "9px", margin: "5px 0 10px", borderRadius: 8,
+                                        border: "1px solid #555", background: "#1b1b1b", color: "#F4F4F4", boxSizing: "border-box"
+                                    }}
+                                />
+                                <label htmlFor="motivo-venta-retroactiva">Motivo (mínimo 5 caracteres)</label>
+                                <textarea
+                                    id="motivo-venta-retroactiva"
+                                    value={motivoRetroactivo}
+                                    onChange={(e) => setMotivoRetroactivo(e.target.value)}
+                                    maxLength={500}
+                                    rows={2}
+                                    required
+                                    placeholder="Explica por qué se registra después"
+                                    style={{
+                                        width: "100%", padding: "9px", marginTop: 5, borderRadius: 8,
+                                        border: "1px solid #555", background: "#1b1b1b", color: "#F4F4F4", boxSizing: "border-box"
+                                    }}
+                                />
+                                <small>La fecha y hora efectiva aparecerán en los reportes. El sistema conserva por separado cuándo se registró realmente.</small>
+                            </div>
+                        )}
+
+                        <p style={{ marginBottom: "4px" }}>
                             <strong>ID del cliente</strong>
                         </p>
                         <input
@@ -262,7 +353,7 @@ export default function RegistrarVenta({
                         />
 
                         <p style={{ marginBottom: "4px" }}>
-                            <strong>Recaudo de esta quincena</strong>
+                            <strong>Recaudo asociado a esta venta</strong>
                         </p>
                         <input
                             type="number"

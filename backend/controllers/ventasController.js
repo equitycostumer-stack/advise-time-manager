@@ -16,7 +16,7 @@ const registrarVenta = async (req, res) => {
         return res.status(201).json(await ventasService.registrarVenta({ ...req.body, usuario: req.usuario }));
     } catch (error) {
         console.error("Error registrando venta:", error.code || error.message);
-        return responderError(res, error, "No fue posible registrar la venta.", 400);
+        return responderError(res, error, "No fue posible registrar la venta.", 500);
     }
 };
 
@@ -30,7 +30,7 @@ const obtenerVentasPorAsesor = async (req, res) => {
         const asesorId = Number(req.params.asesorId);
         if (!Number.isInteger(asesorId) || asesorId <= 0) return res.status(400).json({ ok: false, mensaje: "El asesor indicado no es válido." });
         return res.json({ ok: true, data: await ventasService.obtenerVentasPorAsesor(asesorId) });
-    } catch (error) { console.error("Error consultando ventas por asesor:", error.code || error.message); return responderError(res, error, "No fue posible consultar las ventas.", 400); }
+    } catch (error) { console.error("Error consultando ventas por asesor:", error.code || error.message); return responderError(res, error, "No fue posible consultar las ventas.", 500); }
 };
 
 const obtenerResumenVentasDelDia = async (req, res) => {
@@ -42,7 +42,7 @@ const obtenerResumenVentasPorAsesorPeriodo = async (req, res) => {
     try {
         const { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } = req.query;
         return res.json({ ok: true, data: await ventasService.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, req.usuario) });
-    } catch (error) { console.error("Error consultando ranking de ventas:", error.code || error.message); return responderError(res, error, "No fue posible consultar el ranking de ventas.", 400); }
+    } catch (error) { console.error("Error consultando ranking de ventas:", error.code || error.message); return responderError(res, error, "No fue posible consultar el ranking de ventas.", 500); }
 };
 
 const obtenerResumenVentasPorAsesor = async (req, res) => {
@@ -52,7 +52,7 @@ const obtenerResumenVentasPorAsesor = async (req, res) => {
 
 const anularVenta = async (req, res) => {
     try { return res.json(await ventasService.anularVenta(Number(req.params.id), req.usuario, req.body?.motivo)); }
-    catch (error) { console.error("Error anulando venta:", error.code || error.message); return responderError(res, error, "No fue posible anular la venta.", 400); }
+    catch (error) { console.error("Error anulando venta:", error.code || error.message); return responderError(res, error, "No fue posible anular la venta.", 500); }
 };
 
 const listarVentasAdmin = async (req, res) => {
@@ -61,7 +61,7 @@ const listarVentasAdmin = async (req, res) => {
         return res.json({ ok: true, data: await ventasService.listarVentasAdmin(desde, hasta, asesorId, clienteId, estado) });
     } catch (error) {
         console.error("Error validando ventas:", error.code || error.message);
-        return responderError(res, error, "No fue posible consultar las ventas.", 400);
+        return responderError(res, error, "No fue posible consultar las ventas.", 500);
     }
 };
 
@@ -71,7 +71,7 @@ const corregirVentaAdmin = async (req, res) => {
         return res.json({ ok: true, mensaje: "Venta corregida y auditada correctamente.", data });
     } catch (error) {
         console.error("Error corrigiendo venta:", error.code || error.message);
-        return responderError(res, error, "No fue posible corregir la venta.", 400);
+        return responderError(res, error, "No fue posible corregir la venta.", 500);
     }
 };
 

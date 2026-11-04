@@ -1,7 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import * as XLSX from "xlsx";
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, HeadingLevel, WidthType } from "docx";
-import { saveAs } from "file-saver";
 import api from "../services/api";
 import { FelicitacionToast } from "./ReconocimientoToast";
 
@@ -122,13 +119,20 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
         }
     }
 
-    function descargarExcel() {
+    async function descargarExcel() {
         if (!filas.length) return alert("Primero consulte un rango con registros.");
-        const hoja = XLSX.utils.json_to_sheet(filas.map(filaExportacion));
-        const libro = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(libro, hoja, "Registros diarios");
-        const contenido = XLSX.write(libro, { bookType: "xlsx", type: "array" });
-        saveAs(new Blob([contenido]), `Registros_diarios_${fechaDesde}_${fechaHasta}.xlsx`);
+        try {
+            const [XLSX, fileSaver] = await Promise.all([import("xlsx"), import("file-saver")]);
+            const { saveAs } = fileSaver;
+            const hoja = XLSX.utils.json_to_sheet(filas.map(filaExportacion));
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, "Registros diarios");
+            const contenido = XLSX.write(libro, { bookType: "xlsx", type: "array" });
+            saveAs(new Blob([contenido]), `Registros_diarios_${fechaDesde}_${fechaHasta}.xlsx`);
+        } catch (error) {
+            console.error("No fue posible generar Excel de registros diarios:", error);
+            alert("No fue posible generar el archivo Excel. Intente nuevamente.");
+        }
     }
 
     async function descargarWord() {
@@ -145,6 +149,9 @@ export default function RegistrosDiarios({ asesores = [], asesorActual = null, e
                 setMensajeWord("No hay registros en ese periodo para exportar.");
                 return;
             }
+            const [docx, fileSaver] = await Promise.all([import("docx"), import("file-saver")]);
+            const { Document, Packer, Paragraph, Table, TableRow, TableCell, HeadingLevel, WidthType } = docx;
+            const { saveAs } = fileSaver;
             const celda = (texto, encabezado = false) => new TableCell({ children: [new Paragraph({ children: [{ text: String(texto ?? ""), bold: encabezado }] })] });
             const encabezados = ["Fecha", "Asesora", "Datos", "IDs de datos", "Análisis", "IDs de análisis"];
             const tabla = new Table({

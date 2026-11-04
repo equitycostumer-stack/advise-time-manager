@@ -51,6 +51,7 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
 
     const { usuario } = useAuth();
     const asesorActualId = asesorIdDeSesion(usuario);
+    const puedeAdministrarVentas = esAdministrador || usuario?.rol === "ADMINISTRADOR";
 
     const [resumenDia, setResumenDia] = useState({
         cantidad_ventas: 0,
@@ -170,13 +171,13 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
 
     async function anularVenta(id, clienteId) {
 
-        const motivo = window.prompt("Escribe el motivo de la anulación (mínimo 5 caracteres):", "");
+        const motivo = window.prompt("Escribe el motivo para eliminar/anular esta venta (mínimo 5 caracteres):", "");
         if (motivo === null || motivo.trim().length < 5) {
             if (motivo !== null) window.alert("La anulación requiere un motivo de al menos 5 caracteres.");
             return;
         }
         const confirmar = window.confirm(
-            `¿Confirmas anular esta venta${clienteId ? ` (cliente: ${clienteId})` : ""}?\n\nMotivo: ${motivo.trim()}\n\nEsta acción quedará auditada.`
+            `¿Confirmas retirar esta venta de los totales activos${clienteId ? ` (cliente: ${clienteId})` : ""}?\n\nMotivo: ${motivo.trim()}\n\nSe conservará como anulada y quedará auditada; no se borrará físicamente.`
         );
         if (!confirmar) return;
         setAnulando(id);
@@ -562,14 +563,15 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
                                     <div><span>Recaudo</span><strong>{formatearMoneda(venta.recaudo)}</strong></div>
                                 </div>
                                 <p className="sale-record-note">{venta.observacion || "Sin observación adicional."}</p>
-                                {venta.estado === "ACTIVA" && (
+                                {venta.estado === "ACTIVA" && (puedeAdministrarVentas || String(venta.asesor_id) === String(asesorActualId)) && (
                                     <button
                                         type="button"
                                         className="sale-record-cancel"
                                         onClick={() => anularVenta(venta.id, venta.cliente_id)}
                                         disabled={anulando === venta.id}
+                                        title="La venta se retirará de los totales activos y se conservará en auditoría."
                                     >
-                                        {anulando === venta.id ? "Anulando…" : "✕ Anular venta"}
+                                        {anulando === venta.id ? "Eliminando…" : "🗑 Eliminar de ventas activas"}
                                     </button>
                                 )}
                             </article>

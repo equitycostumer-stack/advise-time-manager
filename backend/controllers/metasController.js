@@ -17,7 +17,7 @@ module.exports = {
             return res.json({ ok: true, data: await service.listar(req.query.periodo_inicio, req.query.periodo_fin, asesorId) });
         } catch (error) {
             console.error("Error listando metas:", error.code || error.message);
-            return res.status(error.status || 400).json({ ok: false, mensaje: error.status ? error.message : "No fue posible consultar las metas." });
+            return res.status(error.status || 500).json({ ok: false, mensaje: error.status ? error.message : "No fue posible consultar las metas." });
         }
     },
     async historial(req, res) {
@@ -27,7 +27,7 @@ module.exports = {
             return res.json({ ok: true, data: await service.historial(req.query.periodo_inicio, req.query.periodo_fin, asesorId) });
         } catch (error) {
             console.error("Error consultando historial de metas:", error.code || error.message);
-            return res.status(error.status || 400).json({ ok: false, mensaje: error.status ? error.message : "No fue posible consultar el historial." });
+            return res.status(error.status || 500).json({ ok: false, mensaje: error.status ? error.message : "No fue posible consultar el historial." });
         }
     },
     async guardar(req, res) {
@@ -36,7 +36,7 @@ module.exports = {
             return res.json({ ok: true, data: await service.guardar(req.body, req.usuario?.id) });
         } catch (error) {
             console.error("Error guardando meta:", error.code || error.message);
-            return res.status(error.status || 400).json({ ok: false, mensaje: error.status ? error.message : "No fue posible guardar la meta." });
+            return res.status(error.status || 500).json({ ok: false, mensaje: error.status ? error.message : "No fue posible guardar la meta." });
         }
     }
 };

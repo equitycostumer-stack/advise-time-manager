@@ -1,18 +1,4 @@
 import { useState } from "react";
-import {
-    Document,
-    Packer,
-    Paragraph,
-    TextRun,
-    Table,
-    TableRow,
-    TableCell,
-    HeadingLevel,
-    WidthType,
-    AlignmentType,
-    ShadingType
-} from "docx";
-import { saveAs } from "file-saver";
 import api from "../services/api";
 
 // ======================================================
@@ -85,50 +71,6 @@ function formatearFechaLarga() {
 }
 
 // ======================================================
-// CELDA DE TABLA (helper)
-// ======================================================
-
-function celda(texto, { encabezado = false } = {}) {
-
-    return new TableCell({
-
-        shading: encabezado
-            ? { type: ShadingType.CLEAR, fill: "0D6EFD" }
-            : undefined,
-
-        children: [
-            new Paragraph({
-                children: [
-                    new TextRun({
-                        text: String(texto ?? ""),
-                        bold: encabezado,
-                        color: encabezado ? "FFFFFF" : "000000"
-                    })
-                ]
-            })
-        ]
-
-    });
-
-}
-
-function filaEncabezado(columnas) {
-
-    return new TableRow({
-        children: columnas.map(c => celda(c, { encabezado: true }))
-    });
-
-}
-
-function filaDatos(columnas) {
-
-    return new TableRow({
-        children: columnas.map(c => celda(c))
-    });
-
-}
-
-// ======================================================
 // COMPONENTE
 // ======================================================
 
@@ -141,6 +83,27 @@ export default function ExportarWord() {
         setGenerando(true);
 
         try {
+
+            const [docx, fileSaver] = await Promise.all([import("docx"), import("file-saver")]);
+            const {
+                Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+                HeadingLevel, WidthType, AlignmentType, ShadingType
+            } = docx;
+            const { saveAs } = fileSaver;
+            const celda = (texto, { encabezado = false } = {}) => new TableCell({
+                shading: encabezado ? { type: ShadingType.CLEAR, fill: "0D6EFD" } : undefined,
+                children: [new Paragraph({ children: [new TextRun({
+                    text: String(texto ?? ""),
+                    bold: encabezado,
+                    color: encabezado ? "FFFFFF" : "000000"
+                })] })]
+            });
+            const filaEncabezado = (columnas) => new TableRow({
+                children: columnas.map((columna) => celda(columna, { encabezado: true }))
+            });
+            const filaDatos = (columnas) => new TableRow({
+                children: columnas.map((columna) => celda(columna))
+            });
 
             // ==========================================
             // OBTENER DATOS FRESCOS

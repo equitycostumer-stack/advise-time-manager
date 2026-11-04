@@ -99,13 +99,19 @@ export default function PanelControlAdmin() {
     const [config, setConfig] = useState({ simbolo_moneda: "$", moneda: "USD" });
     const [cargando, setCargando] = useState(true);
     const [mensaje, setMensaje] = useState("");
+    const [mensajeMeta, setMensajeMeta] = useState("");
+    const [metaBorradores, setMetaBorradores] = useState({});
+    const [metaGuardandoId, setMetaGuardandoId] = useState(null);
     const [historialVisible, setHistorialVisible] = useState(false);
     const [felicitacion, setFelicitacion] = useState({ visible: false, nombre: "asesora", mensaje: "Tus resultados inspiran al equipo." });
     const felicitacionesMostradas = useRef(new Set());
+    const metasSucias = useRef(new Set());
+    const cargandoRef = useRef(false);
 
     const cargar = useCallback(async () => {
+        if (cargandoRef.current) return;
+        cargandoRef.current = true;
         setCargando(true);
-        setMensaje("");
         try {
             const peticiones = [
                 api.get(`/metas?periodo_inicio=${periodo.inicio}&periodo_fin=${periodo.fin}`),
@@ -123,43 +129,84 @@ export default function PanelControlAdmin() {
                 );
             }
 
-            const respuestas = await Promise.all(peticiones);
-            const metasRespuesta = respuestas[esAdministrador ? 2 : 3];
-            const configRespuesta = respuestas[esAdministrador ? 3 : 4];
-            setMetas(Array.isArray(metasRespuesta.data?.data) ? metasRespuesta.data.data : []);
-            setConfig((actual) => ({ ...actual, ...(configRespuesta.data?.data || {}) }));
-            if (esAdministrador) setHistorialMetas(Array.isArray(respuestas[4]?.data?.data) ? respuestas[4].data.data : []);
+            const respuestas = await Promise.allSettled(peticiones);
+            const obtener = (indice) => respuestas[indice]?.status === "fulfilled" ? respuestas[indice].value : null;
+            const errores = [];
+            const metasRespuesta = obtener(esAdministrador ? 2 : 3);
+            const configRespuesta = obtener(esAdministrador ? 3 : 4);
+            if (metasRespuesta) {
+                const listaMetas = Array.isArray(metasRespuesta.data?.data) ? metasRespuesta.data.data : [];
+                setMetas(listaMetas);
+                setMetaBorradores((actuales) => {
+                    const nuevos = { ...actuales };
+                    for (const fila of listaMetas) {
+                        const clave = String(fila.asesor_id);
+                        if (!metasSucias.current.has(clave)) {
+                            nuevos[clave] = {
+                                meta_ventas: String(fila.meta_ventas ?? 0),
+                                meta_recaudo: String(fila.meta_recaudo ?? 0)
+                            };
+                        }
+                    }
+                    return nuevos;
+                });
+            } else {
+                errores.push("metas");
+            }
+            if (configRespuesta) setConfig((actual) => ({ ...actual, ...(configRespuesta.data?.data || {}) }));
+            else errores.push("configuración");
 
             if (esAdministrador) {
-                setEjecutivo(respuestas[0].data?.data || null);
-                const lista = respuestas[1].data;
-                setAsesores(Array.isArray(lista) ? lista : lista?.data || []);
-                return;
+                const respuestaEjecutivo = obtener(0);
+                const respuestaAsesores = obtener(1);
+                const respuestaHistorial = obtener(4);
+                if (respuestaEjecutivo) setEjecutivo(respuestaEjecutivo.data?.data || null);
+                else errores.push("indicadores ejecutivos");
+                if (respuestaAsesores) {
+                    const lista = respuestaAsesores.data;
+                    setAsesores(Array.isArray(lista) ? lista : lista?.data || []);
+                } else errores.push("asesores");
+                if (respuestaHistorial) setHistorialMetas(Array.isArray(respuestaHistorial.data?.data) ? respuestaHistorial.data.data : []);
+                else errores.push("historial");
+            } else {
+                const respuestaDashboard = obtener(0);
+                const respuestaVentas = obtener(1);
+                const respuestaIncidencias = obtener(2);
+                if (respuestaDashboard) {
+                    const dashboard = respuestaDashboard.data || {};
+                    const filasDashboard = Array.isArray(dashboard.asesores) ? dashboard.asesores : [];
+                    const asesor = filasDashboard[0] || {};
+                    setEjecutivo({
+                        asesores: {
+                            total: 1,
+                            trabajando: asesor.estado === "TRABAJANDO" ? 1 : 0,
+                            en_pausa: ["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION"].includes(asesor.estado) ? 1 : 0,
+                            llegadas_tarde: asesor.llego_tarde ? 1 : 0
+                        },
+                        productividad: dashboard.productividad || {},
+                        ventas: { cantidad: 0, total_vendido: 0, total_recaudo: 0 },
+                        incidencias_pendientes: 0
+                    });
+                    setAsesores([asesor]);
+                } else errores.push("estado de jornada");
+                if (respuestaVentas) setVentasPersonales(Array.isArray(respuestaVentas.data?.data) ? respuestaVentas.data.data : []);
+                else errores.push("ventas personales");
+                if (respuestaIncidencias) {
+                    const listaIncidencias = Array.isArray(respuestaIncidencias.data?.incidencias)
+                        ? respuestaIncidencias.data.incidencias
+                        : Array.isArray(respuestaIncidencias.data) ? respuestaIncidencias.data : [];
+                    setEjecutivo((actual) => actual ? {
+                        ...actual,
+                        incidencias_pendientes: listaIncidencias.filter((i) => i.revisada === false || i.revisada === 0 || i.revisada === "0").length
+                    } : actual);
+                } else errores.push("incidencias");
             }
 
-            const dashboard = respuestas[0].data || {};
-            const filas = Array.isArray(dashboard.asesores) ? dashboard.asesores : [];
-            const asesor = filas[0] || {};
-            const ventas = Array.isArray(respuestas[1].data?.data) ? respuestas[1].data.data : [];
-            const incidencias = Array.isArray(respuestas[2].data?.incidencias)
-                ? respuestas[2].data.incidencias
-                : Array.isArray(respuestas[2].data) ? respuestas[2].data : [];
-            setEjecutivo({
-                asesores: {
-                    total: 1,
-                    trabajando: asesor.estado === "TRABAJANDO" ? 1 : 0,
-                    en_pausa: ["BREAK", "ALMUERZO", "BANO", "CAPACITACION", "REUNION"].includes(asesor.estado) ? 1 : 0,
-                    llegadas_tarde: asesor.llego_tarde ? 1 : 0
-                },
-                productividad: dashboard.productividad || {},
-                ventas: { cantidad: 0, total_vendido: 0, total_recaudo: 0 },
-                incidencias_pendientes: incidencias.filter((i) => i.revisada === false || i.revisada === 0 || i.revisada === "0").length
-            });
-            setAsesores([asesor]);
-            setVentasPersonales(ventas);
+            setMensaje(errores.length ? `No se pudieron actualizar algunos datos: ${errores.join(", ")}.` : "");
         } catch (error) {
             setMensaje(error.response?.data?.mensaje || "No fue posible cargar la información del panel.");
         } finally {
+            cargandoRef.current = false;
             setCargando(false);
         }
     }, [esAdministrador, periodo.inicio, periodo.fin, asesorId]);
@@ -191,7 +238,7 @@ export default function PanelControlAdmin() {
         };
     }, [asesores, metas, periodo, usuario, asesorId, ventasDelDia]);
 
-    const filas = useMemo(() => esAdministrador
+    const filasBase = useMemo(() => esAdministrador
         ? asesores.map((asesor) => metas.find((m) => Number(m.asesor_id) === Number(asesor.id)) || {
             asesor_id: asesor.id,
             asesor_nombre: asesor.nombre,
@@ -205,8 +252,13 @@ export default function PanelControlAdmin() {
         })
         : [filaPersonal], [asesores, esAdministrador, filaPersonal, metas, periodo]);
 
+    const filas = useMemo(() => filasBase.map((fila) => ({
+        ...fila,
+        ...(metaBorradores[String(fila.asesor_id)] || {})
+    })), [filasBase, metaBorradores]);
+
     useEffect(() => {
-        const cumplidas = filas.filter((fila) => (
+        const cumplidas = filasBase.filter((fila) => (
             Number(fila.meta_ventas || 0) > 0 && Number(fila.meta_recaudo || 0) > 0 &&
             Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) &&
             Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0)
@@ -223,29 +275,65 @@ export default function PanelControlAdmin() {
                 mensaje: "¡Cumpliste tus metas de ventas y recaudo! Tu disciplina inspira a todo el equipo."
             });
         }
-    }, [filas, periodo.inicio, periodo.fin]);
+    }, [filasBase, periodo.inicio, periodo.fin]);
 
     function cambiarMeta(asesorId, campo, valor) {
-        setMetas((actual) => actual.map((meta) => Number(meta.asesor_id) === Number(asesorId) ? { ...meta, [campo]: valor } : meta));
+        const clave = String(asesorId);
+        metasSucias.current.add(clave);
+        setMetaBorradores((actuales) => ({
+            ...actuales,
+            [clave]: {
+                meta_ventas: actuales[clave]?.meta_ventas ?? String(filasBase.find((fila) => String(fila.asesor_id) === clave)?.meta_ventas ?? 0),
+                meta_recaudo: actuales[clave]?.meta_recaudo ?? String(filasBase.find((fila) => String(fila.asesor_id) === clave)?.meta_recaudo ?? 0),
+                [campo]: valor
+            }
+        }));
     }
 
     async function guardarMeta(fila) {
-        const cumpleMetaVentas = Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) && Number(fila.meta_ventas || 0) > 0;
-        const cumpleMetaRecaudo = Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0) && Number(fila.meta_recaudo || 0) > 0;
-        if (cumpleMetaVentas && cumpleMetaRecaudo) setMensaje(`🎉 ¡Felicitaciones, ${fila.asesor_nombre || "asesor"}! Cumplió su meta de ventas y recaudo.`);
+        const clave = String(fila.asesor_id);
+        if (metaGuardandoId === clave) return;
+        const metaVentasTexto = String(fila.meta_ventas ?? "").trim();
+        const metaRecaudoTexto = String(fila.meta_recaudo ?? "").trim();
+        if (!metaVentasTexto || !metaRecaudoTexto) {
+            setMensajeMeta("Completa ambas metas o escribe 0 si no deseas fijar una de ellas.");
+            return;
+        }
+        const metaVentas = Number(metaVentasTexto);
+        const metaRecaudo = Number(metaRecaudoTexto);
+        if (!Number.isInteger(metaVentas) || metaVentas < 0 || metaVentas > 1000000) {
+            setMensajeMeta("La meta de ventas debe ser un entero entre 0 y 1.000.000.");
+            return;
+        }
+        if (!Number.isFinite(metaRecaudo) || metaRecaudo < 0 || metaRecaudo > 100000000000) {
+            setMensajeMeta("La meta de recaudo debe estar entre 0 y 100.000.000.000.");
+            return;
+        }
+        setMetaGuardandoId(clave);
+        setMensajeMeta("Guardando meta…");
         try {
-            await api.put("/metas", {
+            const { data } = await api.put("/metas", {
                 asesor_id: fila.asesor_id,
                 periodo_tipo: periodo.tipo,
                 periodo_inicio: periodo.inicio,
                 periodo_fin: periodo.fin,
-                meta_ventas: Number(fila.meta_ventas || 0),
-                meta_recaudo: Number(fila.meta_recaudo || 0)
+                meta_ventas: metaVentas,
+                meta_recaudo: metaRecaudo
             });
-            setMensaje(`Meta guardada para ${fila.asesor_nombre || "el asesor"}.`);
+            metasSucias.current.delete(clave);
+            setMetaBorradores((actuales) => ({
+                ...actuales,
+                [clave]: {
+                    meta_ventas: String(data?.data?.meta_ventas ?? metaVentas),
+                    meta_recaudo: String(data?.data?.meta_recaudo ?? metaRecaudo)
+                }
+            }));
+            setMensajeMeta(`Meta guardada para ${fila.asesor_nombre || "el asesor"}.`);
             await cargar();
         } catch (error) {
-            setMensaje(error.response?.data?.mensaje || "No fue posible guardar la meta.");
+            setMensajeMeta(error.response?.data?.mensaje || "No fue posible guardar la meta.");
+        } finally {
+            setMetaGuardandoId(null);
         }
     }
 
@@ -253,7 +341,7 @@ export default function PanelControlAdmin() {
         return <section style={{ ...tarjeta, marginTop: 24 }}><strong>⏳ Cargando Centro de Control...</strong></section>;
     }
 
-    const metasCumplidas = filas.filter((fila) => (
+    const metasCumplidas = filasBase.filter((fila) => (
         Number(fila.meta_ventas || 0) > 0 && Number(fila.meta_recaudo || 0) > 0 &&
         Number(fila.ventas_actuales || 0) >= Number(fila.meta_ventas || 0) &&
         Number(fila.recaudo_actual || 0) >= Number(fila.meta_recaudo || 0)
@@ -279,7 +367,8 @@ export default function PanelControlAdmin() {
         <div className="executive-summary-card" style={{ ...tarjeta, borderTop: "4px solid #b8941f" }}>
             <h2 style={{ margin: 0, color: "#245b3a" }}>{titulo}</h2>
             <p style={{ color: "#66756b", marginBottom: 0 }}>{descripcion}</p>
-            {mensaje && <p style={{ color: mensaje.includes("🎉") ? "#176b45" : "#245b3a", fontWeight: "bold" }}>{mensaje}</p>}
+            {mensaje && <p role="status" style={{ color: mensaje.includes("🎉") ? "#176b45" : "#245b3a", fontWeight: "bold" }}>{mensaje}</p>}
+            {mensajeMeta && <p role="status" style={{ color: mensajeMeta.startsWith("Meta guardada") ? "#176b45" : "#9a4d00", fontWeight: "bold" }}>{mensajeMeta}</p>}
             {metasCumplidas.length > 0 && <div className="goal-celebration" role="status"><strong>🎉 ¡Felicitaciones!</strong><span>{metasCumplidas.map((fila) => fila.asesor_nombre || "Asesor").join(", ")} cumplió su meta de ventas y recaudo.</span><small>Excelente trabajo y compromiso con los resultados.</small></div>}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginTop: 14 }}>
                 {tarjetas.map(([icono, etiqueta, valor]) => (
@@ -302,7 +391,7 @@ export default function PanelControlAdmin() {
                 <ProgresoMetaAsesor fila={filaPersonal} periodo={periodo} config={config} diasPendientes={diasRestantes(periodo)} />
                 <InsigniasAsesor ventas={ventasPersonales} fila={filaPersonal} periodo={periodo} config={config} />
             </>}
-            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", minWidth: 820, borderCollapse: "collapse" }}><thead><tr>{["Asesor", "Meta ventas", "Ventas", "% ventas", "Meta recaudo", "Recaudo", "% recaudo", ...(esAdministrador ? ["Acción"] : [])].map((h) => <th key={h} style={{ textAlign: "left", padding: 8, background: "#f7fbf8", color: "#245b3a" }}>{h}</th>)}</tr></thead><tbody>{filas.map((fila) => { const ventasActuales = Number(fila.ventas_actuales || 0); const recaudoActual = Number(fila.recaudo_actual || 0); const pv = porcentaje(ventasActuales, fila.meta_ventas); const pr = porcentaje(recaudoActual, fila.meta_recaudo); const pvReal = porcentajeReal(ventasActuales, fila.meta_ventas); const prReal = porcentajeReal(recaudoActual, fila.meta_recaudo); const diasTranscurridos = Math.max(1, Math.ceil((Date.now() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const diasPeriodo = Math.max(1, Math.ceil((new Date(`${periodo.fin}T23:59:59-05:00`).getTime() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const proyeccionVentas = Math.round(ventasActuales / Math.min(diasTranscurridos, diasPeriodo) * diasPeriodo); return <tr key={fila.asesor_id} style={{ borderBottom: "1px solid #e5eee8" }}><td style={{ padding: 8, fontWeight: "bold" }}>{fila.asesor_nombre || "Asesor"}</td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" step="1" value={fila.meta_ventas || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_ventas", ev.target.value)} style={{ ...input, width: 100 }} /> : `${Number(fila.meta_ventas || 0).toLocaleString("es-CO")} ventas`}</td><td style={{ padding: 8 }}>{ventasActuales}</td><td style={{ padding: 8, minWidth: 150 }}><strong style={{ color: progresoColor(pvReal) }}>{pvReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pv}%`, height: "100%", background: progresoColor(pvReal), borderRadius: 8 }} /></div><small>Proyección: {proyeccionVentas} ventas</small></td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" value={fila.meta_recaudo || 0} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_recaudo", ev.target.value)} style={{ ...input, width: 120 }} /> : moneda(fila.meta_recaudo, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8 }}>{moneda(recaudoActual, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8, minWidth: 120 }}><strong style={{ color: progresoColor(prReal) }}>{prReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pr}%`, height: "100%", background: progresoColor(prReal), borderRadius: 8 }} /></div></td>{esAdministrador && <td style={{ padding: 8 }}><button type="button" onClick={() => guardarMeta(fila)} style={{ padding: "8px 10px", background: "#b8941f", color: "#fff", border: 0, borderRadius: 6, fontWeight: "bold" }}>Guardar</button></td>}</tr>; })}</tbody></table></div>
+            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", minWidth: 820, borderCollapse: "collapse" }}><thead><tr>{["Asesor", "Meta ventas", "Ventas", "% ventas", "Meta recaudo", "Recaudo", "% recaudo", ...(esAdministrador ? ["Acción"] : [])].map((h) => <th key={h} style={{ textAlign: "left", padding: 8, background: "#f7fbf8", color: "#245b3a" }}>{h}</th>)}</tr></thead><tbody>{filas.map((fila) => { const ventasActuales = Number(fila.ventas_actuales || 0); const recaudoActual = Number(fila.recaudo_actual || 0); const pv = porcentaje(ventasActuales, fila.meta_ventas); const pr = porcentaje(recaudoActual, fila.meta_recaudo); const pvReal = porcentajeReal(ventasActuales, fila.meta_ventas); const prReal = porcentajeReal(recaudoActual, fila.meta_recaudo); const diasTranscurridos = Math.max(1, Math.ceil((Date.now() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const diasPeriodo = Math.max(1, Math.ceil((new Date(`${periodo.fin}T23:59:59-05:00`).getTime() - new Date(`${periodo.inicio}T00:00:00-05:00`).getTime()) / 86400000)); const proyeccionVentas = Math.round(ventasActuales / Math.min(diasTranscurridos, diasPeriodo) * diasPeriodo); return <tr key={fila.asesor_id} style={{ borderBottom: "1px solid #e5eee8" }}><td style={{ padding: 8, fontWeight: "bold" }}>{fila.asesor_nombre || "Asesor"}</td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" step="1" value={fila.meta_ventas ?? ""} aria-label={`Meta de ventas para ${fila.asesor_nombre || "asesor"}`} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_ventas", ev.target.value)} style={{ ...input, width: 100 }} /> : `${Number(fila.meta_ventas || 0).toLocaleString("es-CO")} ventas`}</td><td style={{ padding: 8 }}>{ventasActuales}</td><td style={{ padding: 8, minWidth: 150 }}><strong style={{ color: progresoColor(pvReal) }}>{pvReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pv}%`, height: "100%", background: progresoColor(pvReal), borderRadius: 8 }} /></div><small>Proyección: {proyeccionVentas} ventas</small></td><td style={{ padding: 8 }}>{esAdministrador ? <input type="number" min="0" value={fila.meta_recaudo ?? ""} aria-label={`Meta de recaudo para ${fila.asesor_nombre || "asesor"}`} onChange={(ev) => cambiarMeta(fila.asesor_id, "meta_recaudo", ev.target.value)} style={{ ...input, width: 120 }} /> : moneda(fila.meta_recaudo, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8 }}>{moneda(recaudoActual, config.simbolo_moneda, config.moneda)}</td><td style={{ padding: 8, minWidth: 120 }}><strong style={{ color: progresoColor(prReal) }}>{prReal}%</strong><div style={{ height: 7, background: "#e8eee9", borderRadius: 8, marginTop: 5 }}><div style={{ width: `${pr}%`, height: "100%", background: progresoColor(prReal), borderRadius: 8 }} /></div></td>{esAdministrador && <td style={{ padding: 8 }}><button type="button" onClick={() => guardarMeta(fila)} style={{ padding: "8px 10px", background: "#b8941f", color: "#fff", border: 0, borderRadius: 6, fontWeight: "bold" }}>Guardar</button></td>}</tr>; })}</tbody></table></div>
         </div>
         {esAdministrador && <div style={tarjeta} className="goals-history-card">
             <button type="button" className="goals-history-toggle" onClick={() => setHistorialVisible((visible) => !visible)} aria-expanded={historialVisible}>

@@ -2,6 +2,17 @@ function rellenar(numero) {
     return String(numero).padStart(2, "0");
 }
 
+export function obtenerFechaActualColombia(fecha = new Date()) {
+    const partes = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Bogota",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(fecha).reduce((resultado, parte) => ({ ...resultado, [parte.type]: parte.value }), {});
+
+    return { year: Number(partes.year), month: Number(partes.month), day: Number(partes.day) };
+}
+
 export function calcularPeriodoQuincenaAnterior({ year, month, day }) {
     if (![year, month, day].every(Number.isInteger) || month < 1 || month > 12 || day < 1 || day > 31) {
         throw new TypeError("La fecha para calcular la quincena debe ser válida.");

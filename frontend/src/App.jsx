@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Login from "./pages/Login";
 import logo from "./assets/Logo.png";
 import CambiarPassword from "./components/CambiarPassword";
@@ -28,6 +28,7 @@ import LogrosRecientes from "./components/LogrosRecientes";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
 import AtajosRapidos from "./components/AtajosRapidos";
+import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, obtenerFechaActualColombia, ordenarRankingQuincenal } from "./utils/periodosVentas";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -201,6 +202,36 @@ function App() {
     }
   });
   const [tiempoJornadaEnVivo, setTiempoJornadaEnVivo] = useState(0);
+  const [reconocimientoQuincenalAnterior, setReconocimientoQuincenalAnterior] = useState({ ganadora: null, cargando: true, error: "", periodoLabel: "", visible: false });
+
+  const cargarReconocimientoQuincenalAnterior = useCallback(async () => {
+    if (!usuario) return;
+    const periodo = calcularPeriodoQuincenaAnterior(obtenerFechaActualColombia());
+    const periodoLabel = etiquetarPeriodoQuincenal(periodo);
+    setReconocimientoQuincenalAnterior((actual) => ({ ...actual, cargando: true, error: "", periodoLabel }));
+    try {
+      const [respuestaVentas, respuestaConfig] = await Promise.all([
+        api.get(`/ventas/resumen/asesores/periodo?fecha_desde=${periodo.desde}&fecha_hasta=${periodo.hasta}`),
+        api.get("/configuracion-ventas").catch(() => null)
+      ]);
+      const conVentas = (Array.isArray(respuestaVentas.data?.data) ? respuestaVentas.data.data : []).filter((fila) => Number(fila.cantidad_ventas || 0) > 0);
+      const config = respuestaConfig?.data?.data || {};
+      const estaHabilitado = (valor) => ![false, 0, "0", "false", "no"].includes(typeof valor === "string" ? valor.toLowerCase() : valor);
+      const esVisible = usuario?.rol === "ADMINISTRADOR" || (estaHabilitado(config.ranking_activo) && estaHabilitado(config.ranking_visible_asesores));
+      setReconocimientoQuincenalAnterior({ ganadora: ordenarRankingQuincenal(conVentas)[0] || null, cargando: false, error: "", periodoLabel, visible: esVisible });
+    } catch (error) {
+      console.error("No fue posible cargar el reconocimiento quincenal:", error);
+      setReconocimientoQuincenalAnterior((actual) => ({ ...actual, cargando: false, error: "No fue posible cargar el reconocimiento." }));
+    }
+  }, [usuario]);
+
+  useEffect(() => {
+    if (!usuario) return undefined;
+    const actualizarReconocimiento = () => { void cargarReconocimientoQuincenalAnterior(); };
+    actualizarReconocimiento();
+    window.addEventListener("venta-registrada", actualizarReconocimiento);
+    return () => window.removeEventListener("venta-registrada", actualizarReconocimiento);
+  }, [usuario, cargarReconocimientoQuincenalAnterior]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = tema;
@@ -408,7 +439,7 @@ function App() {
       </aside>
       <main className="app-main">
         <div className="card">
-        <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} />
+        <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} reconocimientoQuincenalAnterior={reconocimientoQuincenalAnterior} />
         <ReconocimientoGlobal />
 
         <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
@@ -619,6 +650,11 @@ function App() {
                 movimientos={resumen?.movimientos || []}
                 asesorSeleccionadoId={asesor}
                 asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
+                ganadoraQuincenaAnterior={reconocimientoQuincenalAnterior.ganadora}
+                cargandoGanadoraQuincenaAnterior={reconocimientoQuincenalAnterior.cargando}
+                errorGanadoraQuincenaAnterior={reconocimientoQuincenalAnterior.error}
+                etiquetaQuincenaAnterior={reconocimientoQuincenalAnterior.periodoLabel}
+                onRefrescarGanadoraQuincenaAnterior={cargarReconocimientoQuincenalAnterior}
               />
             </section>
 

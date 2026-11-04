@@ -4,20 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import RankingPodium from "./RankingPodium";
 import VentasChart from "./VentasChart";
 import ActivityTimeline from "./ActivityTimeline";
-import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, ordenarRankingQuincenal } from "../utils/periodosVentas";
-
-function ahoraColombia() {
-    const partes = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "America/Bogota",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }).formatToParts(new Date()).reduce((resultado, parte) => ({ ...resultado, [parte.type]: parte.value }), {});
-    return { year: Number(partes.year), month: Number(partes.month), day: Number(partes.day) };
-}
+import { obtenerFechaActualColombia, ordenarRankingQuincenal } from "../utils/periodosVentas";
 
 function obtenerPeriodoInicial() {
-    const ahora = ahoraColombia();
+    const ahora = obtenerFechaActualColombia();
     const mes = `${ahora.year}-${String(ahora.month).padStart(2, "0")}`;
     return { mes, quincena: ahora.day <= 15 ? "1" : "2" };
 }
@@ -48,7 +38,17 @@ function asesorIdDeSesion(usuario) {
     }
 }
 
-export default function VentasDashboard({ esAdministrador = false, movimientos = [], asesorSeleccionadoId = null, asesorSeleccionadoNombre = "" }) {
+export default function VentasDashboard({
+    esAdministrador = false,
+    movimientos = [],
+    asesorSeleccionadoId = null,
+    asesorSeleccionadoNombre = "",
+    ganadoraQuincenaAnterior = null,
+    cargandoGanadoraQuincenaAnterior = false,
+    errorGanadoraQuincenaAnterior = "",
+    etiquetaQuincenaAnterior = "",
+    onRefrescarGanadoraQuincenaAnterior
+}) {
 
     const { usuario } = useAuth();
     const asesorActualId = asesorIdDeSesion(usuario);
@@ -82,9 +82,6 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
     const [mesRanking, setMesRanking] = useState(periodoInicial.mes);
     const [quincenaRanking, setQuincenaRanking] = useState(periodoInicial.quincena);
     const [rankingQuincenal, setRankingQuincenal] = useState([]);
-    const [mejorAsesoraAnterior, setMejorAsesoraAnterior] = useState(null);
-    const [cargandoMejorAsesora, setCargandoMejorAsesora] = useState(true);
-    const [errorMejorAsesora, setErrorMejorAsesora] = useState("");
     const [cargandoRanking, setCargandoRanking] = useState(false);
     const [configVentas, setConfigVentas] = useState({ moneda: "USD", simbolo_moneda: "$", ranking_activo: true, ranking_visible_asesores: true, criterio_ranking: "RECAUDO" });
 
@@ -161,30 +158,12 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
         }
     }
 
-    async function cargarMejorAsesoraAnterior() {
-        const periodo = calcularPeriodoQuincenaAnterior(ahoraColombia());
-        setCargandoMejorAsesora(true);
-        try {
-            const { data } = await api.get(`/ventas/resumen/asesores/periodo?fecha_desde=${periodo.desde}&fecha_hasta=${periodo.hasta}`);
-            const asesoresConVentas = (Array.isArray(data?.data) ? data.data : [])
-                .filter((asesor) => Number(asesor.cantidad_ventas || 0) > 0);
-            setMejorAsesoraAnterior(ordenarRankingQuincenal(asesoresConVentas)[0] || null);
-            setErrorMejorAsesora("");
-        } catch (error) {
-            console.error("Error cargando a la mejor asesora de la quincena anterior:", error);
-            setMejorAsesoraAnterior(null);
-            setErrorMejorAsesora("No fue posible consultar las ventas de la quincena anterior.");
-        } finally {
-            setCargandoMejorAsesora(false);
-        }
-    }
-
     async function actualizarPanel() {
         setRevisionGrafica((revision) => revision + 1);
         await Promise.all([
             cargarVentas({ manual: true }),
             cargarRankingQuincenal(),
-            cargarMejorAsesoraAnterior()
+            onRefrescarGanadoraQuincenaAnterior?.()
         ]);
     }
 
@@ -231,7 +210,6 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
 
         cargarVentas();
         cargarRankingQuincenal();
-        cargarMejorAsesoraAnterior();
 
         const intervalo = setInterval(() => {
             cargarVentas();
@@ -246,7 +224,6 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
         const actualizarDespuesDeVenta = () => {
             cargarVentas();
             cargarRankingQuincenal();
-            cargarMejorAsesoraAnterior();
             setRevisionGrafica((revision) => revision + 1);
         };
         window.addEventListener("venta-registrada", actualizarDespuesDeVenta);
@@ -302,7 +279,6 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
             ? porAsesor
             : [];
     const ranking = ordenarRankingQuincenal(rankingFuente);
-    const etiquetaQuincenaAnterior = etiquetarPeriodoQuincenal(calcularPeriodoQuincenaAnterior(ahoraColombia()));
 
     // ======================================================
     // INTERFAZ
@@ -473,16 +449,17 @@ export default function VentasDashboard({ esAdministrador = false, movimientos =
                     <div className="previous-fortnight-winner__content" aria-live="polite">
                         <p className="previous-fortnight-winner__eyebrow">Mejor asesora de la quincena anterior</p>
                         <strong className="previous-fortnight-winner__name">
-                            {cargandoMejorAsesora ? "Consultando resultados…" : errorMejorAsesora || mejorAsesoraAnterior?.asesor_nombre || "Aún no hay ventas activas en este periodo"}
+                            {cargandoGanadoraQuincenaAnterior ? "Consultando resultados…" : errorGanadoraQuincenaAnterior || ganadoraQuincenaAnterior?.asesor_nombre || "¡La próxima ganadora puedes ser tú!"}
                         </strong>
                         <p className="previous-fortnight-winner__period">{etiquetaQuincenaAnterior} · seleccionada automáticamente</p>
-                        {mejorAsesoraAnterior && !cargandoMejorAsesora && (
+                        {ganadoraQuincenaAnterior && !cargandoGanadoraQuincenaAnterior && (
                             <div className="previous-fortnight-winner__stats">
-                                <span>{Number(mejorAsesoraAnterior.cantidad_ventas || 0)} ventas</span>
-                                <span>Vendido: {formatearMoneda(mejorAsesoraAnterior.total_vendido)}</span>
-                                <span>Recaudo: {formatearMoneda(mejorAsesoraAnterior.total_recaudo)}</span>
+                                <span>{Number(ganadoraQuincenaAnterior.cantidad_ventas || 0)} ventas</span>
+                                <span>Vendido: {formatearMoneda(ganadoraQuincenaAnterior.total_vendido)}</span>
+                                <span>Recaudo: {formatearMoneda(ganadoraQuincenaAnterior.total_recaudo)}</span>
                             </div>
                         )}
+                        {!ganadoraQuincenaAnterior && !cargandoGanadoraQuincenaAnterior && !errorGanadoraQuincenaAnterior && <small className="previous-fortnight-winner__criteria">Aún no hay ventas activas en ese periodo. ¡Cada venta cuenta!</small>}
                         <small className="previous-fortnight-winner__criteria">Criterio: más ventas; empate por recaudo y después total vendido.</small>
                     </div>
                 </section>

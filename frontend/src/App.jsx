@@ -25,6 +25,7 @@ import ValidarVentas from "./components/ValidarVentas";
 import RegistrosDiarios from "./components/RegistrosDiarios";
 import ReconocimientoGlobal from "./components/ReconocimientoToast";
 import LogrosRecientes from "./components/LogrosRecientes";
+import ReconocimientoQuincenal from "./components/ReconocimientoQuincenal";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
 import AtajosRapidos from "./components/AtajosRapidos";
@@ -439,7 +440,7 @@ function App() {
       </aside>
       <main className="app-main">
         <div className="card">
-        <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} reconocimientoQuincenalAnterior={reconocimientoQuincenalAnterior} />
+        <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} />
         <ReconocimientoGlobal />
 
         <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
@@ -641,6 +642,7 @@ function App() {
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
                 <MessageCard mensaje={mensaje} />
                 <LogrosRecientes />
+                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal reconocimiento={reconocimientoQuincenalAnterior} />}
               </aside>
             </div>
 
@@ -650,10 +652,6 @@ function App() {
                 movimientos={resumen?.movimientos || []}
                 asesorSeleccionadoId={asesor}
                 asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
-                ganadoraQuincenaAnterior={reconocimientoQuincenalAnterior.ganadora}
-                cargandoGanadoraQuincenaAnterior={reconocimientoQuincenalAnterior.cargando}
-                errorGanadoraQuincenaAnterior={reconocimientoQuincenalAnterior.error}
-                etiquetaQuincenaAnterior={reconocimientoQuincenalAnterior.periodoLabel}
                 onRefrescarGanadoraQuincenaAnterior={cargarReconocimientoQuincenalAnterior}
               />
             </section>

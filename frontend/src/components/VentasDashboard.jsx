@@ -43,10 +43,6 @@ export default function VentasDashboard({
     movimientos = [],
     asesorSeleccionadoId = null,
     asesorSeleccionadoNombre = "",
-    ganadoraQuincenaAnterior = null,
-    cargandoGanadoraQuincenaAnterior = false,
-    errorGanadoraQuincenaAnterior = "",
-    etiquetaQuincenaAnterior = "",
     onRefrescarGanadoraQuincenaAnterior
 }) {
 
@@ -444,25 +440,6 @@ export default function VentasDashboard({
 
             {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
             <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
-                <section className="previous-fortnight-winner" aria-label="Mejor asesora de la quincena anterior">
-                    <div className="previous-fortnight-winner__icon" aria-hidden="true">🏆</div>
-                    <div className="previous-fortnight-winner__content" aria-live="polite">
-                        <p className="previous-fortnight-winner__eyebrow">Mejor asesora de la quincena anterior</p>
-                        <strong className="previous-fortnight-winner__name">
-                            {cargandoGanadoraQuincenaAnterior ? "Consultando resultados…" : errorGanadoraQuincenaAnterior || ganadoraQuincenaAnterior?.asesor_nombre || "¡La próxima ganadora puedes ser tú!"}
-                        </strong>
-                        <p className="previous-fortnight-winner__period">{etiquetaQuincenaAnterior} · seleccionada automáticamente</p>
-                        {ganadoraQuincenaAnterior && !cargandoGanadoraQuincenaAnterior && (
-                            <div className="previous-fortnight-winner__stats">
-                                <span>{Number(ganadoraQuincenaAnterior.cantidad_ventas || 0)} ventas</span>
-                                <span>Vendido: {formatearMoneda(ganadoraQuincenaAnterior.total_vendido)}</span>
-                                <span>Recaudo: {formatearMoneda(ganadoraQuincenaAnterior.total_recaudo)}</span>
-                            </div>
-                        )}
-                        {!ganadoraQuincenaAnterior && !cargandoGanadoraQuincenaAnterior && !errorGanadoraQuincenaAnterior && <small className="previous-fortnight-winner__criteria">Aún no hay ventas activas en ese periodo. ¡Cada venta cuenta!</small>}
-                        <small className="previous-fortnight-winner__criteria">Criterio: más ventas; empate por recaudo y después total vendido.</small>
-                    </div>
-                </section>
                 <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Ranking de ventas y recaudo</h3>
                 <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 13 }}>Ordenado primero por cantidad de ventas, después por recaudo y luego por valor vendido.</p>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>

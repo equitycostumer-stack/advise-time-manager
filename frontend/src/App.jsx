@@ -642,7 +642,7 @@ function App() {
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
                 <MessageCard mensaje={mensaje} />
                 <LogrosRecientes />
-                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal reconocimiento={reconocimientoQuincenalAnterior} />}
+                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal id="reconocimiento-quincenal-inicio" reconocimiento={reconocimientoQuincenalAnterior} />}
               </aside>
             </div>
 
@@ -666,6 +666,16 @@ function App() {
         )}
       </div>
       </main>
+      {reconocimientoQuincenalAnterior.visible && <button
+        type="button"
+        className="recognition-fab"
+        onClick={() => irASeccion("reconocimiento-quincenal-inicio")}
+        aria-label="Ir a la mejor asesora de la quincena anterior"
+        title="Ver a la mejor asesora de la quincena anterior"
+      >
+        <span className="recognition-fab__icon" aria-hidden="true">🏆</span>
+        <span className="recognition-fab__label">Mejor quincena</span>
+      </button>}
     </div>
   );
 }

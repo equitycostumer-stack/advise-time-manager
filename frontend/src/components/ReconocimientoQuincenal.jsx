@@ -4,7 +4,7 @@ function formatearMoneda(valor) {
     return `$${Number(valor || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
 }
 
-export default function ReconocimientoQuincenal({ reconocimiento = {} }) {
+export default function ReconocimientoQuincenal({ reconocimiento = {}, id }) {
     const { ganadora, cargando, error, periodoLabel } = reconocimiento;
     const mensajeNombre = useMemo(() => {
         if (cargando) return "Calculando el reconocimiento…";
@@ -13,7 +13,7 @@ export default function ReconocimientoQuincenal({ reconocimiento = {} }) {
     }, [cargando, error, ganadora]);
 
     return (
-        <section className="previous-fortnight-winner" aria-label="Mejor asesora de la quincena anterior">
+        <section id={id} className="previous-fortnight-winner" aria-label="Mejor asesora de la quincena anterior">
             <div className="previous-fortnight-winner__icon" aria-hidden="true">🏆</div>
             <div className="previous-fortnight-winner__content" aria-live="polite">
                 <p className="previous-fortnight-winner__eyebrow">Mejor asesora de la quincena anterior · ¡Felicidades!</p>

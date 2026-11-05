@@ -975,3 +975,65 @@ html[data-theme="dark"] #root .previous-fortnight-winner__stats span {
     .header-controls .theme-toggle-button { padding:9px 10px; }
     .header-controls .logout-button { padding:9px 10px; }
 }
+.recognition-fab {
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    z-index:9000;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    min-height:58px;
+    padding:0 18px;
+    border:1px solid #9a7412;
+    border-radius:999px;
+    background:linear-gradient(135deg,#fff1bd,#d4af37);
+    color:#382800;
+    box-shadow:0 10px 28px rgba(0,0,0,.28),0 0 0 4px rgba(212,175,55,.16);
+    font:inherit;
+    font-weight:850;
+    cursor:pointer;
+    transition:transform .18s ease,box-shadow .18s ease;
+}
+.recognition-fab:hover {
+    transform:translateY(-3px);
+    box-shadow:0 14px 32px rgba(0,0,0,.32),0 0 0 5px rgba(212,175,55,.2);
+}
+.recognition-fab:focus-visible {
+    outline:3px solid #2563eb;
+    outline-offset:4px;
+}
+.recognition-fab__icon { font-size:25px; line-height:1; }
+.recognition-fab__label { font-size:13px; white-space:nowrap; }
+html[data-theme="dark"] .recognition-fab {
+    border-color:#a58835;
+    background:#000;
+    color:#f5d66e;
+    box-shadow:0 10px 28px rgba(0,0,0,.72),0 0 0 4px rgba(212,175,55,.15);
+}
+@media (max-width:600px) {
+    .recognition-fab {
+        right:14px;
+        bottom:calc(14px + env(safe-area-inset-bottom, 0px));
+        width:56px;
+        height:56px;
+        min-height:56px;
+        padding:0;
+        gap:0;
+    }
+    .recognition-fab__label {
+        position:absolute;
+        width:1px;
+        height:1px;
+        padding:0;
+        margin:-1px;
+        overflow:hidden;
+        clip:rect(0,0,0,0);
+        white-space:nowrap;
+        border:0;
+    }
+}
+@media (prefers-reduced-motion:reduce) {
+    .recognition-fab { transition:none; }
+}

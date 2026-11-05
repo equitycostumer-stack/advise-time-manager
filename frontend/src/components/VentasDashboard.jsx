@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import RankingPodium from "./RankingPodium";
 import VentasChart from "./VentasChart";
 import ActivityTimeline from "./ActivityTimeline";
+import ReconocimientoQuincenal from "./ReconocimientoQuincenal";
 import { obtenerFechaActualColombia, ordenarRankingQuincenal } from "../utils/periodosVentas";
 
 function obtenerPeriodoInicial() {
@@ -43,6 +44,7 @@ export default function VentasDashboard({
     movimientos = [],
     asesorSeleccionadoId = null,
     asesorSeleccionadoNombre = "",
+    reconocimientoQuincenalAnterior = {},
     onRefrescarGanadoraQuincenaAnterior
 }) {
 
@@ -441,6 +443,7 @@ export default function VentasDashboard({
             {configVentas.ranking_activo && (esAdministrador || configVentas.ranking_visible_asesores) && (
             <div style={{ marginTop: "25px", background: "#ffffff", border: "1px solid #dddddd", borderRadius: "10px", padding: "15px" }}>
                 <h3 style={{ margin: "0 0 12px", color: "#0d6efd" }}>🏆 Ranking de ventas y recaudo</h3>
+                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal reconocimiento={reconocimientoQuincenalAnterior} />}
                 <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 13 }}>Ordenado primero por cantidad de ventas, después por recaudo y luego por valor vendido.</p>
                 <p style={{ margin: "0 0 12px", color: "#666" }}>
                     Periodo calculado automáticamente: {quincenaRanking === "1" ? "del 01 al 15" : "del 16 al último día"} de {new Date(`${mesRanking}-02T12:00:00`).toLocaleDateString("es-CO", { month: "long", year: "numeric" })}.

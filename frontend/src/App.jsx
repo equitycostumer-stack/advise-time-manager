@@ -652,6 +652,7 @@ function App() {
                 movimientos={resumen?.movimientos || []}
                 asesorSeleccionadoId={asesor}
                 asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
+                reconocimientoQuincenalAnterior={reconocimientoQuincenalAnterior}
                 onRefrescarGanadoraQuincenaAnterior={cargarReconocimientoQuincenalAnterior}
               />
             </section>

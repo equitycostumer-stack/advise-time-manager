@@ -2,6 +2,7 @@
 // ADVISE SOLUTIONS SERVICES - Ventas Repository
 // ======================================================
 const db = require("../config/db");
+const { asegurarColumnaGeneroAsesores } = require("../migrations/asesoresGenero");
 
 class VentasRepository {
     async ejecutar(sql, parametros = []) {
@@ -144,6 +145,31 @@ class VentasRepository {
                      CASE WHEN ? = 'CANTIDAD_VENTAS' THEN COUNT(v.id) ELSE 0 END DESC,
                      COALESCE(SUM(v.valor), 0) DESC, a.nombre ASC LIMIT 1000
         `, [fechaDesde, fechaHasta, asesorId, asesorId, criterio, criterio, criterio]);
+    }
+
+    async obtenerMejorAsesorPeriodo(fechaDesde, fechaHasta) {
+        await asegurarColumnaGeneroAsesores();
+        const filas = await this.ejecutar(`
+            SELECT a.id AS asesor_id, a.nombre AS asesor_nombre, a.genero,
+                   COUNT(v.id) AS cantidad_ventas,
+                   COALESCE(SUM(v.valor), 0) AS total_vendido,
+                   COALESCE(SUM(v.recaudo), 0) AS total_recaudo
+            FROM asesores a
+            LEFT JOIN ventas v ON v.asesor_id = a.id
+                AND v.estado = 'ACTIVA'
+                AND v.fecha_hora >= ?::date
+                AND v.fecha_hora < (?::date + INTERVAL '1 day')
+            WHERE a.activo = 1
+            GROUP BY a.id, a.nombre, a.genero
+            HAVING COUNT(v.id) > 0
+            ORDER BY COUNT(v.id) DESC,
+                     COALESCE(SUM(v.recaudo), 0) DESC,
+                     COALESCE(SUM(v.valor), 0) DESC,
+                     a.nombre ASC,
+                     a.id ASC
+            LIMIT 1
+        `, [fechaDesde, fechaHasta]);
+        return filas[0] || null;
     }
 
     async anularVenta(id, usuario = null, motivo) {

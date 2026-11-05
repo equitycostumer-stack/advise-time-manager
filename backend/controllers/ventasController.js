@@ -45,6 +45,16 @@ const obtenerResumenVentasPorAsesorPeriodo = async (req, res) => {
     } catch (error) { console.error("Error consultando ranking de ventas:", error.code || error.message); return responderError(res, error, "No fue posible consultar el ranking de ventas.", 500); }
 };
 
+const obtenerMejorAsesorPeriodo = async (req, res) => {
+    try {
+        const { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } = req.query;
+        return res.json({ ok: true, data: await ventasService.obtenerMejorAsesorPeriodo(fechaDesde, fechaHasta, req.usuario) });
+    } catch (error) {
+        console.error("Error consultando reconocimiento quincenal:", error.code || error.message);
+        return responderError(res, error, "No fue posible consultar el reconocimiento.", 500);
+    }
+};
+
 const obtenerResumenVentasPorAsesor = async (req, res) => {
     try { return res.json({ ok: true, data: await ventasService.obtenerResumenVentasPorAsesor(req.usuario) }); }
     catch (error) { console.error("Error consultando resumen por asesor:", error.code || error.message); return responderError(res, error, "No fue posible consultar el resumen por asesor."); }
@@ -75,4 +85,4 @@ const corregirVentaAdmin = async (req, res) => {
     }
 };
 
-module.exports = { registrarVenta, obtenerVentasDelDia, obtenerVentasPorAsesor, obtenerResumenVentasDelDia, obtenerResumenVentasPorAsesor, obtenerResumenVentasPorAsesorPeriodo, anularVenta, listarVentasAdmin, corregirVentaAdmin };
+module.exports = { registrarVenta, obtenerVentasDelDia, obtenerVentasPorAsesor, obtenerResumenVentasDelDia, obtenerResumenVentasPorAsesor, obtenerResumenVentasPorAsesorPeriodo, obtenerMejorAsesorPeriodo, anularVenta, listarVentasAdmin, corregirVentaAdmin };

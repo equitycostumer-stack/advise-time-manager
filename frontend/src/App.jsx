@@ -29,7 +29,7 @@ import ReconocimientoQuincenal from "./components/ReconocimientoQuincenal";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
 import AtajosRapidos from "./components/AtajosRapidos";
-import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, obtenerFechaActualColombia, ordenarRankingQuincenal } from "./utils/periodosVentas";
+import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, obtenerFechaActualColombia, obtenerEtiquetaMejorAsesor } from "./utils/periodosVentas";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -212,14 +212,13 @@ function App() {
     setReconocimientoQuincenalAnterior((actual) => ({ ...actual, cargando: true, error: "", periodoLabel }));
     try {
       const [respuestaVentas, respuestaConfig] = await Promise.all([
-        api.get(`/ventas/resumen/asesores/periodo?fecha_desde=${periodo.desde}&fecha_hasta=${periodo.hasta}`),
+        api.get(`/ventas/resumen/asesores/periodo/mejor?fecha_desde=${periodo.desde}&fecha_hasta=${periodo.hasta}`),
         api.get("/configuracion-ventas").catch(() => null)
       ]);
-      const conVentas = (Array.isArray(respuestaVentas.data?.data) ? respuestaVentas.data.data : []).filter((fila) => Number(fila.cantidad_ventas || 0) > 0);
-      const config = respuestaConfig?.data?.data || {};
-      const estaHabilitado = (valor) => ![false, 0, "0", "false", "no"].includes(typeof valor === "string" ? valor.toLowerCase() : valor);
-      const esVisible = usuario?.rol === "ADMINISTRADOR" || (estaHabilitado(config.ranking_activo) && estaHabilitado(config.ranking_visible_asesores));
-      setReconocimientoQuincenalAnterior({ ganadora: ordenarRankingQuincenal(conVentas)[0] || null, cargando: false, error: "", periodoLabel, visible: esVisible });
+      const config = respuestaConfig?.data?.data;
+      const estaHabilitado = (valor) => valor !== undefined && valor !== null && ![false, 0, "0", "false", "no"].includes(typeof valor === "string" ? valor.toLowerCase() : valor);
+      const esVisible = usuario?.rol === "ADMINISTRADOR" || (Boolean(config) && estaHabilitado(config.ranking_activo) && estaHabilitado(config.ranking_visible_asesores));
+      setReconocimientoQuincenalAnterior({ ganadora: respuestaVentas.data?.data || null, cargando: false, error: "", periodoLabel, visible: esVisible });
     } catch (error) {
       console.error("No fue posible cargar el reconocimiento quincenal:", error);
       setReconocimientoQuincenalAnterior((actual) => ({ ...actual, cargando: false, error: "No fue posible cargar el reconocimiento." }));
@@ -231,7 +230,11 @@ function App() {
     const actualizarReconocimiento = () => { void cargarReconocimientoQuincenalAnterior(); };
     actualizarReconocimiento();
     window.addEventListener("venta-registrada", actualizarReconocimiento);
-    return () => window.removeEventListener("venta-registrada", actualizarReconocimiento);
+    window.addEventListener("genero-asesor-actualizado", actualizarReconocimiento);
+    return () => {
+      window.removeEventListener("venta-registrada", actualizarReconocimiento);
+      window.removeEventListener("genero-asesor-actualizado", actualizarReconocimiento);
+    };
   }, [usuario, cargarReconocimientoQuincenalAnterior]);
 
   useEffect(() => {
@@ -670,11 +673,11 @@ function App() {
         type="button"
         className="recognition-fab"
         onClick={() => irASeccion("reconocimiento-quincenal-inicio")}
-        aria-label="Ir a la mejor asesora de la quincena anterior"
-        title="Ver a la mejor asesora de la quincena anterior"
+        aria-label={`Ir al reconocimiento: ${obtenerEtiquetaMejorAsesor(reconocimientoQuincenalAnterior.ganadora?.genero)}`}
+        title={`Ver el reconocimiento: ${obtenerEtiquetaMejorAsesor(reconocimientoQuincenalAnterior.ganadora?.genero)}`}
       >
         <span className="recognition-fab__icon" aria-hidden="true">🏆</span>
-        <span className="recognition-fab__label">Mejor quincena</span>
+        <span className="recognition-fab__label">{obtenerEtiquetaMejorAsesor(reconocimientoQuincenalAnterior.ganadora?.genero)}</span>
       </button>}
     </div>
   );

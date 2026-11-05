@@ -72,3 +72,21 @@ describe("ventasRepository.crearVenta retroactiva", () => {
         expect(client.release).toHaveBeenCalledTimes(1);
     });
 });
+
+describe("ventasRepository.obtenerMejorAsesorPeriodo", () => {
+    test("aplica la migración y devuelve una sola ganadora con su género y desempates establecidos", async () => {
+        const ganadora = { asesor_id: 8, asesor_nombre: "Viviana Gómez", genero: "FEMENINO", cantidad_ventas: 6 };
+        mockDb.query
+            .mockResolvedValueOnce({ rows: [] })
+            .mockResolvedValueOnce({ rows: [ganadora] });
+
+        await expect(ventasRepository.obtenerMejorAsesorPeriodo("2026-10-16", "2026-10-31")).resolves.toEqual(ganadora);
+
+        expect(mockDb.query).toHaveBeenNthCalledWith(1, "ALTER TABLE asesores ADD COLUMN IF NOT EXISTS genero VARCHAR(12)");
+        const queryGanadora = mockDb.query.mock.calls[1][0];
+        expect(queryGanadora).toContain("a.genero");
+        expect(queryGanadora).toContain("HAVING COUNT(v.id) > 0");
+        expect(queryGanadora).toContain("ORDER BY COUNT(v.id) DESC");
+        expect(queryGanadora).toContain("LIMIT 1");
+    });
+});

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { obtenerEtiquetaMejorAsesor } from "../utils/periodosVentas";
 
 function fechaBogota() {
   const partes = new Intl.DateTimeFormat("en-CA", {
@@ -65,16 +66,10 @@ export default function ReconocimientoGlobal() {
     const cargar = async () => {
       try {
         const periodo = periodoAnterior();
-        const [respuesta, configuracion] = await Promise.all([
-          api.get(`/ventas/resumen/asesores/periodo?fecha_desde=${periodo.inicio}&fecha_hasta=${periodo.fin}`),
-          api.get("/configuracion-ventas")
-        ]);
-        const filas = Array.isArray(respuesta.data?.data) ? respuesta.data.data : [];
-        const criterio = configuracion.data?.data?.criterio_ranking || "RECAUDO";
-        const campo = criterio === "VALOR_VENDIDO" ? "total_vendido" : criterio === "CANTIDAD_VENTAS" ? "cantidad_ventas" : "total_recaudo";
-        const primera = [...filas].sort((a, b) => Number(b[campo] || 0) - Number(a[campo] || 0))[0];
-        if (activo && primera && Number(primera[campo] || 0) > 0) {
-          setGanadora({ ...primera, ...periodo });
+        const respuesta = await api.get(`/ventas/resumen/asesores/periodo/mejor?fecha_desde=${periodo.inicio}&fecha_hasta=${periodo.fin}`);
+        const primera = respuesta.data?.data;
+        if (activo) {
+          setGanadora(primera && Number(primera.cantidad_ventas || 0) > 0 ? { ...primera, ...periodo } : null);
         }
       } catch (error) {
         console.warn("No fue posible cargar el reconocimiento quincenal:", error.message);
@@ -89,7 +84,7 @@ export default function ReconocimientoGlobal() {
 
   return (
     <div style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, color: "#5c4300", background: "linear-gradient(90deg, #fff8d9, #fffdf2)", border: "1px solid #e5c45c", boxShadow: "0 5px 16px rgba(184,148,31,.12)" }}>
-      <strong>🏆 Mejor asesora de la quincena anterior: {ganadora.asesor_nombre}</strong>
+      <strong>🏆 {obtenerEtiquetaMejorAsesor(ganadora.genero)} de la quincena anterior: {ganadora.asesor_nombre}</strong>
       <span style={{ display: "block", fontSize: 13, marginTop: 3 }}>Reconocemos su compromiso y sus resultados. ¡Sigamos creciendo como equipo!</span>
     </div>
   );

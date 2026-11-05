@@ -5,6 +5,7 @@ jest.mock("../repositories/ventasRepository", () => ({
     obtenerResumenVentasDelDia: jest.fn(),
     obtenerResumenVentasPorAsesor: jest.fn(),
     obtenerResumenVentasPorAsesorPeriodo: jest.fn(),
+    obtenerMejorAsesorPeriodo: jest.fn(),
     listarVentasAdmin: jest.fn(),
     obtenerVentaPorId: jest.fn(),
     actualizarVentaAdmin: jest.fn(),
@@ -92,5 +93,53 @@ describe("ventasService fechas de venta", () => {
         );
         expect(resultado.retroactiva).toBe(true);
         expect(resultado.fecha_hora).toBe("2026-11-02 09:30:00");
+    });
+});
+
+describe("ventasService.obtenerMejorAsesorPeriodo", () => {
+    test("valida el rango y devuelve solo la ganadora seleccionada por el repositorio", async () => {
+        const ganadora = { asesor_id: 4, asesor_nombre: "Asesora de prueba", genero: "FEMENINO", cantidad_ventas: 8 };
+        configuracionVentasRepository.obtener.mockResolvedValue({ ranking_activo: true, ranking_visible_asesores: true });
+        ventasRepository.obtenerMejorAsesorPeriodo.mockResolvedValue(ganadora);
+
+        await expect(ventasService.obtenerMejorAsesorPeriodo("2026-10-16", "2026-10-31", usuario)).resolves.toEqual(ganadora);
+        expect(ventasRepository.obtenerMejorAsesorPeriodo).toHaveBeenCalledWith("2026-10-16", "2026-10-31");
+    });
+
+    test("rechaza fechas inválidas antes de consultar la base de datos", async () => {
+        await expect(ventasService.obtenerMejorAsesorPeriodo("fecha", "2026-10-31", usuario)).rejects.toMatchObject({ status: 400 });
+        expect(ventasRepository.obtenerMejorAsesorPeriodo).not.toHaveBeenCalled();
+    });
+
+    test("no expone la ganadora cuando el ranking está oculto para asesores", async () => {
+        configuracionVentasRepository.obtener.mockResolvedValue({ ranking_activo: false, ranking_visible_asesores: false });
+
+        await expect(ventasService.obtenerMejorAsesorPeriodo("2026-10-16", "2026-10-31", usuario)).resolves.toBeNull();
+        expect(ventasRepository.obtenerMejorAsesorPeriodo).not.toHaveBeenCalled();
+    });
+
+    test("mantiene el reconocimiento oculto si no hay configuración explícita", async () => {
+        configuracionVentasRepository.obtener.mockResolvedValue(null);
+
+        await expect(ventasService.obtenerMejorAsesorPeriodo("2026-10-16", "2026-10-31", usuario)).resolves.toBeNull();
+        expect(ventasRepository.obtenerMejorAsesorPeriodo).not.toHaveBeenCalled();
+    });
+});
+
+describe("ventasService ranking quincenal", () => {
+    test("no devuelve las filas cuando el ranking está oculto para asesores", async () => {
+        configuracionVentasRepository.obtener.mockResolvedValue({ ranking_activo: true, ranking_visible_asesores: false });
+
+        await expect(ventasService.obtenerResumenVentasPorAsesorPeriodo("2026-10-16", "2026-10-31", usuario)).resolves.toEqual([]);
+        expect(ventasRepository.obtenerResumenVentasPorAsesorPeriodo).not.toHaveBeenCalled();
+    });
+
+    test("permite la consulta al administrador aunque el ranking no esté configurado", async () => {
+        const filas = [{ asesor_id: 4, cantidad_ventas: 2 }];
+        configuracionVentasRepository.obtener.mockResolvedValue(null);
+        ventasRepository.obtenerResumenVentasPorAsesorPeriodo.mockResolvedValue(filas);
+
+        await expect(ventasService.obtenerResumenVentasPorAsesorPeriodo("2026-10-16", "2026-10-31", { rol: "ADMINISTRADOR" })).resolves.toEqual(filas);
+        expect(ventasRepository.obtenerResumenVentasPorAsesorPeriodo).toHaveBeenCalledWith("2026-10-16", "2026-10-31", "RECAUDO", null);
     });
 });

@@ -14,15 +14,16 @@ export default function Usuarios() {
     const [abierto, setAbierto] = useState(false);
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
+    const [generoGuardando, setGeneroGuardando] = useState({});
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
 
     async function cargar() {
         setCargando(true); setError("");
         try {
-            const [usuariosRes, asesoresRes] = await Promise.all([api.get("/usuarios"), api.get("/asesores")]);
+            const [usuariosRes, asesoresRes] = await Promise.all([api.get("/usuarios"), api.get("/asesores/administracion")]);
             setUsuarios(Array.isArray(usuariosRes.data?.usuarios) ? usuariosRes.data.usuarios : []);
-            const lista = Array.isArray(asesoresRes.data) ? asesoresRes.data : asesoresRes.data?.data;
+            const lista = Array.isArray(asesoresRes.data?.data) ? asesoresRes.data.data : asesoresRes.data;
             setAsesores(Array.isArray(lista) ? lista : []);
         } catch (e) { setError(e.response?.data?.mensaje || "No fue posible cargar los usuarios."); }
         finally { setCargando(false); }
@@ -41,6 +42,24 @@ export default function Usuarios() {
         setMensaje(""); setAbierto(true);
     }
     function cambiar(campo, valor) { setFormulario((actual) => ({ ...actual, [campo]: valor })); }
+
+    async function actualizarGeneroAsesor(asesor, valor) {
+        const genero = valor || null;
+        const generoAnterior = asesor.genero || "";
+        setError(""); setMensaje("");
+        setAsesores((actuales) => actuales.map((actual) => actual.id === asesor.id ? { ...actual, genero } : actual));
+        setGeneroGuardando((actual) => ({ ...actual, [asesor.id]: true }));
+        try {
+            await api.put(`/asesores/${asesor.id}/genero`, { genero });
+            setMensaje(`Forma del reconocimiento guardada para ${asesor.nombre}.`);
+            window.dispatchEvent(new Event("genero-asesor-actualizado"));
+        } catch (e) {
+            setAsesores((actuales) => actuales.map((actual) => actual.id === asesor.id ? { ...actual, genero: generoAnterior || null } : actual));
+            setError(e.response?.data?.mensaje || `No fue posible guardar la forma del reconocimiento para ${asesor.nombre}.`);
+        } finally {
+            setGeneroGuardando((actual) => ({ ...actual, [asesor.id]: false }));
+        }
+    }
 
     async function guardar(e) {
         e.preventDefault(); setGuardando(true); setMensaje("");
@@ -92,6 +111,11 @@ export default function Usuarios() {
         <input aria-label="Buscar usuario" placeholder="Buscar por usuario, correo, asesor o rol..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} style={{ ...caja, margin: "8px 0 16px" }} />
         {error && <p role="alert" style={{ color: "#b02a37", fontWeight: 700 }}>{error}</p>}
         {mensaje && <p role="status" style={{ color: "#198754", fontWeight: 700 }}>{mensaje}</p>}
+        <div style={{ margin: "14px 0 22px", padding: 14, border: "1px solid #dcebe2", borderRadius: 10 }}>
+            <h3 style={{ margin: "0 0 6px", color: "#245b3a" }}>Género para el reconocimiento</h3>
+            <p style={{ margin: "0 0 12px", color: "#66756b", fontSize: 14 }}>Configura cómo debe nombrarse a cada persona en el botón y la tarjeta de la mejor asesora o asesor. Puedes dejarlo sin definir temporalmente.</p>
+            {cargando ? <p>Cargando asesores...</p> : asesores.length === 0 ? <p>No hay asesores activos para configurar.</p> : <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}><thead><tr>{["Asesor", "Estado", "Forma del reconocimiento"].map((h) => <th key={h} style={{ textAlign: "left", padding: 9, background: "#f7fbf8" }}>{h}</th>)}</tr></thead><tbody>{asesores.map((a) => <tr key={a.id} style={{ borderBottom: "1px solid #eee" }}><td style={{ padding: 9, fontWeight: 700 }}>{a.nombre}</td><td style={{ padding: 9 }}>{Number(a.activo) === 1 || a.activo === true ? "Activo" : "Inactivo"}</td><td style={{ padding: 9 }}><select aria-label={`Forma del reconocimiento para ${a.nombre}`} value={a.genero || ""} disabled={Boolean(generoGuardando[a.id])} onChange={(e) => actualizarGeneroAsesor(a, e.target.value)} style={caja}><option value="">Sin definir</option><option value="FEMENINO">Femenino · Mejor asesora</option><option value="MASCULINO">Masculino · Mejor asesor</option></select>{generoGuardando[a.id] && <small role="status" style={{ display: "block", marginTop: 4 }}>Guardando...</small>}</td></tr>)}</tbody></table></div>}
+        </div>
         {cargando ? <p>Cargando usuarios...</p> : <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", minWidth: 880 }}><thead><tr>{["Usuario", "Asesor", "Correo", "Rol", "Estado", "Acciones"].map((h) => <th key={h} style={{ textAlign: "left", padding: 9, background: "#f7fbf8" }}>{h}</th>)}</tr></thead><tbody>{filtrados.length === 0 ? <tr><td colSpan="6" style={{ padding: 14 }}>No existen usuarios.</td></tr> : filtrados.map((u) => <tr key={u.id} style={{ borderBottom: "1px solid #eee" }}><td style={{ padding: 9, fontWeight: 700 }}>{u.usuario}</td><td style={{ padding: 9 }}>{u.asesor || "—"}</td><td style={{ padding: 9 }}>{u.email || "—"}</td><td style={{ padding: 9 }}>{u.rol}</td><td style={{ padding: 9 }}>{Number(u.activo) === 1 || u.activo === true ? "Activo" : "Inactivo"}</td><td style={{ padding: 9, whiteSpace: "nowrap" }}><button type="button" onClick={() => abrirEdicion(u)} style={{ ...boton, background: "#0d6efd", color: "#fff", marginRight: 5 }}>Editar</button><button type="button" onClick={() => alternar(u)} style={{ ...boton, background: Number(u.activo) === 1 || u.activo === true ? "#dc3545" : "#198754", color: "#fff", marginRight: 5 }}>{Number(u.activo) === 1 || u.activo === true ? "Desactivar" : "Activar"}</button>{u.rol === "ASESOR" && <button type="button" onClick={() => eliminarAsesor(u)} style={{ ...boton, background: "#7a1f2b", color: "#fff", marginRight: 5 }}>Eliminar asesor</button>}<button type="button" onClick={() => resetear(u)} style={{ ...boton, background: "#b8941f", color: "#fff" }}>Contraseña</button></td></tr>)}</tbody></table></div>}
         {abierto && <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", display: "grid", placeItems: "center", padding: 18, zIndex: 20 }}><form onSubmit={guardar} style={{ background: "#fff", borderRadius: 12, padding: 22, width: "min(520px, 100%)", display: "grid", gap: 10 }}><h3 style={{ marginTop: 0 }}>{editando ? "Editar usuario" : "Nuevo usuario"}</h3>{!editando && <label>Usuario<input required minLength="3" maxLength="50" value={formulario.usuario} onChange={(e) => cambiar("usuario", e.target.value)} style={caja} /></label>}<label>Correo<input type="email" value={formulario.email} onChange={(e) => cambiar("email", e.target.value)} style={caja} /></label><label>Teléfono<input value={formulario.telefono} onChange={(e) => cambiar("telefono", e.target.value)} style={caja} /></label><label>Rol<select value={formulario.rol} onChange={(e) => cambiar("rol", e.target.value)} style={caja}><option value="ASESOR">ASESOR</option><option value="ADMINISTRADOR">ADMINISTRADOR</option></select></label>{!editando && <><label>Asesor vinculado<select required={formulario.rol === "ASESOR"} value={formulario.asesor_id} onChange={(e) => cambiar("asesor_id", e.target.value)} style={caja}><option value="">Seleccionar</option>{asesores.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}</select></label><label>Contraseña inicial<input required type="password" minLength="10" value={formulario.password} onChange={(e) => cambiar("password", e.target.value)} style={caja} /></label></>}<div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 8 }}><button type="button" onClick={() => setAbierto(false)} style={{ ...boton, background: "#e9ecef" }}>Cancelar</button><button type="submit" disabled={guardando} style={{ ...boton, background: "#245b3a", color: "#fff" }}>{guardando ? "Guardando..." : "Guardar"}</button></div></form></div>}
     </section>;

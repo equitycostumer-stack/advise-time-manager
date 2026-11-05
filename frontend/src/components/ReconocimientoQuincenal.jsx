@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { obtenerEtiquetaMejorAsesor } from "../utils/periodosVentas";
 
 function formatearMoneda(valor) {
     return `$${Number(valor || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
@@ -6,17 +7,18 @@ function formatearMoneda(valor) {
 
 export default function ReconocimientoQuincenal({ reconocimiento = {}, id }) {
     const { ganadora, cargando, error, periodoLabel } = reconocimiento;
+    const etiquetaMejorAsesor = obtenerEtiquetaMejorAsesor(ganadora?.genero);
     const mensajeNombre = useMemo(() => {
         if (cargando) return "Calculando el reconocimiento…";
         if (error) return error;
-        return ganadora?.asesor_nombre || "¡La próxima ganadora puedes ser tú!";
+        return ganadora?.asesor_nombre || "¡El próximo reconocimiento puede ser tuyo!";
     }, [cargando, error, ganadora]);
 
     return (
-        <section id={id} className="previous-fortnight-winner" aria-label="Mejor asesora de la quincena anterior">
+        <section id={id} className="previous-fortnight-winner" aria-label={`${etiquetaMejorAsesor} de la quincena anterior`}>
             <div className="previous-fortnight-winner__icon" aria-hidden="true">🏆</div>
             <div className="previous-fortnight-winner__content" aria-live="polite">
-                <p className="previous-fortnight-winner__eyebrow">Mejor asesora de la quincena anterior · ¡Felicidades!</p>
+                <p className="previous-fortnight-winner__eyebrow">{etiquetaMejorAsesor} de la quincena anterior · ¡Felicidades!</p>
                 <strong className="previous-fortnight-winner__name">{mensajeNombre}</strong>
                 <p className="previous-fortnight-winner__period">{periodoLabel || "Última quincena completa"} · seleccionada automáticamente</p>
                 {ganadora && !cargando && !error && (

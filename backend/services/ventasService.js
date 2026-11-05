@@ -18,6 +18,11 @@ function obtenerAsesorIdPermitido(usuario) {
     return Number.isInteger(asesorId) && asesorId > 0 ? asesorId : null;
 }
 
+function estaHabilitado(valor) {
+    if (valor === undefined || valor === null) return false;
+    return ![false, 0, "0", "false", "no"].includes(typeof valor === "string" ? valor.toLowerCase() : valor);
+}
+
 class VentasService {
     generarFechaColombia(fecha = new Date()) {
         return new Intl.DateTimeFormat("sv-SE", {
@@ -148,7 +153,7 @@ class VentasService {
         return ventasRepository.actualizarVentaAdmin(ventaId, { asesor_id: asesorId, cliente_id: clienteId, valor, recaudo, observacion, accion }, usuario?.id, motivo);
     }
 
-    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, usuario) {
+    validarPeriodoResumen(fechaDesde, fechaHasta) {
         if (!this.validarFechaISO(fechaDesde) || !this.validarFechaISO(fechaHasta) || fechaDesde > fechaHasta) {
             const error = new Error("El rango de fechas no es válido."); error.status = 400; throw error;
         }
@@ -156,10 +161,25 @@ class VentasService {
         if (diferenciaDias > 366) {
             const error = new Error("El rango no puede superar 366 días."); error.status = 400; throw error;
         }
-        // El ranking es un indicador motivacional compartido: no filtrar por
-        // asesor aquí. Las metas y los detalles de ventas sí permanecen privados.
+    }
+
+    async obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, usuario) {
+        this.validarPeriodoResumen(fechaDesde, fechaHasta);
         const configuracion = await configuracionVentasRepository.obtener();
+        if (usuario?.rol !== "ADMINISTRADOR" && (!configuracion || !estaHabilitado(configuracion.ranking_activo) || !estaHabilitado(configuracion.ranking_visible_asesores))) {
+            return [];
+        }
+        // El ranking es un indicador motivacional compartido cuando está habilitado.
         return ventasRepository.obtenerResumenVentasPorAsesorPeriodo(fechaDesde, fechaHasta, configuracion?.criterio_ranking || "RECAUDO", null);
+    }
+
+    async obtenerMejorAsesorPeriodo(fechaDesde, fechaHasta, usuario) {
+        this.validarPeriodoResumen(fechaDesde, fechaHasta);
+        const config = await configuracionVentasRepository.obtener();
+        if (usuario?.rol !== "ADMINISTRADOR" && (!config || !estaHabilitado(config.ranking_activo) || !estaHabilitado(config.ranking_visible_asesores))) {
+            return null;
+        }
+        return ventasRepository.obtenerMejorAsesorPeriodo(fechaDesde, fechaHasta);
     }
 
     async anularVenta(id, usuario = null, motivo = "") {

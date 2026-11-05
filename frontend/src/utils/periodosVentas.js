@@ -50,6 +50,15 @@ export function ordenarRankingQuincenal(asesores) {
         const ventas = Number(b.cantidad_ventas || 0) - Number(a.cantidad_ventas || 0);
         const recaudo = Number(b.total_recaudo || 0) - Number(a.total_recaudo || 0);
         const vendido = Number(b.total_vendido || 0) - Number(a.total_vendido || 0);
-        return ventas || recaudo || vendido || String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""), "es");
+        const nombre = String(a.asesor_nombre || "").localeCompare(String(b.asesor_nombre || ""), "es");
+        const id = Number(a.asesor_id || 0) - Number(b.asesor_id || 0);
+        return ventas || recaudo || vendido || nombre || id;
     });
+}
+
+export function obtenerEtiquetaMejorAsesor(genero) {
+    const valor = String(genero || "").trim().toUpperCase();
+    if (valor === "MASCULINO") return "Mejor asesor";
+    if (valor === "FEMENINO") return "Mejor asesora";
+    return "Mejor asesor/a";
 }

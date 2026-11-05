@@ -1006,32 +1006,42 @@ html[data-theme="dark"] #root .previous-fortnight-winner__stats span {
 }
 .recognition-fab__icon { font-size:25px; line-height:1; }
 .recognition-fab__label { font-size:13px; white-space:nowrap; }
-html[data-theme="dark"] .recognition-fab {
-    border-color:#a58835;
-    background:#000;
-    color:#f5d66e;
+html[data-theme="dark"] #root .recognition-fab {
+    border-color:#a58835 !important;
+    background:#000 !important;
+    background-image:none !important;
+    color:#f5d66e !important;
     box-shadow:0 10px 28px rgba(0,0,0,.72),0 0 0 4px rgba(212,175,55,.15);
 }
+html[data-theme="dark"] #root .recognition-fab .recognition-fab__label { color:#f5d66e !important; }
+html[data-theme="dark"] #root .recognition-fab:hover:not(:disabled) {
+    border-color:#d4af37 !important;
+    background:#050505 !important;
+    color:#ffeaa1 !important;
+}
+html[data-theme="dark"] #root .recognition-fab:hover:not(:disabled) .recognition-fab__label { color:#ffeaa1 !important; }
 @media (max-width:600px) {
     .recognition-fab {
         right:14px;
         bottom:calc(14px + env(safe-area-inset-bottom, 0px));
-        width:56px;
-        height:56px;
-        min-height:56px;
-        padding:0;
-        gap:0;
+        width:auto;
+        max-width:calc(100vw - 28px);
+        height:50px;
+        min-height:50px;
+        padding:0 14px;
+        gap:7px;
     }
     .recognition-fab__label {
-        position:absolute;
-        width:1px;
-        height:1px;
+        position:static;
+        width:auto;
+        height:auto;
         padding:0;
-        margin:-1px;
-        overflow:hidden;
-        clip:rect(0,0,0,0);
+        margin:0;
+        overflow:visible;
+        clip:auto;
         white-space:nowrap;
         border:0;
+        font-size:12px;
     }
 }
 @media (prefers-reduced-motion:reduce) {

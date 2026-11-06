@@ -336,6 +336,356 @@ export const versiculosVentas = [
         texto: "Abrirte ha Jehová su buen tesoro, el cielo, para dar lluvia á tu tierra en su tiempo, y para bendecir toda obra de tus manos...",
         reflexion: "Tu esfuerzo constante activa los resultados. Trabaja con disciplina inteligente y verás cómo la lluvia de cierres y contratos exitosos llega a tu cuenta.",
         fuente: "https://ebible.org/spaRV1909/DEU28.htm"
+    },
+    {
+        id: "extra50_salmos_37_5",
+        referencia: "Salmos 37:5",
+        texto: "Encomienda á Jehová tu camino, y espera en él; y él hará.",
+        reflexion: "Haz tu trabajo con excelencia, pon los leads en el sistema y confía en tu proceso; el cierre llegará si mantienes la acción constante.",
+        fuente: "https://ebible.org/spaRV1909/PSA037.htm"
+    },
+    {
+        id: "extra50_proverbios_15_1",
+        referencia: "Proverbios 15:1",
+        texto: "La blanda respuesta quita la ira; mas la palabra áspera hace subir el furor.",
+        reflexion: "Cuando un cliente responda con molestia u objeciones fuertes, mantén un tono profesional, calmado y seguro. El control emocional desarma cualquier barrera.",
+        fuente: "https://ebible.org/spaRV1909/PRO15.htm"
+    },
+    {
+        id: "extra50_isaias_41_10",
+        referencia: "Isaías 41:10",
+        texto: "No temas, que yo soy contigo; no desmayes, que yo soy tu Dios que te esfuerzo: siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia.",
+        reflexion: "El miedo a llamar o a negociar con clientes de alto valor no cabe aquí. Tienes la capacidad, el respaldo y las herramientas para dominar cualquier conversación.",
+        fuente: "https://ebible.org/spaRV1909/ISA41.htm"
+    },
+    {
+        id: "extra50_proverbios_28_19",
+        referencia: "Proverbios 28:19",
+        texto: "El que labra su tierra, se hartará de pan: mas el que sigue los vagabundos, se hartará de pobreza.",
+        reflexion: "Enfócate al 100% en tu propia pantalla, en tus llamadas y en tu embudo de ventas. Quien siembra esfuerzo continuo en su jornada asegura comisiones abundantes.",
+        fuente: "https://ebible.org/spaRV1909/PRO28.htm"
+    },
+    {
+        id: "extra50_filipenses_3_14",
+        referencia: "Filipenses 3:14",
+        texto: "Prosigo al blanco, al premio del soberano llamamiento...",
+        reflexion: "No te distrayas con los resultados de una sola llamada. Mantén los ojos fijos en tu meta financiera diaria y semanal; camina firme hacia tu bono.",
+        fuente: "https://ebible.org/spaRV1909/PHP03.htm"
+    },
+    {
+        id: "extra50_proverbios_11_25",
+        referencia: "Proverbios 11:25",
+        texto: "El alma liberal será engordada; y el que saciare, él también será saciado.",
+        reflexion: "Aporta valor real en cada asesoría. Cuando te enfocas genuinamente en solucionar los problemas de crédito del cliente, los contratos y las comisiones regresan a ti multiplicados.",
+        fuente: "https://ebible.org/spaRV1909/PRO11.htm"
+    },
+    {
+        id: "extra50_romanos_5_3_4",
+        referencia: "Romanos 5:3-4",
+        texto: "...sabiendo que la tribulación produce paciencia; y la paciencia, prueba; y la prueba, esperanza.",
+        reflexion: "Los días difíciles y las objeciones complejas son el gimnasio del vendedor. Cada reto pule tu speech y te convierte en un cerrador imbatible.",
+        fuente: "https://ebible.org/spaRV1909/ROM05.htm"
+    },
+    {
+        id: "extra50_proverbios_27_17",
+        referencia: "Proverbios 27:17",
+        texto: "Hierro con hierro se aguza; y el hombre aguza el rostro de su amigo.",
+        reflexion: "Escucha a los mejores del equipo, comparte estrategias y acepta el feedback. La retroalimentación constante entre compañeros eleva el nivel de todo el piso.",
+        fuente: "https://ebible.org/spaRV1909/PRO27.htm"
+    },
+    {
+        id: "extra50_2_cronicas_15_7",
+        referencia: "2 Crónicas 15:7",
+        texto: "Esforzaos empero vosotros, y no desmayen vuestras manos; que obra hay para vuestro trabajo.",
+        reflexion: "Cada marcado en frío y cada seguimiento cuenta. Mantén las manos activas en el teléfono; la recompensa económica está asegurada para quien no se detiene.",
+        fuente: "https://ebible.org/spaRV1909/2CH15.htm"
+    },
+    {
+        id: "extra50_proverbios_14_4",
+        referencia: "Proverbios 14:4",
+        texto: "Donde no hay bueyes, el pesebre está limpio; mas por la fuerza del buey hay multiplicación de frutos.",
+        reflexion: "Un día con mucho movimiento en el CRM, objeciones y llamadas largas puede parecer caótico, pero ese esfuerzo y volumen es el único que genera facturación real.",
+        fuente: "https://ebible.org/spaRV1909/PRO14.htm"
+    },
+    {
+        id: "extra50_mateo_5_16",
+        referencia: "Mateo 5:16",
+        texto: "Así alumbre vuestra luz delante de los hombres, para que vean vuestras buenas obras...",
+        reflexion: "Que tu seguridad, entusiasmo y honestidad se sientan a través de la línea telefónica. Un asesor que proyecta luz y confianza cierra ventas de forma natural.",
+        fuente: "https://ebible.org/spaRV1909/MAT05.htm"
+    },
+    {
+        id: "extra50_proverbios_16_9",
+        referencia: "Proverbios 16:9",
+        texto: "El corazón del hombre piensa su camino; mas Jehová endereza sus pasos.",
+        reflexion: "Planifica tus metas del mes con ambición, ejecuta tu plan de llamadas con disciplina y adáptate con inteligencia a los cambios del mercado.",
+        fuente: "https://ebible.org/spaRV1909/PRO16.htm"
+    },
+    {
+        id: "extra50_lucas_16_10",
+        referencia: "Lucas 16:10",
+        texto: "El que es fiel en lo muy poco, también en lo más es fiel...",
+        reflexion: "Gestiona con la misma excelencia un lead pequeño que uno grande. El cuidado en los pequeños detalles del CRM construye la reputación de un cerrador estrella.",
+        fuente: "https://ebible.org/spaRV1909/LUK16.htm"
+    },
+    {
+        id: "extra50_proverbios_18_9",
+        referencia: "Proverbios 18:9",
+        texto: "También el que es negligente en su obra es hermano del disipador.",
+        reflexion: "Dejar leads sin llamar o postergar los seguimientos es tirar dinero a la basura. La velocidad y la disciplina impecable cuidan tu bolsillo.",
+        fuente: "https://ebible.org/spaRV1909/PRO18.htm"
+    },
+    {
+        id: "extra50_efesios_6_7",
+        referencia: "Efesios 6:7",
+        texto: "Sirviendo con buena voluntad, como al Señor y no á los hombres.",
+        reflexion: "Entrega tu mejor energía en cada auditoría, sin importar la hora del día. La excelencia y la buena actitud abren las puertas del éxito comercial.",
+        fuente: "https://ebible.org/spaRV1909/EPH06.htm"
+    },
+    {
+        id: "extra50_proverbios_20_13",
+        referencia: "Proverbios 20:13",
+        texto: "No ames el sueño, porque no te empobrezcas; abre tus ojos, y te hartarás de pan.",
+        reflexion: "Llegar temprano, arrancar las llamadas desde el primer minuto y ganarle tiempo al día te pone un paso adelante de la competencia. La mañana es de quien factura.",
+        fuente: "https://ebible.org/spaRV1909/PRO20.htm"
+    },
+    {
+        id: "extra50_salmos_126_5",
+        referencia: "Salmos 126:5",
+        texto: "Los que sembraron con lágrimas, con regocijo segarán.",
+        reflexion: "Esas tardes de esfuerzo, llamadas largas y seguimientos intensos que hoy parecen agotadores, se transformarán en el festejo de las mejores comisiones del mes.",
+        fuente: "https://ebible.org/spaRV1909/PSA126.htm"
+    },
+    {
+        id: "extra50_proverbios_21_25",
+        referencia: "Proverbios 21:25",
+        texto: "El deseo del perezoso le mata, porque sus manos no quieren trabajar.",
+        reflexion: "Soñar con el tablero de líderes no basta; hay que marcar. El éxito en ventas pertenece exclusivamente a los que ejecutan y levantan el teléfono sin excusas.",
+        fuente: "https://ebible.org/spaRV1909/PRO21.htm"
+    },
+    {
+        id: "extra50_1_corintios_9_24",
+        referencia: "1 Corintios 9:24",
+        texto: "¿No sabéis que los que corren en el estadio, todos á la verdad corren, mas uno solo lleva el premio? Corred de tal manera que lo obtengáis.",
+        reflexion: "No juegues a medias en el piso de ventas. Entra a ganar, compite contigo mismo por romper el récord y corre cada día con la mentalidad de ser el número uno.",
+        fuente: "https://ebible.org/spaRV1909/1CO09.htm"
+    },
+    {
+        id: "extra50_proverbios_12_27",
+        referencia: "Proverbios 12:27",
+        texto: "El indolente no asará su caza: mas el haber del hombre diligente es precioso.",
+        reflexion: "No sirve de nada generar un gran lead si no haces el cierre definitivo. Lleva cada caso hasta el final, asegura el contrato y consolida tu ganancia.",
+        fuente: "https://ebible.org/spaRV1909/PRO12.htm"
+    },
+    {
+        id: "extra50_hebreos_6_11",
+        referencia: "Hebreos 6:11",
+        texto: "Pero deseamos que cada uno de vosotros muestre la misma solicitud hasta el fin, para una entera certidumbre de la esperanza.",
+        reflexion: "Mantén la misma intensidad y pasión en la última llamada de la tarde que mostraste en la primera de la mañana. La constancia al cierre del día define al cerrador.",
+        fuente: "https://ebible.org/spaRV1909/HEB06.htm"
+    },
+    {
+        id: "extra50_proverbios_15_22",
+        referencia: "Proverbios 15:22",
+        texto: "Los pensamientos son frustrados donde no hay consejo; mas en la multitud de los consejeros se afirman.",
+        reflexion: "Si estás estancado con un cliente, pide apoyo a tus líderes o analiza llamadas exitosas. El conocimiento compartido acelera tus resultados.",
+        fuente: "https://ebible.org/spaRV1909/PRO15.htm"
+    },
+    {
+        id: "extra50_santiago_1_12",
+        referencia: "Santiago 1:12",
+        texto: "Bienaventurado el varón que sufre la tentación; porque cuando hubiere sido probado, recibirá la corona de vida...",
+        reflexion: "Soportar la frustración de una venta caída te hace resiliente. Superar las rachas bajas te prepara para recibir los meses de mayor facturación.",
+        fuente: "https://ebible.org/spaRV1909/JAS01.htm"
+    },
+    {
+        id: "extra50_proverbios_19_15",
+        referencia: "Proverbios 19:15",
+        texto: "La pereza hace caer en profundo sueño; y el alma negligente padecerá hambre.",
+        reflexion: "La inacción congela tus ingresos. Mantente activo, dinámico y con el CRM al día; el movimiento constante atrae las mejores oportunidades de cierre.",
+        fuente: "https://ebible.org/spaRV1909/PRO19.htm"
+    },
+    {
+        id: "extra50_salmos_34_10",
+        referencia: "Salmos 34:10",
+        texto: "...los que buscan á Jehová, no tendrán falta de ningún bien.",
+        reflexion: "Trabaja con valores limpios y un propósito firme. Cuando actúas bien y pones tu mejor esfuerzo, la abundancia y los cierres llegan por consecuencia.",
+        fuente: "https://ebible.org/spaRV1909/PSA034.htm"
+    },
+    {
+        id: "extra50_proverbios_10_5",
+        referencia: "Proverbios 10:5",
+        texto: "El que recoge en el verano es hombre entendido; el que duerme en el tiempo de la siega es hijo que avergüenza.",
+        reflexion: "Cuando el mercado esté activo y entren leads, aprovecha cada segundo para marcar. Exprime los momentos de abundancia para sobrepasar tus metas históricas.",
+        fuente: "https://ebible.org/spaRV1909/PRO10.htm"
+    },
+    {
+        id: "extra50_colosenses_4_6",
+        referencia: "Colosenses 4:6",
+        texto: "Sea vuestra palabra siempre con gracia, sazonada con sal; para que sepáis cómo os conviene responder á cada uno.",
+        reflexion: "Usa un vocabulario profesional, persuasivo y pulido. Saber modular tu voz y elegir las palabras exactas es la llave que abre la confianza del cliente.",
+        fuente: "https://ebible.org/spaRV1909/COL04.htm"
+    },
+    {
+        id: "extra50_proverbios_13_11",
+        referencia: "Proverbios 13:11",
+        texto: "Las riquezas de vanidad disminuyen; mas el que allega con mano, las multiplica.",
+        reflexion: "La estabilidad financiera se construye día a día, llamada tras llamada. Las comisiones sólidas son el resultado de la disciplina acumulada.",
+        fuente: "https://ebible.org/spaRV1909/PRO13.htm"
+    },
+    {
+        id: "extra50_galatas_6_4",
+        referencia: "Gálatas 6:4",
+        texto: "Así que, cada uno pruebe su obra, y entonces tendrá gloria sólo respecto de sí mismo, y no en otro.",
+        reflexion: "No te midas con el ritmo de los demás. Evalúa tus propias métricas de ayer, supérate a ti mismo hoy y celebra tu propia evolución como cerrador.",
+        fuente: "https://ebible.org/spaRV1909/GAL06.htm"
+    },
+    {
+        id: "extra50_proverbios_16_32",
+        referencia: "Proverbios 16:32",
+        texto: "Mejor es el que tarde se aira que el fuerte; y el que se enseñorea de su espíritu, que el que toma una ciudad.",
+        reflexion: "El dominio propio es tu mayor superpoder. Mantener la calma y la sonrisa ante un cliente difícil te da el control absoluto de la negociación.",
+        fuente: "https://ebible.org/spaRV1909/PRO16.htm"
+    },
+    {
+        id: "extra50_1_timoteo_6_18",
+        referencia: "1 Timoteo 6:18",
+        texto: "Que hagan bien, que sean ricos en buenas obras, dadivosos, listos á repartir.",
+        reflexion: "Conviértete en un asesor que soluciona vidas, no solo en alguien que busca una comisión. El valor que entregas al cliente se traduce en cierres orgánicos.",
+        fuente: "https://ebible.org/spaRV1909/1TI06.htm"
+    },
+    {
+        id: "extra50_proverbios_22_1",
+        referencia: "Proverbios 22:1",
+        texto: "De más estima es el buen nombre que las muchas riquezas...",
+        reflexion: "Protege tu ética profesional. Un cliente bien asesorado, bajo la verdad y las regulaciones correctas, te traerá referidos de por vida y un flujo constante de ingresos.",
+        fuente: "https://ebible.org/spaRV1909/PRO22.htm"
+    },
+    {
+        id: "extra50_deuteronomio_8_18",
+        referencia: "Deuteronomio 8:18",
+        texto: "Antes acuérdate de Jehová tu Dios, porque él te da el poder para hacer las riquezas...",
+        reflexion: "Agradece tus habilidades de comunicación y tu talento comercial. Úsalos al máximo en cada llamada; tienes el potencial de construir el estilo de vida que deseas.",
+        fuente: "https://ebible.org/spaRV1909/DEU08.htm"
+    },
+    {
+        id: "extra50_proverbios_24_5",
+        referencia: "Proverbios 24:5",
+        texto: "El hombre sabio es fuerte; y de pujanza el varón docto.",
+        reflexion: "Capasítate continuamente en las leyes de crédito y objeciones financieras. Entre más conocimiento técnico domines, más fácil doblarás cualquier resistencia del cliente.",
+        fuente: "https://ebible.org/spaRV1909/PRO24.htm"
+    },
+    {
+        id: "extra50_salmos_1_3",
+        referencia: "Salmos 1:3",
+        texto: "Y será como el árbol plantado junto á corrientes de aguas, que da su fruto en su tiempo, y su hoja no cae; y todo lo que hace, prosperará.",
+        reflexion: "Echa raíces en tu capacitación y mantén los hábitos diarios correctos. Un asesor bien plantado en su rutina prospera y factura en cualquier época del año.",
+        fuente: "https://ebible.org/spaRV1909/PSA001.htm"
+    },
+    {
+        id: "extra50_proverbios_12_14",
+        referencia: "Proverbios 12:14",
+        texto: "El hombre será harto de bien del fruto de su boca: y la paga de las manos del hombre le será dada.",
+        reflexion: "Tus palabras en el teléfono construyen tu cheque de comisiones. Háblale al cliente con autoridad y certeza; tus manos cosecharán el fruto del esfuerzo.",
+        fuente: "https://ebible.org/spaRV1909/PRO12.htm"
+    },
+    {
+        id: "extra50_mateo_25_23",
+        referencia: "Mateo 25:23",
+        texto: "Su señor le dijo: Bien, buen siervo y fiel; sobre poco has sido fiel, sobre mucho te pondré...",
+        reflexion: "Demuestra excelencia cuidando tu base de datos actual. Cuando el sistema ve que aprovechas cada registro al máximo, te lloverán leads de mayor calidad.",
+        fuente: "https://ebible.org/spaRV1909/MAT25.htm"
+    },
+    {
+        id: "extra50_proverbios_13_22",
+        referencia: "Proverbios 13:22",
+        texto: "...y la riqueza del pecador está guardada para el justo.",
+        reflexion: "Los clientes que necesitan ayuda están ahí afuera buscando asesores profesionales. Sal al mercado con seguridad y toma la porción de éxito que te corresponde.",
+        fuente: "https://ebible.org/spaRV1909/PRO13.htm"
+    },
+    {
+        id: "extra50_romanos_12_2",
+        referencia: "Romanos 12:2",
+        texto: "Y no os conforméis á este siglo; mas reformaos por la renovación de vuestro entendimiento...",
+        reflexion: "Rompe los límites mentales tradicionales de las ventas. Eleva tus expectativas, renueva tus estrategias de speech y atrévete a cobrar los bonos más altos.",
+        fuente: "https://ebible.org/spaRV1909/ROM12.htm"
+    },
+    {
+        id: "extra50_proverbios_14_15",
+        referencia: "Proverbios 14:15",
+        texto: "El simple todo lo cree: mas el avisado comprende sus pasos.",
+        reflexion: "No te dejes llevar por la primera negativa superficial del cliente. Indaga con preguntas inteligentes, analiza la verdadera objeción y dirige la llamada al cierre.",
+        fuente: "https://ebible.org/spaRV1909/PRO14.htm"
+    },
+    {
+        id: "extra50_eclesiastes_7_8",
+        referencia: "Eclesiastés 7:8",
+        texto: "Mejor es el fin del negocio que su principio; mejor es el sufrido de espíritu que el altivo.",
+        reflexion: "Lo que cuenta en ventas no es cuántas llamadas abres, sino cuántos contratos firmas. Mantén el enfoque y la paciencia hasta lograr el pago confirmado.",
+        fuente: "https://ebible.org/spaRV1909/ECC07.htm"
+    },
+    {
+        id: "extra50_proverbios_15_30",
+        referencia: "Proverbios 15:30",
+        texto: "La luz de los ojos alegra el corazón; y la buena fama engorda los huesos.",
+        reflexion: "Transmite una sonrisa e inyecta optimismo en tu voz durante cada interacción. La energía positiva es un imán comercial que atrae cierres inmediatos.",
+        fuente: "https://ebible.org/spaRV1909/PRO15.htm"
+    },
+    {
+        id: "extra50_1_corintios_16_13",
+        referencia: "1 Corintios 16:13",
+        texto: "Velad, estad firmes en la fe; portaos varonilmente, y esforzaos.",
+        reflexion: "Mantén una postura firme y segura frente al teléfono. La autoridad de tu tono de voz es lo que convence al cliente de que tú eres el experto que necesita.",
+        fuente: "https://ebible.org/spaRV1909/1CO16.htm"
+    },
+    {
+        id: "extra50_proverbios_16_20",
+        referencia: "Proverbios 16:20",
+        texto: "El entendido en la palabra hallará el bien: y el que confía en Jehová es bienaventurado.",
+        reflexion: "Aprende el arte de la escucha activa. Cuando entiendes perfectamente las necesidades financieras del cliente, colocas el argumento exacto para cerrar el trato.",
+        fuente: "https://ebible.org/spaRV1909/PRO16.htm"
+    },
+    {
+        id: "extra50_eclesiastes_11_4",
+        referencia: "Eclesiastés 11:4",
+        texto: "El que observa el viento no sembrará; y el que mira á las nubes no segará.",
+        reflexion: "No esperes el 'momento perfecto' ni el lead perfecto para marcar. Levanta el teléfono ya; la acción masiva inmediata vence a cualquier condición externa.",
+        fuente: "https://ebible.org/spaRV1909/ECC11.htm"
+    },
+    {
+        id: "extra50_proverbios_21_21",
+        referencia: "Proverbios 21:21",
+        texto: "El que sigue la justicia y la misericordia, hallará la vida, la justicia, y la honra.",
+        reflexion: "Asesora con total transparencia y cuida los intereses de tu cliente. Hacer las cosas bien te dará una reputación impecable y una carrera comercial ascendente.",
+        fuente: "https://ebible.org/spaRV1909/PRO21.htm"
+    },
+    {
+        id: "extra50_isaias_32_17",
+        referencia: "Isaías 32:17",
+        texto: "Y el efecto de la justicia será paz; y la labor de la justicia, reposo y seguridad para siempre.",
+        reflexion: "Ejecutar tus ventas con procesos limpios te dará la tranquilidad de construir ingresos estables, libres de reclamos y respaldados por tu buen desempeño.",
+        fuente: "https://ebible.org/spaRV1909/ISA32.htm"
+    },
+    {
+        id: "extra50_proverbios_22_4",
+        referencia: "Proverbios 22:4",
+        texto: "Riquezas, y honra, y vida, son la remuneración de la humildad y del temor de Jehová.",
+        reflexion: "Mantén la humildad para seguir aprendiendo todos los días, sin importar cuántas ventas rompas. Quien nunca deja de aprender, nunca deja de facturar.",
+        fuente: "https://ebible.org/spaRV1909/PRO22.htm"
+    },
+    {
+        id: "extra50_salmos_112_7",
+        referencia: "Salmos 112:7",
+        texto: "De mala memoria no tendrá temor: su corazón está firme, confiado en Jehová.",
+        reflexion: "No temas a los cambios en los algoritmos, a los scripts nuevos ni a los días de bajas respuestas. Tu capacidad está probada; mantén el corazón firme en tus metas.",
+        fuente: "https://ebible.org/spaRV1909/PSA112.htm"
+    },
+    {
+        id: "extra50_proverbios_10_24",
+        referencia: "Proverbios 10:24",
+        texto: "...mas el deseo de los justos será dado.",
+        reflexion: "Trabaja con enfoque diario, mantén la disciplina en tus marcados y ejecuta la estrategia. Tu esfuerzo constante se convertirá en el cobro de tus mejores comisiones.",
+        fuente: "https://ebible.org/spaRV1909/PRO10.htm"
     }
 ];
 

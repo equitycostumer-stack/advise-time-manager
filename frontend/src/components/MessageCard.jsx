@@ -1,15 +1,30 @@
 import { useEffect, useId, useState } from "react";
 import api from "../services/api";
 import { obtenerFechaHoyBogota, obtenerVersiculoDelDia } from "../utils/versiculoDelDia";
-import { licenciaVersiculosUrl, traduccionVersiculos } from "../data/versiculosVentas";
 
 export default function MessageCard({ mensaje }) {
     const [mensajeEmpresa, setMensajeEmpresa] = useState("");
     const [fecha, setFecha] = useState(obtenerFechaHoyBogota);
     const [reflexionAbierta, setReflexionAbierta] = useState(false);
+    const [catalogoVersiculos, setCatalogoVersiculos] = useState([]);
+    const [licenciaVersiculosUrl, setLicenciaVersiculosUrl] = useState("");
+    const [traduccionVersiculos, setTraduccionVersiculos] = useState("");
     const reflexionId = useId();
     const textoDelDia = mensajeEmpresa || mensaje;
-    const seleccion = obtenerVersiculoDelDia(fecha);
+    const seleccion = obtenerVersiculoDelDia(fecha, catalogoVersiculos);
+
+    useEffect(() => {
+        let vigente = true;
+        import("../data/versiculosVentas.js")
+            .then((modulo) => {
+                if (!vigente) return;
+                setCatalogoVersiculos(modulo.versiculosVentas);
+                setLicenciaVersiculosUrl(modulo.licenciaVersiculosUrl);
+                setTraduccionVersiculos(modulo.traduccionVersiculos);
+            })
+            .catch(() => {});
+        return () => { vigente = false; };
+    }, []);
 
     useEffect(() => {
         let vigente = true;
@@ -32,12 +47,13 @@ export default function MessageCard({ mensaje }) {
 
     if (!seleccion?.versiculo) return null;
     const { versiculo, indice, total } = seleccion;
+    const esTextoCompartido = versiculo.traduccion === "Texto compartido";
 
     return (
         <section className="daily-message-card" aria-labelledby="daily-message-title">
             <span className="daily-message-card__orbit" aria-hidden="true">✦</span>
             <header className="daily-message-card__header">
-                <span className="daily-message-card__heart" aria-hidden="true">💚</span>
+                <span className="daily-message-card__heart" aria-hidden="true"><span className="daily-message-card__heart-icon">💚</span></span>
                 <div className="daily-message-card__heading">
                     <span className="daily-message-card__eyebrow">✧ Inspiración para hoy</span>
                     <h3 id="daily-message-title">Mensaje del día</h3>
@@ -56,7 +72,7 @@ export default function MessageCard({ mensaje }) {
             <div className="daily-message-card__verse">
                 <div className="daily-message-card__verse-topline">
                     <span className="daily-message-card__verse-label">✧ Versículo de hoy</span>
-                    <span className="daily-message-card__version">RVR 1909</span>
+                    <span className="daily-message-card__version">{versiculo.traduccion || "RVR 1909"}</span>
                 </div>
                 <blockquote>“{versiculo.texto}”</blockquote>
                 <div className="daily-message-card__verse-footer">
@@ -86,7 +102,9 @@ export default function MessageCard({ mensaje }) {
 
             <footer className="daily-message-card__footer">
                 <span>Un nuevo pasaje cada día</span>
-                <a href={licenciaVersiculosUrl} target="_blank" rel="noreferrer">{traduccionVersiculos} · dominio público</a>
+                <a href={esTextoCompartido ? versiculo.fuente : licenciaVersiculosUrl} target="_blank" rel="noreferrer">
+                    {esTextoCompartido ? "Consultar capítulo bíblico" : `${traduccionVersiculos} · dominio público`}
+                </a>
             </footer>
         </section>
     );

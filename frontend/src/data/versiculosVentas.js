@@ -686,6 +686,806 @@ export const versiculosVentas = [
         texto: "...mas el deseo de los justos será dado.",
         reflexion: "Trabaja con enfoque diario, mantén la disciplina en tus marcados y ejecuta la estrategia. Tu esfuerzo constante se convertirá en el cobro de tus mejores comisiones.",
         fuente: "https://ebible.org/spaRV1909/PRO10.htm"
+    },
+    {
+        "id": "aporte_100_salmo_27_1",
+        "referencia": "Salmo 27:1",
+        "texto": "El Señor es mi luz y mi salvación; ¿de quién temeré? El Señor es la fortaleza de mi vida; ¿de quién he de atemorizarme?",
+        "reflexion": "Enfrenta cada llamada y cada reunión importante sin timidez ni temor al rechazo.",
+        "fuente": "https://ebible.org/spaRV1909/PSA027.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_isaias_41_10",
+        "referencia": "Isaías 41:10",
+        "texto": "No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia.",
+        "reflexion": "Cuando los resultados no se den de inmediato, mantén la calma. No estás solo en este negocio.",
+        "fuente": "https://ebible.org/spaRV1909/ISA41.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_josue_1_9",
+        "referencia": "Josué 1:9",
+        "texto": "Mira que te mando que te esfuerces y seas valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo en dondequiera que vayas.",
+        "reflexion": "El éxito comercial requiere valentía para salir de la zona de confort. Da el primer paso hoy.",
+        "fuente": "https://ebible.org/spaRV1909/JOS01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_46_1",
+        "referencia": "Salmo 46:1",
+        "texto": "Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.",
+        "reflexion": "Si un negocio importante se cae, recupérate rápido; tu verdadero sustento es inquebrantable.",
+        "fuente": "https://ebible.org/spaRV1909/PSA046.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_18_2",
+        "referencia": "Salmo 18:2",
+        "texto": "Jehová, roca mía y castillo mío, y mi libertador; Dios mío, fortaleza mía, en él confiaré; mi escudo, y la fuerza de mi salvación, mi alto refugio.",
+        "reflexion": "Construye tu carrera comercial sobre valores sólidos para que ninguna crisis del mercado te mueva.",
+        "fuente": "https://ebible.org/spaRV1909/PSA018.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_2_tesalonicenses_3_3",
+        "referencia": "2 Tesalonicenses 3:3",
+        "texto": "Pero fiel es el Señor, que os afirmará y guardará del mal.",
+        "reflexion": "Mantén la integridad en tus negociaciones; hacer lo correcto siempre protege tu reputación a largo plazo.",
+        "fuente": "https://ebible.org/spaRV1909/2TH03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_91_1",
+        "referencia": "Salmo 91:1",
+        "texto": "El que habita al abrigo del Altísimo morará bajo la sombra del Omnipotente.",
+        "reflexion": "Comienza tu jornada laboral entregando tus planes a Dios; trabajarás con un respaldo absoluto.",
+        "fuente": "https://ebible.org/spaRV1909/PSA091.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_91_2",
+        "referencia": "Salmo 91:2",
+        "texto": "Diré yo a Jehová: Esperanza mía, y castillo mío; mi Dios, en quien confiaré.",
+        "reflexion": "Tu seguridad no depende de un solo cliente, sino de tu fe y tu constancia.",
+        "fuente": "https://ebible.org/spaRV1909/PSA091.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_18_10",
+        "referencia": "Proverbios 18:10",
+        "texto": "Torre fuerte es el nombre de Jehová; a él correrá el justo, y será levantado.",
+        "reflexion": "Cuando la presión por llegar a la meta sea alta, busca paz en la oración antes de actuar.",
+        "fuente": "https://ebible.org/spaRV1909/PRO18.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_121_1_2",
+        "referencia": "Salmo 121:1-2",
+        "texto": "Alzaré mis ojos a los montes; ¿de dónde vendrá mi socorro? Mi socorro viene de Jehová, que hizo los cielos y la tierra.",
+        "reflexion": "No te dejes abrumar por el tamaño de tus metas mensuales. Tu capacidad viene de lo alto.",
+        "fuente": "https://ebible.org/spaRV1909/PSA121.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_121_7",
+        "referencia": "Salmo 121:7",
+        "texto": "Jehová te guardará de todo mal; él guardará tu alma.",
+        "reflexion": "Avanza con la certeza de que tus esfuerzos honestos están respaldados y protegidos.",
+        "fuente": "https://ebible.org/spaRV1909/PSA121.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_isaias_40_29",
+        "referencia": "Isaías 40:29",
+        "texto": "Él da esfuerzo al cansado, y multiplica las fuerzas al que no tiene ningunas.",
+        "reflexion": "Si el agotamiento de la semana te frena, hoy se renuevan tus energías para cerrar con fuerza.",
+        "fuente": "https://ebible.org/spaRV1909/ISA40.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_isaias_40_31",
+        "referencia": "Isaías 40:31",
+        "texto": "Pero los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas; correrán, y no se cansarán; caminarán, y no se fatigarán.",
+        "reflexion": "Los vendedores extraordinarios no dependen del impulso del momento, sino de una resistencia constante.",
+        "fuente": "https://ebible.org/spaRV1909/ISA40.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_efesios_6_10",
+        "referencia": "Efesios 6:10",
+        "texto": "Por lo demás, hermanos míos, fortaleceos en el Señor, y en el poder de su fuerza.",
+        "reflexion": "La fuerza mental para negociar se cultiva desde adentro. Fortalece tu mente hoy.",
+        "fuente": "https://ebible.org/spaRV1909/EPH06.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_filipenses_4_13",
+        "referencia": "Filipenses 4:13",
+        "texto": "Todo lo puedo en Cristo que me fortalece.",
+        "reflexion": "No hay meta comercial imposible ni cliente demasiado difícil si caminas con fe.",
+        "fuente": "https://ebible.org/spaRV1909/PHP04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_31_24",
+        "referencia": "Salmo 31:24",
+        "texto": "Esforzaos todos vosotros los que esperáis en Jehová, y tome aliento vuestro corazón.",
+        "reflexion": "Cobra ánimo; la perseverancia en la prospección siempre da frutos a su debido tiempo.",
+        "fuente": "https://ebible.org/spaRV1909/PSA031.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_nahum_1_7",
+        "referencia": "Nahúm 1:7",
+        "texto": "Jehová es bueno, fortaleza en el día de la angustia; y conoce a los que en él confían.",
+        "reflexion": "En los meses de vacas flacas, mantén la confianza. Tu constancia está siendo observada.",
+        "fuente": "https://ebible.org/spaRV1909/NAM01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_2_corintios_12_9",
+        "referencia": "2 Corintios 12:9",
+        "texto": "Y me ha dicho: Bástate mi gracia; porque mi poder se perfecciona en la debilidad. Por tanto, de buena gana me gloriaré más bien en mis debilidades, para que repose sobre mí el poder de Cristo.",
+        "reflexion": "Reconoce tus áreas de mejora en el proceso de venta; tus puntos débiles se pueden transformar en destrezas.",
+        "fuente": "https://ebible.org/spaRV1909/2CO12.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_28_7",
+        "referencia": "Salmo 28:7",
+        "texto": "Jehová es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado, por lo que se gozó mi corazón, y con mi cántico le alabaré.",
+        "reflexion": "Sal a vender con la actitud de quien ya sabe que tiene las herramientas necesarias para triunfar.",
+        "fuente": "https://ebible.org/spaRV1909/PSA028.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_144_1",
+        "referencia": "Salmo 144:1",
+        "texto": "Bendito sea Jehová, mi roca, quien adiestra mis manos para la batalla, y mis dedos para la guerra.",
+        "reflexion": "Capacítate, pule tus habilidades de comunicación y negociación; Dios bendice la preparación.",
+        "fuente": "https://ebible.org/spaRV1909/PSA144.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_filipenses_4_6",
+        "referencia": "Filipenses 4:6",
+        "texto": "Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias.",
+        "reflexion": "El desespero ahuyenta las ventas. Transforma la ansiedad de la meta en una estrategia clara.",
+        "fuente": "https://ebible.org/spaRV1909/PHP04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_filipenses_4_7",
+        "referencia": "Filipenses 4:7",
+        "texto": "Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.",
+        "reflexion": "Negociar desde la paz interior te da claridad para encontrar soluciones creativas para tus clientes.",
+        "fuente": "https://ebible.org/spaRV1909/PHP04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_juan_14_27",
+        "referencia": "Juan 14:27",
+        "texto": "La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo.",
+        "reflexion": "Un cerrador sereno transmite confianza. Tu calma es tu mayor argumento de venta.",
+        "fuente": "https://ebible.org/spaRV1909/JHN14.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_mateo_11_28",
+        "referencia": "Mateo 11:28",
+        "texto": "Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.",
+        "reflexion": "Trabaja duro, pero aprende a soltar la carga al final del día. El descanso es parte del éxito.",
+        "fuente": "https://ebible.org/spaRV1909/MAT11.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_mateo_11_29",
+        "referencia": "Mateo 11:29",
+        "texto": "Llevad mi yugo sobre vosotros, y aprended de mí, que soy manso y humilde de corazón; y hallaréis descanso para vuestras almas.",
+        "reflexion": "La humildad y la escucha activa desarman cualquier objeción de un cliente difícil.",
+        "fuente": "https://ebible.org/spaRV1909/MAT11.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_pedro_5_7",
+        "referencia": "1 Pedro 5:7",
+        "texto": "Echando toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.",
+        "reflexion": "Entrega la preocupación por los números de este mes y concéntrate en servir bien a tu cliente de hoy.",
+        "fuente": "https://ebible.org/spaRV1909/1PE05.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_4_8",
+        "referencia": "Salmo 4:8",
+        "texto": "En paz me acostaré, y asimismo dormiré; porque solo tú, Jehová, me haces vivir confiado.",
+        "reflexion": "Termina tu jornada con la satisfacción de haberlo dado todo; el mañana traerá sus propios cierres.",
+        "fuente": "https://ebible.org/spaRV1909/PSA004.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_isaias_26_3",
+        "referencia": "Isaías 26:3",
+        "texto": "Tú guardarás en completa paz a aquel cuyo pensamiento en ti persevera; porque en ti ha confiado.",
+        "reflexion": "Mantén el enfoque en tus objetivos diarios. No te desvíes con las distracciones del camino.",
+        "fuente": "https://ebible.org/spaRV1909/ISA26.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_juan_16_33",
+        "referencia": "Juan 16:33",
+        "texto": "Estas cosas os he hablado para que en mí tengáis paz. En el mundo tendréis aflicción; pero confiad, yo he vencido al mundo.",
+        "reflexion": "Los problemas operativos o logísticos ocurren; la clave está en resolverlos con mentalidad ganadora.",
+        "fuente": "https://ebible.org/spaRV1909/JHN16.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_23_1",
+        "referencia": "Salmo 23:1",
+        "texto": "Jehová es mi pastor; nada me faltará.",
+        "reflexion": "Cambia la mentalidad de escasez por una de abundancia. Los recursos y los clientes llegarán.",
+        "fuente": "https://ebible.org/spaRV1909/PSA023.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_23_2",
+        "referencia": "Salmo 23:2",
+        "texto": "En lugares de delicados pastos me hará descansar; junto a aguas de reposo me pastoreará.",
+        "reflexion": "Diseña un ritmo de trabajo sostenible. El agotamiento crónico destruye la productividad.",
+        "fuente": "https://ebible.org/spaRV1909/PSA023.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_23_3",
+        "referencia": "Salmo 23:3",
+        "texto": "Confortará mi alma; me guiará por sendas de justicia por amor de su nombre.",
+        "reflexion": "Actúa siempre con ética; el camino de la rectitud garantiza relaciones comerciales de por vida.",
+        "fuente": "https://ebible.org/spaRV1909/PSA023.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_23_4",
+        "referencia": "Salmo 23:4",
+        "texto": "Aunque ande en valle de sombra de muerte, no temeré mal alguno, porque tú estarás conmigo; tu vara y tu cayado me infundirán aliento.",
+        "reflexion": "Aunque la economía o el mercado parezcan difíciles, tu negocio prosperará bajo dirección divina.",
+        "fuente": "https://ebible.org/spaRV1909/PSA023.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_colosenses_3_15",
+        "referencia": "Colosenses 3:15",
+        "texto": "Y la paz de Dios gobierne en vuestros corazones, a la que asimismo fuisteis llamados en un solo cuerpo; y sed agradecidos.",
+        "reflexion": "Trabaja en armonía con tu equipo de ventas; la sinergia multiplica los resultados individuales.",
+        "fuente": "https://ebible.org/spaRV1909/COL03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_119_165",
+        "referencia": "Salmo 119:165",
+        "texto": "Mucha paz tienen los que aman tu ley, y no hay para ellos tropiezo.",
+        "reflexion": "Un profesional con principios sólidos es incorruptible y genera una confianza magnética.",
+        "fuente": "https://ebible.org/spaRV1909/PSA119.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_romanos_15_13",
+        "referencia": "Romanos 15:13",
+        "texto": "Y el Dios de esperanza os llene de todo gozo y paz en el creer, para que abundéis en esperanza por el poder del Espíritu Santo.",
+        "reflexion": "Transmite entusiasmo. Un vendedor optimista conecta mucho mejor con las necesidades del cliente.",
+        "fuente": "https://ebible.org/spaRV1909/ROM15.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_2_tesalonicenses_3_16",
+        "referencia": "2 Tesalonicenses 3:16",
+        "texto": "Y el mismo Señor de paz os dé siempre paz en toda manera. El Señor sea con todos vosotros.",
+        "reflexion": "Que tu servicio al cliente deje una huella de tranquilidad, excelencia y profesionalismo.",
+        "fuente": "https://ebible.org/spaRV1909/2TH03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_29_11",
+        "referencia": "Salmo 29:11",
+        "texto": "Jehová dará poder a su pueblo; Jehová bendecirá a su pueblo con paz.",
+        "reflexion": "El verdadero poder comercial no es agresivo; es la firmeza tranquila de quien conoce el valor de su producto.",
+        "fuente": "https://ebible.org/spaRV1909/PSA029.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_isaias_32_17",
+        "referencia": "Isaías 32:17",
+        "texto": "Y el efecto de la justicia será paz; y la labor de la justicia, reposo y seguridad para siempre.",
+        "reflexion": "Cumple siempre lo que prometes en tus contratos; la transparencia fideliza cuentas clave.",
+        "fuente": "https://ebible.org/spaRV1909/ISA32.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_galatas_5_22",
+        "referencia": "Gálatas 5:22",
+        "texto": "Mas el fruto del Espíritu es amor, gozo, paz, paciencia, benignidad, bondad, fe.",
+        "reflexion": "La paciencia es vital en ventas de ciclo largo. Acompaña el proceso del cliente sin presionarlo mal.",
+        "fuente": "https://ebible.org/spaRV1909/GAL05.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_juan_3_16",
+        "referencia": "Juan 3:16",
+        "texto": "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.",
+        "reflexion": "El dar el máximo valor antes de recibir es la clave secreta de la fidelización comercial.",
+        "fuente": "https://ebible.org/spaRV1909/JHN03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_corintios_13_4",
+        "referencia": "1 Corintios 13:4",
+        "texto": "El amor es sufrido, es benigno; el amor no tiene envidia, el amor no es jactancioso, no se envanece.",
+        "reflexion": "Trata a tus prospectos con amabilidad genuina, no los veas solo como una transacción o un número.",
+        "fuente": "https://ebible.org/spaRV1909/1CO13.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_corintios_13_7",
+        "referencia": "1 Corintios 13:7",
+        "texto": "Todo lo sufre, todo lo cree, todo lo espera, todo lo soporta.",
+        "reflexion": "Desarrolla empatía para entender las verdaderas frustraciones y deseos de tus clientes.",
+        "fuente": "https://ebible.org/spaRV1909/1CO13.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_corintios_13_13",
+        "referencia": "1 Corintios 13:13",
+        "texto": "Y ahora permanecen la fe, la esperanza y el amor, estos tres; pero el mayor de ellos es el amor.",
+        "reflexion": "La pasión por lo que haces y el genuino deseo de ayudar a otros sostienen cualquier carrera comercial.",
+        "fuente": "https://ebible.org/spaRV1909/1CO13.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_romanos_5_8",
+        "referencia": "Romanos 5:8",
+        "texto": "Mas Dios muestra su amor para con nosotros, en que siendo aún pecadores, Cristo murió por nosotros.",
+        "reflexion": "Agrega valor a tus prospectos incluso antes de que decidan comprarte; rompe sus barreras.",
+        "fuente": "https://ebible.org/spaRV1909/ROM05.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_juan_4_19",
+        "referencia": "1 Juan 4:19",
+        "texto": "Nosotros le amamos a él, porque él nos amó primero.",
+        "reflexion": "Toma la iniciativa en el seguimiento. No esperes a que el cliente te busque, muestra interés real hoy.",
+        "fuente": "https://ebible.org/spaRV1909/1JN04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_juan_4_8",
+        "referencia": "1 Juan 4:8",
+        "texto": "El que no ama, no ha conocido a Dios; porque Dios es amor.",
+        "reflexion": "Humaniza tu marca o servicio; las personas le compran a personas en las que confían y aprecian.",
+        "fuente": "https://ebible.org/spaRV1909/1JN04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_jeremias_29_11",
+        "referencia": "Jeremías 29:11",
+        "texto": "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis.",
+        "reflexion": "Visualiza un futuro próspero para tu emprendimiento. Diseña tus metas con la certeza de que crecerás.",
+        "fuente": "https://ebible.org/spaRV1909/JER29.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_hebreos_11_1",
+        "referencia": "Hebreos 11:1",
+        "texto": "Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve.",
+        "reflexion": "Aunque tu embudo de ventas parezca vacío hoy, sigue sembrando con fe; la cosecha llegará.",
+        "fuente": "https://ebible.org/spaRV1909/HEB11.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_romanos_8_28",
+        "referencia": "Romanos 8:28",
+        "texto": "Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados.",
+        "reflexion": "Incluso los errores operativos o los negocios perdidos te dejan lecciones para facturar el doble mañana.",
+        "fuente": "https://ebible.org/spaRV1909/ROM08.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_romanos_8_38_39",
+        "referencia": "Romanos 8:38-39",
+        "texto": "Por lo cual estoy seguro de que ni la muerte, ni la vida... nos podrá separar del amor de Dios...",
+        "reflexion": "Tu identidad y tu valor no se definen por tus resultados comerciales de un solo día. Mantén la cabeza alta.",
+        "fuente": "https://ebible.org/spaRV1909/ROM08.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_lamentaciones_3_22_23",
+        "referencia": "Lamentaciones 3:22-23",
+        "texto": "Por la misericordia de Jehová no hemos sido consumidos, porque nunca decayeron sus misericordias. Nuevas son cada mañana; grande es tu fidelidad.",
+        "reflexion": "Cada amanecer es un borrón y cuenta nueva; una nueva oportunidad para Prospectar y Cerrar.",
+        "fuente": "https://ebible.org/spaRV1909/LAM03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_hebreos_11_6",
+        "referencia": "Hebreos 11:6",
+        "texto": "Pero sin fe es imposible agradar a Dios; porque es necesario que el que se acerca a Dios crea que le hay...",
+        "reflexion": "Si tú no crees firmemente en el valor de tu propio producto o servicio, nadie más lo comprará.",
+        "fuente": "https://ebible.org/spaRV1909/HEB11.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_130_5",
+        "referencia": "Salmo 130:5",
+        "texto": "Esperé yo a Jehová, esperó mi alma; en su palabra he esperado.",
+        "reflexion": "Los grandes tratos corporativos requieren paciencia estratégica. Sigue el proceso sin desesperar.",
+        "fuente": "https://ebible.org/spaRV1909/PSA130.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_3_5",
+        "referencia": "Proverbios 3:5",
+        "texto": "Fíate de Jehová de todo vuestro corazón, y no te apoyes en tu propia prudencia.",
+        "reflexion": "Valida tus decisiones comerciales y de inversión buscando sabiduría antes de arriesgar tu capital.",
+        "fuente": "https://ebible.org/spaRV1909/PRO03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_3_6",
+        "referencia": "Proverbios 3:6",
+        "texto": "Reconócelo en todos tus caminos, y él enderezará tus veredas.",
+        "reflexion": "Integra tus valores espirituales en tu día a día empresarial; el camino se volverá más claro.",
+        "fuente": "https://ebible.org/spaRV1909/PRO03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_marcos_9_23",
+        "referencia": "Marcos 9:23",
+        "texto": "Jesús le dijo: Si puedes creer, al que cree todo le es posible.",
+        "reflexion": "Elimina tus creencias limitantes sobre el dinero y las ventas. Estás diseñado para la abundancia.",
+        "fuente": "https://ebible.org/spaRV1909/MRK09.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_galatas_2_20",
+        "referencia": "Gálatas 2:20",
+        "texto": "Con Cristo estoy juntamente crucificado, y ya no vivo yo, mas vive Cristo en mí...",
+        "reflexion": "Permite que la honestidad y la excelencia de tu fe guíen cada trato comercial que cierres hoy.",
+        "fuente": "https://ebible.org/spaRV1909/GAL02.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_pedro_1_3",
+        "referencia": "1 Pedro 1:3",
+        "texto": "Bendito el Dios y Padre de nuestro Señor Jesús Cristo, que según su grande misericordia nos hizo renacer para una esperanza viva.",
+        "reflexion": "Mantén altas tus expectativas. El mercado está lleno de oportunidades para quienes salen a buscarlas.",
+        "fuente": "https://ebible.org/spaRV1909/1PE01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_37_5",
+        "referencia": "Salmo 37:5",
+        "texto": "Encomienda a Jehová tu camino, y confía en él; y él hará.",
+        "reflexion": "Pon tus campañas de marketing y tus propuestas en manos de Dios, ejecuta con excelencia y confía en el resultado.",
+        "fuente": "https://ebible.org/spaRV1909/PSA037.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_119_105",
+        "referencia": "Salmo 119:105",
+        "texto": "Lámpara es a mis pies tu palabra, y lumbrera a mi camino.",
+        "reflexion": "Utiliza principios éticos sólidos como el GPS para guiar el crecimiento y las decisiones de tu empresa.",
+        "fuente": "https://ebible.org/spaRV1909/PSA119.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_santiago_1_5",
+        "referencia": "Santiago 1:5",
+        "texto": "Y si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente...",
+        "reflexion": "Si tienes dudas sobre cómo pivotar tu negocio o cerrar un trato complejo, detente y pide dirección.",
+        "fuente": "https://ebible.org/spaRV1909/JAS01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_1_7",
+        "referencia": "Proverbios 1:7",
+        "texto": "El principio de la sabiduría es el temor de Jehová; los insensatos desprecian la sabiduría y la enseñanza.",
+        "reflexion": "Nunca dejes de aprender. Estudia tu mercado, mejora tu técnica de venta y mantente humilde.",
+        "fuente": "https://ebible.org/spaRV1909/PRO01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_4_23",
+        "referencia": "Proverbios 4:23",
+        "texto": "Sobre toda cosa guardada, guarda tu corazón; porque de él mana la vida.",
+        "reflexion": "Protege tu mente de los comentarios negativos de la competencia o de entornos tóxicos.",
+        "fuente": "https://ebible.org/spaRV1909/PRO04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_32_8",
+        "referencia": "Salmo 32:8",
+        "texto": "Te haré entender, y te enseñaré el camino en que debes andar; sobre ti fijaré mis ojos.",
+        "reflexion": "Dios te dará la perspicacia necesaria para descubrir nuevos nichos de mercado y necesidades insatisfechas.",
+        "fuente": "https://ebible.org/spaRV1909/PSA032.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_miqueas_6_8",
+        "referencia": "Miqueas 6:8",
+        "texto": "Oh hombre, él te ha declarado lo que es bueno... solamente hacer justicia, y amar misericordia...",
+        "reflexion": "El éxito financiero duradero se construye sobre transacciones donde tanto tú como el cliente ganen de verdad.",
+        "fuente": "https://ebible.org/spaRV1909/MIC06.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_mateo_6_33",
+        "referencia": "Mateo 6:33",
+        "texto": "Mas buscad primeramente el reino de Dios y su justicia, y todas estas cosas os serán añadidas.",
+        "reflexion": "Alinea tus prioridades. Si tu brújula moral está bien puesta, la prosperidad material vendrá por añadidura.",
+        "fuente": "https://ebible.org/spaRV1909/MAT06.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_romanos_12_2",
+        "referencia": "Romanos 12:2",
+        "texto": "No os conforméis a este siglo, sino transformaos por medio de la renovación de vuestro entendimiento...",
+        "reflexion": "Inova. No vendas como todo el mundo vende; encuentra un ángulo disruptivo y único para tu negocio.",
+        "fuente": "https://ebible.org/spaRV1909/ROM12.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_efesios_2_10",
+        "referencia": "Efesios 2:10",
+        "texto": "Porque somos hechura suya, creados en Cristo Jesús para buenas obras...",
+        "reflexion": "Tu trabajo y tus productos tienen el potencial de mejorar la vida de tus clientes. Vende con ese propósito.",
+        "fuente": "https://ebible.org/spaRV1909/EPH02.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_16_3",
+        "referencia": "Proverbios 16:3",
+        "texto": "Encomienda a Jehová tus obras, y tus pensamientos serán afirmados.",
+        "reflexion": "Planifica tu semana, organiza tu agenda de prospección y pon tus metas en manos de Dios para que prosperen.",
+        "fuente": "https://ebible.org/spaRV1909/PRO16.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_proverbios_16_9",
+        "referencia": "Proverbios 16:9",
+        "texto": "El corazón del hombre piensa su camino; mas Jehová endereza sus pasos.",
+        "reflexion": "Sé flexible. Si una estrategia de marketing no funciona, corrige el rumbo rápido sin perder el objetivo.",
+        "fuente": "https://ebible.org/spaRV1909/PRO16.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_eclesiastes_12_13",
+        "referencia": "Eclesiastés 12:13",
+        "texto": "El fin de todo el discurso oído es este: Teme a Dios, y guarda sus mandamientos...",
+        "reflexion": "Ningún éxito económico justifica romper tus principios familiares o éticos. Balancea tu vida.",
+        "fuente": "https://ebible.org/spaRV1909/ECC12.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_119_9",
+        "referencia": "Salmo 119:9",
+        "texto": "¿Con qué limpiará el joven su camino? Con guardar tu palabra.",
+        "reflexion": "Conduce tus finanzas corporativas con transparencia total; las cuentas claras atraen bendición.",
+        "fuente": "https://ebible.org/spaRV1909/PSA119.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_josue_1_8",
+        "referencia": "Josué 1:8",
+        "texto": "Nunca se apartará de tu boca este libro de la ley, sino que de día y de noche meditarás en él...",
+        "reflexion": "La constancia diaria en tus buenos hábitos es el único camino real hacia el éxito sostenible.",
+        "fuente": "https://ebible.org/spaRV1909/JOS01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_mateo_7_7",
+        "referencia": "Mateo 7:7",
+        "texto": "Pedid, y se os dará; buscad, y hallaréis; llamad, y se os abrirá.",
+        "reflexion": "La ley de la acción: en ventas, quien no pide el cierre, no vende; quien no toca puertas, no abre cuentas.",
+        "fuente": "https://ebible.org/spaRV1909/MAT07.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_mateo_7_8",
+        "referencia": "Mateo 7:8",
+        "texto": "Porque todo aquel que pide, recibe; y el que busca, halla; y al que llama, se le abrirá.",
+        "reflexion": "Incrementa tu volumen de prospección hoy; estadísticamente, la acción masiva produce resultados consistentes.",
+        "fuente": "https://ebible.org/spaRV1909/MAT07.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_25_4",
+        "referencia": "Salmo 25:4",
+        "texto": "Muéstrame, oh Jehová, tus caminos; enséñame tus sendas.",
+        "reflexion": "Pide dirección antes de firmar alianzas comerciales, sociedades o contratos a largo plazo.",
+        "fuente": "https://ebible.org/spaRV1909/PSA025.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_25_5",
+        "referencia": "Salmo 25:5",
+        "texto": "Encamíname en tu verdad, y enséñame, porque tú eres el Dios de mi salvación...",
+        "reflexion": "Mantén un espíritu enseñable; los mejores mentores aparecen cuando estás dispuesto a aprender.",
+        "fuente": "https://ebible.org/spaRV1909/PSA025.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_colosenses_3_23",
+        "referencia": "Colosenses 3:23",
+        "texto": "Y todo lo que hagáis, hacedlo de corazón, como para el Señor y no para los hombres.",
+        "reflexion": "Trabaja con un estándar de excelencia tan alto que tu producto se venda solo por el servicio que entregas.",
+        "fuente": "https://ebible.org/spaRV1909/COL03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_corintios_10_31",
+        "referencia": "1 Corintios 10:31",
+        "texto": "Si, pues, coméis o bebéis, o hacéis otra cosa, hacedlo todo para la gloria de Dios.",
+        "reflexion": "Convierte tu negocio en una plataforma de impacto positivo para tu comunidad, empleados y clientes.",
+        "fuente": "https://ebible.org/spaRV1909/1CO10.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_100_4",
+        "referencia": "Salmo 100:4",
+        "texto": "Entrad por sus puertas con acción de gracias, por sus atrios con alabanza; alabadle, bendecid su nombre.",
+        "reflexion": "Comienza tu jornada agradeciendo por los clientes que ya tienes; la gratitud multiplica las oportunidades.",
+        "fuente": "https://ebible.org/spaRV1909/PSA100.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_1_tesalonicenses_5_16_18",
+        "referencia": "1 Tesalonicenses 5:16-18",
+        "texto": "Estad siempre gozosos. Orad sin cesar. Dad gracias en todo...",
+        "reflexion": "Celebra cada pequeño logro: una reunión agendada, un prospecto interesado o un cierre definitivo.",
+        "fuente": "https://ebible.org/spaRV1909/1TH05.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_118_24",
+        "referencia": "Salmo 118:24",
+        "texto": "Este es el día que hizo Jehová; nos gozaremos y alegraremos en él.",
+        "reflexion": "Hoy es un día perfecto para facturar, conectar y expandir el alcance de tu empresa. Aprovecha cada hora.",
+        "fuente": "https://ebible.org/spaRV1909/PSA118.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_103_1",
+        "referencia": "Salmo 103:1",
+        "texto": "Bendice, alma mía, a Jehová, y bendiga todo mi ser su santo nombre.",
+        "reflexion": "Reconoce de dónde viene tu talento, tu elocuencia y tu capacidad para generar ingresos.",
+        "fuente": "https://ebible.org/spaRV1909/PSA103.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_103_2",
+        "referencia": "Salmo 103:2",
+        "texto": "Bendice, alma mía, a Jehová, y no olvides ninguno de sus beneficios.",
+        "reflexion": "Cuando alcances el éxito y tus cuentas estén llenas, mantén los pies en la tierra y el corazón agradecido.",
+        "fuente": "https://ebible.org/spaRV1909/PSA103.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_nehemias_8_10",
+        "referencia": "Nehemías 8:10",
+        "texto": "No os entristezváis, porque el gozo de Jehová es vuestra fuerza.",
+        "reflexion": "El entusiasmo es altamente contagioso. Un cerrador alegre resulta irresistible para el mercado.",
+        "fuente": "https://ebible.org/spaRV1909/NEH08.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_150_6",
+        "referencia": "Salmo 150:6",
+        "texto": "Todo lo que respira alabe a JAH. Aleluya.",
+        "reflexion": "Que tu día de trabajo termine siempre celebrando la vida, la salud y la oportunidad de emprender de nuevo.",
+        "fuente": "https://ebible.org/spaRV1909/PSA150.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_9_1",
+        "referencia": "Salmo 9:1",
+        "texto": "Te alabaré, oh Jehová, con todo mi corazón; contaré todas tus maravillas.",
+        "reflexion": "Comparte tus testimonios de éxito con tu equipo; las historias de victoria elevan la moral colectiva.",
+        "fuente": "https://ebible.org/spaRV1909/PSA009.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_filipenses_4_4",
+        "referencia": "Filipenses 4:4",
+        "texto": "Regocijaos en el Señor siempre. Otra vez digo: ¡Regocijaos!",
+        "reflexion": "Mantén una actitud positiva incluso si la venta se complica; el buen humor destraba negociaciones.",
+        "fuente": "https://ebible.org/spaRV1909/PHP04.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_34_1",
+        "referencia": "Salmo 34:1",
+        "texto": "Bendeciré a Jehová en todo tiempo; su alabanza estará de continuo en mi boca.",
+        "reflexion": "Desarrolla constancia emocional; un verdadero líder comercial no cambia de actitud según el flujo de caja.",
+        "fuente": "https://ebible.org/spaRV1909/PSA034.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_34_8",
+        "referencia": "Salmo 34:8",
+        "texto": "Gustad, y ved que es bueno Jehová; dichoso el hombre que confía en él.",
+        "reflexion": "Atrévete a probar nuevas ideas comerciales; confía en tu preparación y en el respaldo divino.",
+        "fuente": "https://ebible.org/spaRV1909/PSA034.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_habacuc_3_17_18",
+        "referencia": "Habacuc 3:17-18",
+        "texto": "Aunque la higuera no florezca... Con todo, yo me alegraré en Jehová, y me gozaré en el Dios de mi salvación.",
+        "reflexion": "En temporadas bajas, mantén el mismo nivel de energía y fe. Los ciclos cambian para quien no se rinde.",
+        "fuente": "https://ebible.org/spaRV1909/HAB03.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_63_3",
+        "referencia": "Salmo 63:3",
+        "texto": "Porque mejor es tu misericordia que la vida; mis labios te alabarán.",
+        "reflexion": "Tu propósito va más allá del dinero; tu negocio es una herramienta para bendecir a otros.",
+        "fuente": "https://ebible.org/spaRV1909/PSA063.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_95_1",
+        "referencia": "Salmo 95:1",
+        "texto": "Venid, aclamemos alegremente a Jehová; cantemos con júbilo a la roca de nuestra salvación.",
+        "reflexion": "Inyecta energía alta a tus llamadas de prospección. El tono de voz determina el 80% del impacto inicial.",
+        "fuente": "https://ebible.org/spaRV1909/PSA095.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_107_1",
+        "referencia": "Salmo 107:1",
+        "texto": "Alabad a Jehová, porque él es bueno; porque para siempre es su misericordia.",
+        "reflexion": "Agradece por los clientes recurrentes; cuidarlos a ellos es más rentable que buscar cien clientes nuevos.",
+        "fuente": "https://ebible.org/spaRV1909/PSA107.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_santiago_1_17",
+        "referencia": "Santiago 1:17",
+        "texto": "Toda buena dádiva y todo don perfecto desciende de lo alto, del Padre de las luces...",
+        "reflexion": "Cada contrato cerrado es una bendición y un premio a tu disciplina laboral. Disfruta tu éxito.",
+        "fuente": "https://ebible.org/spaRV1909/JAS01.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_16_11",
+        "referencia": "Salmo 16:11",
+        "texto": "Me mostrarás la senda de la vida; en tu presencia hay plenitud de gozo; delicias a tu diestra para siempre.",
+        "reflexion": "Disfruta el proceso de construir tu negocio, no solo la meta final. El viaje del emprendedor es valioso.",
+        "fuente": "https://ebible.org/spaRV1909/PSA016.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_126_3",
+        "referencia": "Salmo 126:3",
+        "texto": "Grandes cosas ha hecho Jehová con nosotros; estaremos alegres.",
+        "reflexion": "Cuando mires atrás y veas cuánto ha crecido tu cartera de clientes, celebra la fidelidad de tu camino.",
+        "fuente": "https://ebible.org/spaRV1909/PSA126.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_exodo_15_2",
+        "referencia": "Éxodo 15:2",
+        "texto": "Jehová es mi fortaleza y mi cántico, y ha sido mi salvación. Este es mi Dios, y lo alabaré.",
+        "reflexion": "Haz que tu ética de trabajo hable por ti. Eres un profesional excelente guiado por un propósito mayor.",
+        "fuente": "https://ebible.org/spaRV1909/EXO15.htm",
+        "traduccion": "Texto compartido"
+    },
+    {
+        "id": "aporte_100_salmo_145_3",
+        "referencia": "Salmo 145:3",
+        "texto": "Grande es Jehová, y digno de suprema alabanza; y su grandeza es inescrutable.",
+        "reflexion": "No le pongas techo a tu crecimiento corporativo ni límites a tus metas de ventas. Piensa en grande.",
+        "fuente": "https://ebible.org/spaRV1909/PSA145.htm",
+        "traduccion": "Texto compartido"
     }
 ];
 

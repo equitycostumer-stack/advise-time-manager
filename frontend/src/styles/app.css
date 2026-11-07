@@ -1081,6 +1081,11 @@ html[data-theme="dark"] #root .recognition-fab:hover:not(:disabled) .recognition
     box-shadow:0 0 22px rgba(65,224,174,.12),inset 0 1px 0 rgba(255,255,255,.16);
     font-size:24px;
 }
+.daily-message-card__heart-icon {
+    display:inline-block;
+    transform-origin:center;
+    animation:daily-heart-pulse 3.6s ease-in-out infinite;
+}
 .daily-message-card__heading { min-width:0; }
 .daily-message-card__eyebrow,
 .daily-message-card__verse-label,
@@ -1266,6 +1271,10 @@ html[data-theme="dark"] #root .recognition-fab:hover:not(:disabled) .recognition
     0%,100% { opacity:.55; transform:scale(.94) rotate(-5deg); }
     50% { opacity:1; transform:scale(1.07) rotate(5deg); }
 }
+@keyframes daily-heart-pulse {
+    0%,100% { transform:scale(.94) rotate(-4deg); }
+    50% { transform:scale(1.08) rotate(4deg); }
+}
 @keyframes daily-reflection-in {
     from { opacity:0; transform:translateY(-5px); }
     to { opacity:1; transform:translateY(0); }
@@ -1338,6 +1347,7 @@ html[data-theme="dark"] #root .daily-message-card__reflection-toggle:hover {
 }
 @media (prefers-reduced-motion:reduce) {
     .daily-message-card__orbit,
+    .daily-message-card__heart-icon,
     .daily-message-card__reflection { animation:none !important; }
     .daily-message-card__reflection-toggle { transition:none; }
 }

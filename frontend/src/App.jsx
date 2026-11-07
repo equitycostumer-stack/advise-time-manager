@@ -29,6 +29,8 @@ import ReconocimientoQuincenal from "./components/ReconocimientoQuincenal";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
 import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, obtenerFechaActualColombia, obtenerEtiquetaMejorAsesor } from "./utils/periodosVentas";
+import { obtenerFechaHoyBogota } from "./utils/versiculoDelDia";
+import { obtenerMensajeMotivacionalDelDia } from "./utils/mensajeMotivacionalDelDia";
 
 // ======================================================
 // CONVERSIÓN ÚNICA DE FECHAS MYSQL -> COLOMBIA
@@ -53,147 +55,7 @@ export function convertirFechaColombia(fecha) {
   return Number.isNaN(fechaConvertida.getTime()) ? null : fechaConvertida;
 }
 
-const MENSAJES_MOTIVACIONALES = [
-  "☀️ Sonríe. Hoy será un excelente día.",
-  "🌅 Cada día es una nueva oportunidad para comenzar mejor.",
-  "💚 Hoy tienes una nueva oportunidad para dar lo mejor de ti.",
-  "🌟 Tu actitud puede transformar completamente tu día.",
-  "😊 Una actitud positiva puede abrir muchas puertas.",
-  "🌞 Comienza el día con energía y termina con satisfacción.",
-  "✨ Hoy puede ser el día en que logres algo importante.",
-  "🌻 Mantén una actitud positiva y sigue avanzando.",
-  "💫 Cada nuevo día trae nuevas oportunidades.",
-  "🙌 Confía en ti y en todo lo que eres capaz de lograr.",
-  "💪 La constancia convierte los pequeños esfuerzos en grandes resultados.",
-  "🏆 La disciplina de hoy construye los logros de mañana.",
-  "🔥 Mantén el enfoque y continúa avanzando.",
-  "📈 Cada esfuerzo cuenta cuando eres constante.",
-  "🎯 La disciplina te acerca cada día más a tus objetivos.",
-  "💎 La excelencia se construye con pequeños esfuerzos diarios.",
-  "🚀 No te detengas. Cada paso te acerca a tu meta.",
-  "💪 Los grandes resultados comienzan con decisiones pequeñas.",
-  "🏅 La constancia siempre termina marcando la diferencia.",
-  "⚡ Hazlo con disciplina, incluso cuando nadie esté mirando.",
-  "🎯 Enfócate en lo importante y da lo mejor de ti.",
-  "🚀 Un buen día comienza con objetivos claros.",
-  "📋 Organiza tu día, enfócate y avanza paso a paso.",
-  "⏱️ Aprovecha tu tiempo y conviértelo en resultados.",
-  "🧠 Enfócate en lo que puedes controlar.",
-  "🎯 Una meta clara convierte el esfuerzo en dirección.",
-  "📈 Cada tarea completada es un paso hacia un mejor resultado.",
-  "🔥 Mantén tu concentración y aprovecha cada oportunidad.",
-  "💼 Profesionalismo, enfoque y constancia: una gran combinación.",
-  "⚡ No necesitas hacerlo todo de una vez. Avanza paso a paso.",
-  "📞 Cada llamada es una nueva oportunidad.",
-  "📞 Cada conversación puede abrir una nueva posibilidad.",
-  "🤝 Escuchar con atención también es una forma de ayudar.",
-  "😊 Una buena actitud puede cambiar una conversación.",
-  "💚 Cada cliente merece nuestra mejor atención.",
-  "📞 Cada llamada es una oportunidad para conectar y ayudar.",
-  "🎯 Escucha, comprende y busca la mejor solución.",
-  "🤝 Una conversación bien llevada puede marcar la diferencia.",
-  "☎️ Cada llamada puede ser el comienzo de un gran resultado.",
-  "🌟 Haz que cada interacción cuente.",
-  "🤝 Juntos podemos lograr mucho más.",
-  "💚 Un buen equipo convierte los retos en oportunidades.",
-  "👥 El éxito también se construye trabajando en equipo.",
-  "🤝 Ayudar a un compañero también es avanzar.",
-  "🌟 Cada persona aporta algo importante al equipo.",
-  "💪 Cuando trabajamos juntos, los resultados mejoran.",
-  "❤️ El respeto y la colaboración fortalecen cualquier equipo.",
-  "🙌 Un equipo unido puede superar grandes desafíos.",
-  "🎯 Todos tenemos un papel importante en el resultado final.",
-  "💚 El éxito de uno puede inspirar el éxito de todos.",
-  "🌱 Cada día tienes la oportunidad de aprender algo nuevo.",
-  "📚 Cada experiencia puede convertirse en aprendizaje.",
-  "🧠 Los errores también pueden enseñarnos cómo mejorar.",
-  "🌱 Sigue creciendo, incluso cuando el progreso parezca pequeño.",
-  "📈 Cada día puedes ser un poco mejor que ayer.",
-  "💡 Busca aprender algo nuevo de cada experiencia.",
-  "🌟 Tu crecimiento comienza cuando decides seguir intentando.",
-  "🚀 Cada reto puede convertirse en una oportunidad de crecimiento.",
-  "🌱 Los pequeños avances también son avances.",
-  "💎 El aprendizaje constante es una de las mejores inversiones.",
-  "🏆 Los resultados son el reflejo de la constancia.",
-  "🎯 Define tu objetivo y trabaja con determinación.",
-  "🚀 El próximo gran resultado puede comenzar hoy.",
-  "🌟 Cada pequeño logro merece ser reconocido.",
-  "💪 Cree en el proceso y sigue trabajando.",
-  "📈 El progreso diario termina construyendo grandes resultados.",
-  "🏅 El esfuerzo constante siempre deja huella.",
-  "🔥 Los resultados extraordinarios comienzan con acciones ordinarias.",
-  "💎 La excelencia no ocurre por casualidad.",
-  "🎯 Enfócate en hacer hoy lo que te acercará a tu meta.",
-  "💚 Respira, enfócate y continúa con buena energía.",
-  "☕ Tómate un momento, respira y vuelve con energía renovada.",
-  "🌿 Inicia tu día con calma y concentración.",
-  "😊 Tu energía también influye en quienes te rodean.",
-  "🌈 Después de cada reto existe una oportunidad para aprender.",
-  "☀️ Una buena actitud hace más agradable cualquier jornada.",
-  "💚 Cuida tu energía y úsala en lo que realmente importa.",
-  "🌿 Mantén la calma, mantén el enfoque y sigue adelante.",
-  "😊 No busques un día perfecto; construye un buen día.",
-  "🌞 Hoy es una nueva oportunidad para hacerlo mejor que ayer.",
-  "🔥 Tú puedes con el reto de hoy.",
-  "💪 Supera tus propios límites un día a la vez.",
-  "🚀 Atrévete a dar un paso más allá de lo habitual.",
-  "⚡ Comienza con energía, continúa con disciplina y termina con orgullo.",
-  "🏆 No te compares con otros; compite contra tu mejor versión.",
-  "🔥 Cuando mantienes el enfoque, los obstáculos se vuelven oportunidades.",
-  "💪 Cada desafío es una oportunidad para demostrar de qué eres capaz.",
-  "🌟 Tu mejor versión se construye todos los días.",
-  "🚀 Sigue adelante. Todavía hay mucho por conquistar.",
-  "🎯 Hoy es un buen día para superar tus propias expectativas.",
-  "Tu actitud de hoy determina el tamaño de tus resultados de mañana.",
-  "Cada llamada es una nueva puerta que se abre hacia tu éxito.",
-  "La disciplina de hoy es el cheque de comisiones de la próxima semana.",
-  "El \"no\" de un cliente solo te pone más cerca del próximo \"sí\".",
-  "Enfócate en el proceso y los resultados llegarán por añadidura.",
-  "Hoy es el día perfecto para superar tus propias metas.",
-  "La constancia vence cualquier objeción en el camino.",
-  "Tu tono de voz y tu seguridad abren cualquier billetera.",
-  "Menos excusas y más acción en el CRM multiplican tus ganancias.",
-  "El éxito en las ventas pertenece a los que persisten sin dudar.",
-  "Atiende cada lead hoy como si fuera el cierre más grande del mes.",
-  "La mentalidad de hoy define el nivel de tus logros.",
-  "Aprende de cada llamada y evoluciona constantemente.",
-  "El trabajo inteligente de hoy construye tu libertad de mañana.",
-  "Una llamada extra al final del día puede cambiar tu mes entero.",
-  "Haz que tu entusiasmo sea lo primero que escuche el cliente.",
-  "La excelencia no es un acto, es el hábito de marcar cada día.",
-  "El rechazo no es personal, es solo parte del juego del éxito.",
-  "Confía en tu speech, domina la conversación y asegura el trato.",
-  "Cada problema del cliente es una oportunidad para demostrar tu valor.",
-  "El asesor diligente no espera la suerte, sale a buscarla.",
-  "Visualiza tu meta de la semana y trabaja hoy hasta alcanzarla.",
-  "Tu energía en el teléfono es el imán que atrae los cierres.",
-  "Sé el cerrador que tu equipo y tus metas necesitan hoy.",
-  "El seguimiento constante transforma un interés en una venta.",
-  "Haz las cosas con pasión y los números hablarán por sí solos.",
-  "No cuentes los días, haz que cada día de marcación cuente.",
-  "La preparación técnica de hoy desarma la resistencia de mañana.",
-  "Los límites solo existen en la mente de quien no levanta el teléfono.",
-  "Hoy vas a conectar con las personas correctas para cerrar grandes tratos.",
-  "El piso de ventas es de los que ejecutan con velocidad y precisión.",
-  "Cada auditoría bien hecha es una semilla de abundancia para tu cuenta.",
-  "Mantén el enfoque en tu meta y limpia las distracciones de tu día.",
-  "Un cierre exitoso comienza con la decisión de hacer una llamada más.",
-  "Tu ética y transparencia hoy te aseguran clientes de por vida.",
-  "Levántate con determinación y acuéstate hoy con la satisfacción del deber cumplido.",
-  "No te conformes con lo bueno cuando naciste para ser el mejor.",
-  "El control de la llamada siempre lo tiene quien sabe escuchar con atención.",
-  "Una mente positiva encuentra soluciones donde otros ven objeciones.",
-  "Rómpela hoy en el teléfono; el tablero de líderes te está esperando.",
-  "Siembra esfuerzo por la mañana y cosecharás contratos por la tarde.",
-  "La resiliencia es el superpoder que convierte los desafíos en bonos.",
-  "Cada lead es una historia diferente; adáptate con inteligencia y cierra.",
-  "Tu compromiso con tus metas debe ser mayor que cualquier excusa.",
-  "El entusiasmo vende más que mil palabras; inyéctale vida a tu voz.",
-  "Domina tus métricas diarias y dominarás tus ingresos mensuales.",
-  "La consistencia silenciosa produce los resultados más ruidosos.",
-  "Hoy es un lienzo en blanco para escribir tu nuevo récord de ventas.",
-  "Cree en tu potencial y sal al mercado a ganar lo que te corresponde."
-];
+
 
 function formatearDuracion(segundos = 0) {
   const total = Math.max(0, Number(segundos) || 0);
@@ -251,6 +113,7 @@ function App() {
     }
   });
   const [tiempoJornadaEnVivo, setTiempoJornadaEnVivo] = useState(0);
+  const [fechaMensajeDiario, setFechaMensajeDiario] = useState(obtenerFechaHoyBogota);
   const [reconocimientoQuincenalAnterior, setReconocimientoQuincenalAnterior] = useState({ ganadora: null, cargando: true, error: "", periodoLabel: "", visible: false });
 
   const cargarReconocimientoQuincenalAnterior = useCallback(async () => {
@@ -295,6 +158,15 @@ function App() {
   }, [tema]);
 
   useEffect(() => {
+    const actualizarFechaMensaje = () => {
+      const hoy = obtenerFechaHoyBogota();
+      setFechaMensajeDiario((actual) => actual === hoy ? actual : hoy);
+    };
+    const intervalo = window.setInterval(actualizarFechaMensaje, 60000);
+    return () => window.clearInterval(intervalo);
+  }, []);
+
+  useEffect(() => {
     if (!inicioJornada || String(estado).toUpperCase().includes("SALIDA")) {
       setTiempoJornadaEnVivo(0);
       return undefined;
@@ -312,10 +184,10 @@ function App() {
     return () => clearInterval(intervalo);
   }, [inicioJornada, estado]);
 
-  // Selección de mensaje aleatorio memorizada
+  // El mismo mensaje se muestra todo el día y cambia al llegar la medianoche de Bogotá.
   const mensaje = useMemo(
-    () => MENSAJES_MOTIVACIONALES[Math.floor(Math.random() * MENSAJES_MOTIVACIONALES.length)],
-    []
+    () => obtenerMensajeMotivacionalDelDia(fechaMensajeDiario),
+    [fechaMensajeDiario]
   );
 
   // Memorización del objeto del asesor seleccionado

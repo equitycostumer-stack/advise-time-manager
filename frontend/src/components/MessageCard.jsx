@@ -1,16 +1,14 @@
 import { useEffect, useId, useState } from "react";
-import api from "../services/api";
 import { obtenerFechaHoyBogota, obtenerVersiculoDelDia } from "../utils/versiculoDelDia";
 
 export default function MessageCard({ mensaje }) {
-    const [mensajeEmpresa, setMensajeEmpresa] = useState("");
     const [fecha, setFecha] = useState(obtenerFechaHoyBogota);
     const [reflexionAbierta, setReflexionAbierta] = useState(false);
     const [catalogoVersiculos, setCatalogoVersiculos] = useState([]);
     const [licenciaVersiculosUrl, setLicenciaVersiculosUrl] = useState("");
     const [traduccionVersiculos, setTraduccionVersiculos] = useState("");
     const reflexionId = useId();
-    const textoDelDia = mensajeEmpresa || mensaje;
+    const textoDelDia = mensaje;
     const seleccion = obtenerVersiculoDelDia(fecha, catalogoVersiculos);
 
     useEffect(() => {
@@ -21,16 +19,6 @@ export default function MessageCard({ mensaje }) {
                 setCatalogoVersiculos(modulo.versiculosVentas);
                 setLicenciaVersiculosUrl(modulo.licenciaVersiculosUrl);
                 setTraduccionVersiculos(modulo.traduccionVersiculos);
-            })
-            .catch(() => {});
-        return () => { vigente = false; };
-    }, []);
-
-    useEffect(() => {
-        let vigente = true;
-        api.get("/configuracion-empresa")
-            .then(({ data }) => {
-                if (vigente) setMensajeEmpresa(data?.data?.mensaje_dia || "");
             })
             .catch(() => {});
         return () => { vigente = false; };

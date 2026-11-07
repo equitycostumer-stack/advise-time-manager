@@ -28,7 +28,6 @@ import LogrosRecientes from "./components/LogrosRecientes";
 import ReconocimientoQuincenal from "./components/ReconocimientoQuincenal";
 import Usuarios from "./pages/Usuarios";
 import PanelMiDia from "./components/PanelMiDia";
-import AtajosRapidos from "./components/AtajosRapidos";
 import { calcularPeriodoQuincenaAnterior, etiquetarPeriodoQuincenal, obtenerFechaActualColombia, obtenerEtiquetaMejorAsesor } from "./utils/periodosVentas";
 
 // ======================================================
@@ -641,11 +640,6 @@ function App() {
               estado={estado}
               resumen={resumen}
               tiempoJornada={tiempoJornadaEnVivo}
-            />
-            <AtajosRapidos
-              usuarioClave={usuario?.usuario || usuario?.id || "equipo"}
-              onNavigate={setVista}
-              onIrASeccion={irASeccion}
             />
 
             <section className="dashboard-top-cards" aria-label="Estado de jornada">

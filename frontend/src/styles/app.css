@@ -514,7 +514,7 @@ html[data-theme="dark"] .executive-panel .executive-productivity-summary strong 
 /* Mejora 1: panel personal de resumen diario */
 .mi-dia-panel { margin:0 0 14px; padding:18px; border:1px solid #d8e7f4; border-radius:15px; background:linear-gradient(130deg,#f5fbff 0%,#f4fbf6 100%); box-shadow:0 7px 20px rgba(35,76,121,.07); }
 .mi-dia-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-.mi-dia-eyebrow, .quick-links-eyebrow { color:#1684dc; font-size:10px; font-weight:900; letter-spacing:1.1px; }
+.mi-dia-eyebrow { color:#1684dc; font-size:10px; font-weight:900; letter-spacing:1.1px; }
 .mi-dia-header h2 { margin:4px 0; color:#173b68; font-size:21px; }
 .mi-dia-header p { margin:0; color:#6b7d91; font-size:12px; }
 .mi-dia-status { display:inline-flex; align-items:center; gap:8px; max-width:100%; padding:9px 12px; border:1px solid transparent; border-radius:999px; font-size:12px; white-space:nowrap; }
@@ -531,23 +531,6 @@ html[data-theme="dark"] .executive-panel .executive-productivity-summary strong 
 .mi-dia-metric--money strong { font-size:16px; }
 .mi-dia-guidance { display:flex; align-items:flex-start; gap:8px; margin:12px 0 0; padding:10px 12px; border-radius:9px; background:rgba(22,132,220,.07); color:#4e6680; font-size:11px; line-height:1.5; }
 .mi-dia-guidance > span { flex:0 0 auto; }
-
-/* Mejora 2: accesos favoritos editables, guardados por usuario en este navegador */
-.quick-links-card { margin:0 0 18px; padding:15px 17px; border:1px solid #dce8f3; border-radius:13px; background:#fff; box-shadow:0 5px 15px rgba(35,76,121,.06); }
-.quick-links-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:11px; }
-.quick-links-header h2 { margin:3px 0 0; color:#173b68; font-size:16px; }
-.quick-links-edit { min-height:38px; padding:7px 11px; border:1px solid #bfd6ea; border-radius:8px; background:#f2f8fd; color:#1766a5; font-size:11px; font-weight:800; cursor:pointer; }
-.quick-links-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:9px; }
-.quick-link-button { min-height:50px; display:flex; align-items:center; gap:9px; padding:10px 11px; border:1px solid #d8e6f2; border-radius:10px; background:linear-gradient(135deg,#fff,#f7fbff); color:#294b6d; text-align:left; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
-.quick-link-button:hover { border-color:#98c7eb; background:#edf7ff; }
-.quick-link-icon { font-size:17px; }
-.quick-link-arrow { margin-left:auto; color:#1684dc; font-size:15px; }
-.quick-links-options { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
-.quick-links-option { min-height:40px; display:inline-flex; align-items:center; gap:7px; padding:8px 10px; border:1px solid #d5e2ed; border-radius:9px; background:#f8fafc; color:#486078; font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
-.quick-links-option.is-selected { border-color:#aed5f2; background:#eaf5ff; color:#155d97; }
-.quick-links-option > span { font-size:15px; }
-.quick-links-hint, .quick-links-notice { flex:1 0 100%; margin:2px 0 0; color:#718198; font-size:10px; }
-.quick-links-notice { color:#9b5c00; font-weight:700; }
 
 /* Mejora 3: comparativa de la gráfica */
 .ventas-comparison-card { min-width:185px; padding:10px 12px; border:1px solid #dce8f3; border-radius:11px; background:#f7fbff; }
@@ -576,8 +559,6 @@ html[data-theme="dark"] .executive-panel .executive-productivity-summary strong 
     .mi-dia-header { flex-direction:column; }
     .mi-dia-status { white-space:normal; }
     .mi-dia-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .quick-links-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .quick-link-button { min-height:54px; padding:9px; }
     .ventas-comparison-card { width:100%; }
     .history-presets { gap:6px; }
     .history-presets button { min-height:42px; }
@@ -588,39 +569,27 @@ html[data-theme="dark"] .executive-panel .executive-productivity-summary strong 
     .mi-dia-metric { min-height:76px; padding:9px; }
     .mi-dia-metric strong { font-size:16px; }
     .mi-dia-metric--money strong { font-size:14px; }
-    .quick-links-card { padding:12px; }
-    .quick-links-grid { grid-template-columns:1fr 1fr; }
-    .quick-link-button { font-size:10px; }
     .history-presets-label { flex:1 0 100%; }
 }
 
 @media (prefers-reduced-motion:reduce) {
-    .mi-dia-panel, .quick-link-button, .history-presets button, .ventas-comparison-card { transition:none !important; }
+    .mi-dia-panel, .history-presets button, .ventas-comparison-card { transition:none !important; }
     button:hover:not(:disabled) { transform:none !important; }
 }
 
 html[data-theme="dark"] .mi-dia-panel,
-html[data-theme="dark"] .quick-links-card,
 html[data-theme="dark"] .ventas-comparison-card { background:#142235 !important; border-color:#30465d !important; }
 html[data-theme="dark"] .mi-dia-header h2,
-html[data-theme="dark"] .quick-links-header h2,
 html[data-theme="dark"] .mi-dia-metric strong,
-html[data-theme="dark"] .quick-link-button,
-html[data-theme="dark"] .quick-links-option,
 html[data-theme="dark"] .ventas-comparison-values strong { color:#e5edf7 !important; }
 html[data-theme="dark"] .mi-dia-header p,
 html[data-theme="dark"] .mi-dia-metric-label,
 html[data-theme="dark"] .mi-dia-guidance,
-html[data-theme="dark"] .quick-links-hint,
 html[data-theme="dark"] .ventas-comparison-footnote,
 html[data-theme="dark"] .ventas-comparison-values small { color:#a6b5c6 !important; }
 html[data-theme="dark"] .mi-dia-metric,
-html[data-theme="dark"] .quick-link-button,
-html[data-theme="dark"] .quick-links-option,
 html[data-theme="dark"] .history-presets button { background:#1b2d42 !important; border-color:#30465d !important; }
 html[data-theme="dark"] .mi-dia-guidance { background:#1b2d42 !important; }
-html[data-theme="dark"] .quick-link-button:hover,
-html[data-theme="dark"] .quick-links-option.is-selected,
 html[data-theme="dark"] .history-presets button[aria-pressed="true"] { background:#173556 !important; border-color:#396a90 !important; }
 html[data-theme="dark"] .history-presets-label { color:#a6b5c6 !important; }
 html[data-theme="dark"] .history-presets button { color:#dce8f5 !important; }
@@ -679,7 +648,6 @@ html[data-theme="dark"] .dashboard-primary,
 html[data-theme="dark"] .dashboard-secondary > *,
 html[data-theme="dark"] .below-dashboard > *,
 html[data-theme="dark"] .mi-dia-panel,
-html[data-theme="dark"] .quick-links-card,
 html[data-theme="dark"] .ventas-dashboard,
 html[data-theme="dark"] .ventas-trend-card,
 html[data-theme="dark"] .ventas-trend-total,
@@ -743,7 +711,7 @@ html[data-theme="dark"] #root :is(h1,h2,h3,h4,h5,h6,p,span,strong,b,small,label,
 html[data-theme="dark"] #root [style*="color:"] {
     color:#f3f3f3 !important;
 }
-html[data-theme="dark"] #root :is(small,.muted,.ventas-toolbar p,.history-presets-label,.quick-links-hint,.quick-links-notice,.mi-dia-guidance,.ventas-comparison-eyebrow,.ventas-comparison-footnote,.ventas-comparison-loading,.ventas-comparison-unavailable,.activity-timeline-time,.sale-record-note,.sale-record-data span,.achievement-card-copy p,.achievement-card-state,.goal-progress-copy > span,.goal-progress-copy > small,.empty-state-copy p) {
+html[data-theme="dark"] #root :is(small,.muted,.ventas-toolbar p,.history-presets-label,.mi-dia-guidance,.ventas-comparison-eyebrow,.ventas-comparison-footnote,.ventas-comparison-loading,.ventas-comparison-unavailable,.activity-timeline-time,.sale-record-note,.sale-record-data span,.achievement-card-copy p,.achievement-card-state,.goal-progress-copy > span,.goal-progress-copy > small,.empty-state-copy p) {
     color:#c8c8c8 !important;
 }
 html[data-theme="dark"] #root a { color:#f1d36b !important; }
@@ -803,8 +771,6 @@ html[data-theme="dark"] #root .history-date-controls,
 html[data-theme="dark"] #root .sales-search-field input,
 html[data-theme="dark"] #root .sales-state-field select,
 html[data-theme="dark"] #root .sales-clear-filters,
-html[data-theme="dark"] #root .quick-link-button,
-html[data-theme="dark"] #root .quick-links-option,
 html[data-theme="dark"] #root .history-presets button,
 html[data-theme="dark"] #root .ventas-chart-segment button {
     background:#080808 !important;

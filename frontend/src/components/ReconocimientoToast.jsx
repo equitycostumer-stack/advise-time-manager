@@ -83,7 +83,7 @@ export default function ReconocimientoGlobal() {
   if (!ganadora) return null;
 
   return (
-    <div style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, color: "#5c4300", background: "linear-gradient(90deg, #fff8d9, #fffdf2)", border: "1px solid #e5c45c", boxShadow: "0 5px 16px rgba(184,148,31,.12)" }}>
+    <div className="previous-fortnight-notice" style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, color: "#5c4300", background: "linear-gradient(90deg, #fff8d9, #fffdf2)", border: "1px solid #e5c45c", boxShadow: "0 5px 16px rgba(184,148,31,.12)" }}>
       <strong>🏆 {obtenerEtiquetaMejorAsesor(ganadora.genero)} de la quincena anterior: {ganadora.asesor_nombre}</strong>
       <span style={{ display: "block", fontSize: 13, marginTop: 3 }}>Reconocemos su compromiso y sus resultados. ¡Sigamos creciendo como equipo!</span>
     </div>

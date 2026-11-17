@@ -1014,6 +1014,91 @@ html[data-theme="dark"] #root .recognition-fab:hover:not(:disabled) .recognition
     .recognition-fab { transition:none; }
 }
 
+/* Correcciones específicas de contraste en modo negro para reconocimiento y ranking */
+html[data-theme="dark"] #root .previous-fortnight-notice {
+    border-color:#75601f !important;
+    background:#000 !important;
+    background-image:none !important;
+    color:#f2d36b !important;
+    box-shadow:none !important;
+}
+html[data-theme="dark"] #root .previous-fortnight-notice strong { color:#f2d36b !important; }
+html[data-theme="dark"] #root .previous-fortnight-notice span { color:#d0d0d0 !important; }
+
+html[data-theme="dark"] #root .mi-dia-status {
+    border-color:#414141 !important;
+    background:#101010 !important;
+    color:#e5e5e5 !important;
+}
+html[data-theme="dark"] #root .mi-dia-status--working { border-color:#294967 !important; background:#101923 !important; color:#c3e1ff !important; }
+html[data-theme="dark"] #root .mi-dia-status--pause { border-color:#5f491d !important; background:#211a0b !important; color:#ffe2a1 !important; }
+html[data-theme="dark"] #root .mi-dia-status--offline { border-color:#454545 !important; background:#171717 !important; color:#dedede !important; }
+html[data-theme="dark"] #root .mi-dia-status--available,
+html[data-theme="dark"] #root .mi-dia-status--neutral { border-color:#285a37 !important; background:#101f15 !important; color:#b7f2c7 !important; }
+html[data-theme="dark"] #root .mi-dia-status strong { color:inherit !important; }
+
+html[data-theme="dark"] #root .ranking-podium-card,
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-1,
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-2,
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-3,
+html[data-theme="dark"] #root .ranking-podium-empty {
+    border-color:#383838 !important;
+    background:#050505 !important;
+    background-image:none !important;
+    color:#f5f5f5 !important;
+    box-shadow:none !important;
+}
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-1 { border-color:#75601f !important; border-bottom-color:#d4af37 !important; background:#100e08 !important; }
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-2 { border-bottom-color:#777 !important; }
+html[data-theme="dark"] #root .ranking-podium-card.podium-place-3 { border-bottom-color:#80553a !important; }
+html[data-theme="dark"] #root .ranking-podium-card.is-current { outline-color:rgba(212,175,55,.65) !important; }
+html[data-theme="dark"] #root .ranking-podium-place,
+html[data-theme="dark"] #root .ranking-podium-card small,
+html[data-theme="dark"] #root .ranking-podium-empty small { color:#c8c8c8 !important; }
+html[data-theme="dark"] #root .ranking-podium-name,
+html[data-theme="dark"] #root .ranking-podium-card small b,
+html[data-theme="dark"] #root .ranking-podium-empty strong { color:#f5f5f5 !important; }
+html[data-theme="dark"] #root .ranking-you-badge,
+html[data-theme="dark"] #root .ranking-podium-sales {
+    border:1px solid #34495e !important;
+    background:#101923 !important;
+    color:#cfe7ff !important;
+}
+html[data-theme="dark"] #root .ranking-current-position {
+    border-color:#34495e !important;
+    background:#101923 !important;
+    color:#d6eaff !important;
+}
+html[data-theme="dark"] #root .ranking-current-position strong { color:#fff !important; }
+
+/* Tarjetas administrativas de asesor: no dejar degradados claros detrás del texto claro */
+html[data-theme="dark"] #root .advisor-status-card {
+    border-color:#383838 !important;
+    border-top-color:#53708a !important;
+    background:#050505 !important;
+    background-image:none !important;
+    color:#f5f5f5 !important;
+    box-shadow:none !important;
+}
+html[data-theme="dark"] #root .advisor-status-card h3,
+html[data-theme="dark"] #root .advisor-status-card strong { color:#f5f5f5 !important; }
+html[data-theme="dark"] #root .advisor-status-card span,
+html[data-theme="dark"] #root .advisor-status-card__metric > div { color:#c8c8c8 !important; }
+html[data-theme="dark"] #root .advisor-status-card__icon,
+html[data-theme="dark"] #root .advisor-status-card__badge {
+    border:1px solid #34495e !important;
+    background:#101923 !important;
+    color:#cfe7ff !important;
+}
+html[data-theme="dark"] #root .advisor-status-card__metric {
+    border:1px solid #303030 !important;
+    background:#101010 !important;
+}
+html[data-theme="dark"] #root .advisor-status-card__punctuality { border-top-color:#303030 !important; }
+html[data-theme="dark"] #root .advisor-status-card__punctuality span:first-child { color:#c8c8c8 !important; }
+html[data-theme="dark"] #root .advisor-status-card__punctuality.is-on-time span:last-child { color:#9de0b1 !important; }
+html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:last-child { color:#ffaaa4 !important; }
+
 
 /* Mensaje diario: inspiración celestial con cita bíblica y reflexión desplegable */
 .daily-message-card {

@@ -234,6 +234,7 @@ export default function BreakTimer({
     return (
 
         <div
+            className={`break-timer-card${excedido ? " is-exceeded" : ""}`}
             style={{
                 marginTop: "20px",
                 padding: "25px",
@@ -256,6 +257,7 @@ export default function BreakTimer({
         >
 
             <div
+                className="break-timer-card__title"
                 style={{
                     fontSize: "17px",
                     fontWeight: "bold",
@@ -275,6 +277,7 @@ export default function BreakTimer({
             </div>
 
             <div
+                className="break-timer-card__time"
                 style={{
                     fontSize: "48px",
                     fontWeight: "bold",
@@ -295,6 +298,7 @@ export default function BreakTimer({
             </div>
 
             <div
+                className="break-timer-card__description"
                 style={{
                     marginTop: "8px",
                     fontSize: "14px",
@@ -310,6 +314,7 @@ export default function BreakTimer({
             </div>
 
             <div
+                className="break-timer-card__limit"
                 style={{
                     marginTop: "10px",
                     fontSize: "13px",
@@ -325,6 +330,7 @@ export default function BreakTimer({
             {excedido && (
 
                 <div
+                    className="break-timer-card__alert"
                     style={{
                         marginTop: "15px",
                         padding: "12px",

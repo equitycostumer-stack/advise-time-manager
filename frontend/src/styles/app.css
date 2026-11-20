@@ -1437,6 +1437,28 @@ html[data-theme="dark"] #root .daily-message-card__reflection-toggle:hover {
     .daily-message-card__reflection-toggle { transition:none; }
 }
 
+/* Contador de break: reemplaza sus colores inline claros en el tema negro */
+html[data-theme="dark"] #root .break-timer-card {
+    border-color:#8a641e !important;
+    background:#050505 !important;
+    background-image:none !important;
+    color:#f5f5f5 !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.55) !important;
+}
+html[data-theme="dark"] #root .break-timer-card.is-exceeded { border-color:#8a3434 !important; }
+html[data-theme="dark"] #root .break-timer-card__title { color:#f2d36b !important; }
+html[data-theme="dark"] #root .break-timer-card.is-exceeded .break-timer-card__title,
+html[data-theme="dark"] #root .break-timer-card.is-exceeded .break-timer-card__time { color:#ff8d8d !important; }
+html[data-theme="dark"] #root .break-timer-card__time { color:#ffd166 !important; font-variant-numeric:tabular-nums; }
+html[data-theme="dark"] #root .break-timer-card__description,
+html[data-theme="dark"] #root .break-timer-card__limit { color:#dedede !important; }
+html[data-theme="dark"] #root .break-timer-card__limit strong { color:#fff !important; }
+html[data-theme="dark"] #root .break-timer-card__alert {
+    border:1px solid #713333 !important;
+    background:#210b0b !important;
+    color:#ffc1bb !important;
+}
+
 
 /* Ajustes de accesibilidad visual y estados expandidos de la tarjeta diaria */
 .daily-message-card__eyebrow { font-size:12px; }

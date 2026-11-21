@@ -1215,8 +1215,7 @@ html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:las
     display:inline-block;
     margin-right:5px;
     color:#69f0ae;
-    transform-origin:center;
-    animation:daily-message-signal-pulse 2.1s ease-in-out infinite;
+    animation:daily-message-signal-pulse 1.8s ease-in-out infinite;
 }
 .daily-message-card__team-message {
     margin:0 0 13px;
@@ -1371,8 +1370,8 @@ html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:las
     to { opacity:1; transform:translateY(0); }
 }
 @keyframes daily-message-signal-pulse {
-    0%,100% { opacity:.58; transform:scale(.88); text-shadow:0 0 2px rgba(105,240,174,.35); }
-    50% { opacity:1; transform:scale(1.16); text-shadow:0 0 8px rgba(105,240,174,.95); }
+    0%,100% { opacity:.3; filter:brightness(.65); text-shadow:0 0 1px rgba(105,240,174,.2); }
+    50% { opacity:1; filter:brightness(1.7); text-shadow:0 0 12px rgba(105,240,174,1); }
 }
 
 /* En el modo negro se conservan superficies #000 y texto de alto contraste. */

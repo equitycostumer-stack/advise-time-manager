@@ -58,8 +58,9 @@ export function FelicitacionToast({ nombre, mensaje, visible, onClose }) {
   );
 }
 
-export default function ReconocimientoGlobal() {
+export default function ReconocimientoGlobal({ asesores = [] }) {
   const [ganadora, setGanadora] = useState(null);
+  const fotoGanadora = asesores.find((asesor) => Number(asesor.id) === Number(ganadora?.asesor_id))?.foto_data || null;
 
   useEffect(() => {
     let activo = true;
@@ -84,8 +85,18 @@ export default function ReconocimientoGlobal() {
 
   return (
     <div className="previous-fortnight-notice" style={{ margin: "0 0 16px", padding: "12px 16px", borderRadius: 12, color: "#5c4300", background: "linear-gradient(90deg, #fff8d9, #fffdf2)", border: "1px solid #e5c45c", boxShadow: "0 5px 16px rgba(184,148,31,.12)" }}>
-      <strong>🏆 {obtenerEtiquetaMejorAsesor(ganadora.genero)} de la quincena anterior: {ganadora.asesor_nombre}</strong>
-      <span style={{ display: "block", fontSize: 13, marginTop: 3 }}>Reconocemos su compromiso y sus resultados. ¡Sigamos creciendo como equipo!</span>
+      <span className="previous-fortnight-notice__avatar" aria-hidden="true">
+        {fotoGanadora ? <img src={fotoGanadora} alt="" /> : (
+          <svg viewBox="0 0 24 24" focusable="false">
+            <circle cx="12" cy="8" r="4" fill="currentColor" />
+            <path d="M4 21c.4-4.2 3.6-7 8-7s7.6 2.8 8 7H4Z" fill="currentColor" />
+          </svg>
+        )}
+      </span>
+      <div className="previous-fortnight-notice__content">
+        <strong>🏆 {obtenerEtiquetaMejorAsesor(ganadora.genero)} de la quincena anterior: {ganadora.asesor_nombre}</strong>
+        <span style={{ display: "block", fontSize: 13, marginTop: 3 }}>Reconocemos su compromiso y sus resultados. ¡Sigamos creciendo como equipo!</span>
+      </div>
     </div>
   );
 }

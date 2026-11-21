@@ -384,7 +384,7 @@ function App() {
       <main className="app-main">
         <div className="card">
         <Header tema={tema} onCambiarTema={() => setTema((actual) => actual === "dark" ? "light" : "dark")} />
-        <ReconocimientoGlobal />
+        <ReconocimientoGlobal asesores={asesores} />
 
         <div className="app-mobile-nav" style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
           <button

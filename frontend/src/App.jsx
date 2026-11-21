@@ -196,13 +196,18 @@ function App() {
     [asesores, asesor]
   );
 
-    // Cargar asesores al montar (solo si hay sesión iniciada)
+  // Cargar asesores al montar (solo si hay sesión iniciada)
   useEffect(() => {
+    const actualizarAsesores = () => {
+      if (localStorage.getItem("token")) void cargarAsesores(true);
+    };
+    window.addEventListener("foto-asesor-actualizada", actualizarAsesores);
     if (localStorage.getItem("token")) {
       cargarAsesores();
     } else {
       setCargando(false);
     }
+    return () => window.removeEventListener("foto-asesor-actualizada", actualizarAsesores);
   }, []);
 
   // Actualizar estado al cambiar el asesor seleccionado
@@ -222,16 +227,25 @@ function App() {
   }, [asesor]);
 
   // Funciones de API
-  async function cargarAsesores() {
+  async function cargarAsesores(silencioso = false) {
     try {
-      setCargando(true);
-      const { data } = await api.get("/asesores");
-      setAsesores(Array.isArray(data) ? data : []);
+      if (!silencioso) setCargando(true);
+      const [asesoresRes, fotosRes] = await Promise.all([
+        api.get("/asesores"),
+        api.get("/asesores/fotos").catch((error) => {
+          console.warn("No fue posible cargar las fotos de asesores:", error);
+          return null;
+        })
+      ]);
+      const lista = Array.isArray(asesoresRes.data) ? asesoresRes.data : [];
+      const fotos = Array.isArray(fotosRes?.data?.data) ? fotosRes.data.data : [];
+      const fotosPorId = Object.fromEntries(fotos.map((foto) => [String(foto.id), foto.foto_data]));
+      setAsesores(lista.map((item) => ({ ...item, foto_data: fotosPorId[String(item.id)] || null })));
     } catch (error) {
       console.error("❌ Error cargando asesores:", error);
-      setAsesores([]);
+      if (!silencioso) setAsesores([]);
     } finally {
-      setCargando(false);
+      if (!silencioso) setCargando(false);
     }
   }
 
@@ -516,10 +530,12 @@ function App() {
 
             <section className="dashboard-top-cards" aria-label="Estado de jornada">
               <article className="person-card">
-                <div className="person-avatar" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" focusable="false">
-                    <path fill="currentColor" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" />
-                  </svg>
+                <div className={`person-avatar${asesorSeleccionado?.foto_data ? " person-avatar--photo" : ""}`} aria-hidden="true">
+                  {asesorSeleccionado?.foto_data ? <img className="person-avatar__photo" src={asesorSeleccionado.foto_data} alt="" /> : (
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path fill="currentColor" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" />
+                    </svg>
+                  )}
                 </div>
                 <div className="person-card-content">
                   <div className="person-card-label">Asesores</div>

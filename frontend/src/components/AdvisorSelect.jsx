@@ -35,8 +35,16 @@ export default function AdvisorSelect({ asesores = [], asesor, setAsesor }) {
                     {asesores.length === 0 ? (
                         <div className="advisor-empty">No hay asesores disponibles</div>
                     ) : asesores.map((item) => (
-                        <button type="button" role="option" aria-selected={String(item.id) === String(asesor)} key={item.id} onClick={() => elegir(item)}>
-                            {item.nombre}
+                        <button className="advisor-option" type="button" role="option" aria-selected={String(item.id) === String(asesor)} key={item.id} onClick={() => elegir(item)}>
+                            <span className="advisor-option-avatar" aria-hidden="true">
+                                {item.foto_data ? <img src={item.foto_data} alt="" /> : (
+                                    <svg viewBox="0 0 24 24">
+                                        <circle cx="12" cy="8" r="4" fill="currentColor" />
+                                        <path d="M4 21c.4-4.2 3.6-7 8-7s7.6 2.8 8 7H4Z" fill="currentColor" />
+                                    </svg>
+                                )}
+                            </span>
+                            <span className="advisor-option-name">{item.nombre}</span>
                         </button>
                     ))}
                 </div>

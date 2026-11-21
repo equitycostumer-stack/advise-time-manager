@@ -110,6 +110,7 @@ export default function Usuarios() {
             setAsesores((actuales) => actuales.map((actual) => actual.id === asesor.id ? { ...actual, foto_data: fotoGuardada } : actual));
             setMensaje(fotoGuardada ? `Foto guardada para ${asesor.nombre}.` : `Foto retirada para ${asesor.nombre}.`);
             window.dispatchEvent(new Event("datos-actualizados"));
+            window.dispatchEvent(new Event("foto-asesor-actualizada"));
         } catch (e) {
             setError(e.response?.data?.mensaje || e.message || `No fue posible guardar la foto de ${asesor.nombre}.`);
         } finally {

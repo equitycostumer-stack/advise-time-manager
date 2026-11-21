@@ -43,6 +43,8 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .person-card, .current-status-card, .time-card { min-height:138px; display:flex; align-items:center; gap:16px; padding:22px; background:#fff; border:1px solid rgba(205,220,235,.8); border-radius:12px; box-shadow:0 6px 16px rgba(49,90,131,.08); }
 .person-avatar { width:62px; height:62px; flex:0 0 62px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#1f7fc6,#143a76); color:#fff; font-size:31px; box-shadow:inset 0 0 0 7px #dceafa; }
 .person-avatar svg { display:block; width:30px; height:30px; }
+.person-avatar--photo { box-sizing:border-box; overflow:hidden; border:3px solid #dceafa; background:#eaf4ff; box-shadow:0 5px 14px rgba(25,75,125,.18); }
+.person-avatar__photo { display:block; width:100%; height:100%; object-fit:cover; }
 .person-card strong, .current-status-card strong, .time-card strong { display:block; color:#132d54; font-size:20px; line-height:1.15; }
 .person-card span, .current-status-card span, .time-card span { display:block; color:#18345e; font-size:13px; margin-bottom:8px; }
 .person-card small { display:block; margin-top:9px; color:#13a64f; font-size:12px; }
@@ -118,7 +120,13 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .advisor-trigger:disabled { cursor:default; opacity:.9; }
 .advisor-options { position:absolute; top:calc(100% + 5px); left:0; right:0; z-index:50; max-height:230px; overflow:auto; padding:5px; background:#fff; border:1px solid #bcd0e4; border-radius:8px; box-shadow:0 12px 25px rgba(20,60,100,.22); }
 .advisor-options button { width:100%; display:block; padding:9px 10px; border:0; border-radius:5px; background:#fff; color:#17385f; text-align:left; cursor:pointer; font-size:13px; }
+.advisor-options .advisor-option { display:flex; align-items:center; gap:9px; }
+.advisor-options .advisor-option[aria-selected="true"] { background:#eaf4ff; color:#0d5c97; font-weight:800; }
 .advisor-options button:hover { background:#eaf4ff; color:#0879cf; }
+.advisor-option-avatar { display:grid; flex:0 0 32px; width:32px; height:32px; place-items:center; overflow:hidden; margin:0; border:1px solid #d4e3f1; border-radius:50%; background:#eaf4ff; color:#2674ad; }
+.advisor-option-avatar img { display:block; width:100%; height:100%; object-fit:cover; }
+.advisor-option-avatar svg { width:18px; height:18px; }
+.advisor-option-name { min-width:0; margin:0; overflow-wrap:anywhere; }
 .advisor-empty { padding:10px; color:#718198; font-size:12px; }
 @media (max-width:700px) { .advisor-dropdown { max-width:100%; } }
 
@@ -472,6 +480,8 @@ html[data-theme="dark"] .sales-search-field input,
 html[data-theme="dark"] .sales-state-field select,
 html[data-theme="dark"] .sales-clear-filters { background:#1b2d42 !important; color:#e5edf7 !important; border-color:#30465d !important; }
 html[data-theme="dark"] .advisor-options button:hover { background:#263e58 !important; }
+html[data-theme="dark"] .advisor-options .advisor-option[aria-selected="true"] { background:#263e58 !important; color:#e5edf7 !important; }
+html[data-theme="dark"] .advisor-option-avatar { border-color:#405a75; background:#1b2d42; color:#a9cbe9; }
 html[data-theme="dark"] .ventas-filterbar,
 html[data-theme="dark"] .ventas-chart-segment,
 html[data-theme="dark"] .ventas-chart-tooltip,

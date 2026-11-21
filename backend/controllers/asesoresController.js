@@ -21,6 +21,55 @@ class AsesoresController {
         }
     }
 
+    async obtenerFotosActivos(req, res) {
+        try {
+            const fotos = await repository.obtenerFotosActivos();
+            return res.status(200).json({ ok: true, data: fotos });
+        } catch (error) {
+            console.error("Error obteniendo fotos de asesores:", error.code || error.message);
+            return res.status(500).json({ ok: false, mensaje: "No fue posible cargar las fotos de asesores." });
+        }
+    }
+
+    async actualizarFoto(req, res) {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ ok: false, mensaje: "El identificador del asesor no es válido." });
+        }
+
+        const recibido = req.body?.foto_data;
+        if (recibido !== null && typeof recibido !== "string") {
+            return res.status(400).json({ ok: false, mensaje: "Adjunta una imagen válida o envía null para quitar la foto." });
+        }
+
+        let fotoData = null;
+        if (recibido !== null) {
+            const coincidencia = /^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(recibido);
+            if (!coincidencia) {
+                return res.status(400).json({ ok: false, mensaje: "La foto debe enviarse optimizada en formato JPEG." });
+            }
+            const bytes = Buffer.from(coincidencia[1], "base64");
+            if (
+                bytes.length === 0 ||
+                bytes.length > 120 * 1024 ||
+                bytes.toString("base64") !== coincidencia[1] ||
+                bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff
+            ) {
+                return res.status(400).json({ ok: false, mensaje: "La foto no es un JPEG válido o supera el límite de 120 KB." });
+            }
+            fotoData = recibido;
+        }
+
+        try {
+            const asesor = await repository.actualizarFoto(id, fotoData);
+            if (!asesor) return res.status(404).json({ ok: false, mensaje: "No se encontró el asesor." });
+            return res.status(200).json({ ok: true, data: asesor, mensaje: fotoData ? "Foto del asesor guardada." : "Foto del asesor eliminada." });
+        } catch (error) {
+            console.error("Error guardando foto del asesor:", error.code || error.message);
+            return res.status(500).json({ ok: false, mensaje: "No fue posible guardar la foto del asesor." });
+        }
+    }
+
     async actualizarGenero(req, res) {
         const id = Number(req.params.id);
         if (!Number.isInteger(id) || id < 1) {

@@ -158,6 +158,7 @@ function IncidenciaCard({ inc }) {
 export default function Dashboard() {
     const { usuario } = useAuth();
     const [asesores, setAsesores] = useState([]);
+    const [fotosAsesores, setFotosAsesores] = useState({});
     const [incidencias, setIncidencias] = useState([]);
     const [productividad, setProductividad] = useState({
         tiempo_trabajado: 0,
@@ -193,9 +194,23 @@ export default function Dashboard() {
         }
     }
 
+    async function cargarFotosAsesores() {
+        try {
+            const { data } = await api.get("/asesores/fotos");
+            const fotos = Array.isArray(data?.data) ? data.data : [];
+            setFotosAsesores(Object.fromEntries(fotos.map((foto) => [foto.id, foto.foto_data])));
+        } catch (error) {
+            console.error("ERROR CARGANDO FOTOS DE ASESORES", error);
+        }
+    }
+
     useEffect(() => {
         cargarDashboard();
-        const actualizar = () => cargarDashboard();
+        cargarFotosAsesores();
+        const actualizar = () => {
+            cargarDashboard();
+            cargarFotosAsesores();
+        };
         window.addEventListener("datos-actualizados", actualizar);
         const intervalo = setInterval(cargarDashboard, 5000);
         return () => {
@@ -381,7 +396,9 @@ export default function Dashboard() {
                             <div key={a.id} className={`advisor-status-card advisor-status-card--${String(estado).toLowerCase()}`} style={{ background: "linear-gradient(145deg, #ffffff 0%, #f7fbf8 100%)", border: `1px solid ${a.llego_tarde ? "#f1aeb5" : "#d9ebe0"}`, borderTop: `4px solid ${estadoConfig.color}`, borderRadius: "16px", padding: "18px", boxShadow: "0 8px 20px rgba(35, 90, 62, .08)", transition: "transform .2s ease, box-shadow .2s ease" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "16px" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                                        <div className="advisor-status-card__icon" style={{ width: "40px", height: "40px", borderRadius: "12px", display: "grid", placeItems: "center", background: estadoConfig.fondo, color: estadoConfig.color, fontSize: "18px", flexShrink: 0 }}>{estadoConfig.icono}</div>
+                                        <div className="advisor-status-card__icon" role="img" aria-label={fotosAsesores[a.id] ? `Foto de ${a.nombre}` : `Silueta de ${a.nombre}`} style={{ width: "44px", height: "44px", borderRadius: "50%", display: "grid", placeItems: "center", overflow: "hidden", background: estadoConfig.fondo, color: estadoConfig.color, border: `2px solid ${estadoConfig.color}`, flexShrink: 0 }}>
+                                            {fotosAsesores[a.id] ? <img className="advisor-status-card__photo" src={fotosAsesores[a.id]} alt="" /> : <svg className="advisor-status-card__fallback" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="currentColor" /><path d="M4 21c.4-4.2 3.6-7 8-7s7.6 2.8 8 7H4Z" fill="currentColor" /></svg>}
+                                        </div>
                                         <div style={{ minWidth: 0, flex: 1 }}><h3 style={{ color: "#245b3a", margin: 0, fontSize: "17px", lineHeight: 1.2, whiteSpace: "normal", overflowWrap: "anywhere" }}>{a.nombre}</h3><span style={{ color: "#789184", fontSize: "12px" }}>Asesor operativo</span></div>
                                     </div>
                                     <span className="advisor-status-card__badge" style={{ background: estadoConfig.fondo, color: estadoConfig.color, borderRadius: "999px", padding: "5px 9px", fontSize: "11px", fontWeight: "800", whiteSpace: "nowrap" }}>{estado}</span>

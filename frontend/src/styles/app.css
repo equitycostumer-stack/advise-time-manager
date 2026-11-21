@@ -1101,6 +1101,19 @@ html[data-theme="dark"] #root .advisor-status-card__punctuality span:first-child
 html[data-theme="dark"] #root .advisor-status-card__punctuality.is-on-time span:last-child { color:#9de0b1 !important; }
 html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:last-child { color:#ffaaa4 !important; }
 
+.advisor-status-card__photo {
+    display:block;
+    width:100%;
+    height:100%;
+    border-radius:inherit;
+    object-fit:cover;
+}
+.advisor-status-card__fallback {
+    display:block;
+    width:25px;
+    height:25px;
+}
+
 
 /* Mensaje diario: inspiración celestial con cita bíblica y reflexión desplegable */
 .daily-message-card {

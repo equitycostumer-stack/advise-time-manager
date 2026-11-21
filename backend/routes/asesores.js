@@ -7,7 +7,9 @@ const verificarRol = require("../middleware/rolesMiddleware");
 router.use(verificarToken);
 
 router.get("/administracion", verificarRol("ADMINISTRADOR"), controller.obtenerActivosParaAdministracion.bind(controller));
+router.get("/fotos", controller.obtenerFotosActivos.bind(controller));
 router.put("/:id/genero", verificarRol("ADMINISTRADOR"), controller.actualizarGenero.bind(controller));
+router.put("/:id/foto", verificarRol("ADMINISTRADOR"), controller.actualizarFoto.bind(controller));
 router.get("/", controller.obtenerAsesores.bind(controller));
 
 module.exports = router;

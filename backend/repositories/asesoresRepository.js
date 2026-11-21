@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const { asegurarColumnaGeneroAsesores } = require("../migrations/asesoresGenero");
+const { asegurarColumnaFotoAsesores } = require("../migrations/asesoresFoto");
 
 class AsesoresRepository {
     async ejecutar(sql, parametros = []) {
@@ -28,12 +29,34 @@ class AsesoresRepository {
 
     async obtenerActivosParaAdministracion() {
         await asegurarColumnaGeneroAsesores();
+        await asegurarColumnaFotoAsesores();
         return this.ejecutar(`
-            SELECT id, nombre, activo, genero
+            SELECT id, nombre, activo, genero, foto_data
             FROM asesores
             WHERE activo = 1
             ORDER BY nombre ASC
         `);
+    }
+
+    async obtenerFotosActivos() {
+        await asegurarColumnaFotoAsesores();
+        return this.ejecutar(`
+            SELECT id, foto_data
+            FROM asesores
+            WHERE activo = 1 AND foto_data IS NOT NULL
+            ORDER BY id ASC
+        `);
+    }
+
+    async actualizarFoto(id, fotoData) {
+        await asegurarColumnaFotoAsesores();
+        const filas = await this.ejecutar(`
+            UPDATE asesores
+            SET foto_data = ?
+            WHERE id = ?
+            RETURNING id, nombre, activo, foto_data
+        `, [fotoData, id]);
+        return filas[0] || null;
     }
 
     async actualizarGenero(id, genero) {

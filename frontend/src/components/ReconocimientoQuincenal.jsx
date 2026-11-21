@@ -5,7 +5,7 @@ function formatearMoneda(valor) {
     return `$${Number(valor || 0).toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
 }
 
-export default function ReconocimientoQuincenal({ reconocimiento = {}, id }) {
+export default function ReconocimientoQuincenal({ reconocimiento = {}, id, fotoGanadora = null }) {
     const { ganadora, cargando, error, periodoLabel } = reconocimiento;
     const etiquetaMejorAsesor = obtenerEtiquetaMejorAsesor(ganadora?.genero);
     const mensajeNombre = useMemo(() => {
@@ -19,7 +19,19 @@ export default function ReconocimientoQuincenal({ reconocimiento = {}, id }) {
             <div className="previous-fortnight-winner__icon" aria-hidden="true">🏆</div>
             <div className="previous-fortnight-winner__content" aria-live="polite">
                 <p className="previous-fortnight-winner__eyebrow">{etiquetaMejorAsesor} de la quincena anterior · ¡Felicidades!</p>
-                <strong className="previous-fortnight-winner__name">{mensajeNombre}</strong>
+                <div className="previous-fortnight-winner__name-row">
+                    {ganadora && !cargando && !error && (
+                        <span className="previous-fortnight-winner__avatar" aria-hidden="true">
+                            {fotoGanadora ? <img src={fotoGanadora} alt="" /> : (
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <circle cx="12" cy="8" r="4" fill="currentColor" />
+                                    <path d="M4 21c.4-4.2 3.6-7 8-7s7.6 2.8 8 7H4Z" fill="currentColor" />
+                                </svg>
+                            )}
+                        </span>
+                    )}
+                    <strong className="previous-fortnight-winner__name">{mensajeNombre}</strong>
+                </div>
                 <p className="previous-fortnight-winner__period">{periodoLabel || "Última quincena completa"} · seleccionada automáticamente</p>
                 {ganadora && !cargando && !error && (
                     <div className="previous-fortnight-winner__stats">

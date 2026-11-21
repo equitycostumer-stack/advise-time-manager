@@ -196,6 +196,12 @@ function App() {
     [asesores, asesor]
   );
 
+  const fotoGanadoraQuincenalAnterior = useMemo(() => {
+    const asesorId = Number(reconocimientoQuincenalAnterior.ganadora?.asesor_id);
+    if (!Number.isInteger(asesorId) || asesorId <= 0) return null;
+    return asesores.find((item) => Number(item.id) === asesorId)?.foto_data || null;
+  }, [asesores, reconocimientoQuincenalAnterior.ganadora?.asesor_id]);
+
   // Cargar asesores al montar (solo si hay sesión iniciada)
   useEffect(() => {
     const actualizarAsesores = () => {
@@ -580,7 +586,7 @@ function App() {
                 <ResumenJornada resumen={resumen} asesor={asesorSeleccionado} />
                 <MessageCard mensaje={mensaje} />
                 <LogrosRecientes />
-                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal id="reconocimiento-quincenal-inicio" reconocimiento={reconocimientoQuincenalAnterior} />}
+                {reconocimientoQuincenalAnterior.visible && <ReconocimientoQuincenal id="reconocimiento-quincenal-inicio" reconocimiento={reconocimientoQuincenalAnterior} fotoGanadora={fotoGanadoraQuincenalAnterior} />}
               </aside>
             </div>
 
@@ -591,6 +597,7 @@ function App() {
                 asesorSeleccionadoId={asesor}
                 asesorSeleccionadoNombre={asesorSeleccionado?.nombre || ""}
                 reconocimientoQuincenalAnterior={reconocimientoQuincenalAnterior}
+                fotoGanadoraQuincenalAnterior={fotoGanadoraQuincenalAnterior}
                 onRefrescarGanadoraQuincenaAnterior={cargarReconocimientoQuincenalAnterior}
               />
             </section>

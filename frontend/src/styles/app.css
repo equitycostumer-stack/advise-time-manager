@@ -885,6 +885,21 @@ html[data-theme="dark"] #root .registros-diarios [role="status"] { color:#d8d8d8
     font-size:21px;
     line-height:1.25;
 }
+.previous-fortnight-winner__name-row { display:flex; min-width:0; align-items:center; gap:10px; }
+.previous-fortnight-winner__avatar {
+    display:grid;
+    flex:0 0 48px;
+    width:48px;
+    height:48px;
+    place-items:center;
+    overflow:hidden;
+    border:2px solid #d4af37;
+    border-radius:50%;
+    background:#fff1bd;
+    color:#8a6d1d;
+}
+.previous-fortnight-winner__avatar img { display:block; width:100%; height:100%; object-fit:cover; }
+.previous-fortnight-winner__avatar svg { width:25px; height:25px; }
 .previous-fortnight-winner__period,
 .previous-fortnight-winner__criteria {
     display:block;
@@ -918,6 +933,11 @@ html[data-theme="dark"] #root .previous-fortnight-winner__icon {
 }
 html[data-theme="dark"] #root .previous-fortnight-winner__eyebrow { color:#f2d36b !important; }
 html[data-theme="dark"] #root .previous-fortnight-winner__name { color:#fff !important; }
+html[data-theme="dark"] #root .previous-fortnight-winner__avatar {
+    border-color:#927523 !important;
+    background:#101010 !important;
+    color:#f2d36b !important;
+}
 html[data-theme="dark"] #root .previous-fortnight-winner__period,
 html[data-theme="dark"] #root .previous-fortnight-winner__criteria { color:#d0d0d0 !important; }
 html[data-theme="dark"] #root .previous-fortnight-winner__stats span {
@@ -928,6 +948,7 @@ html[data-theme="dark"] #root .previous-fortnight-winner__stats span {
 @media (max-width:520px) {
     .previous-fortnight-winner { grid-template-columns:42px minmax(0,1fr); gap:10px; padding:12px; }
     .previous-fortnight-winner__icon { width:40px; height:40px; font-size:22px; }
+    .previous-fortnight-winner__avatar { flex-basis:40px; width:40px; height:40px; }
     .previous-fortnight-winner__name { font-size:18px; }
 }
 

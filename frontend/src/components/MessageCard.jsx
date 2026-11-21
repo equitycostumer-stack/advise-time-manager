@@ -47,7 +47,10 @@ export default function MessageCard({ mensaje }) {
                     <h3 id="daily-message-title">Mensaje del día</h3>
                     <p>Fe, enfoque y propósito para tu jornada</p>
                 </div>
-                <span className="daily-message-card__signal" aria-label="Actualiza cada día">● HOY</span>
+                <span className="daily-message-card__signal" aria-label="Actualiza cada día">
+                    <span className="daily-message-card__signal-dot" aria-hidden="true">●</span>
+                    <span>HOY</span>
+                </span>
             </header>
 
             {textoDelDia && (

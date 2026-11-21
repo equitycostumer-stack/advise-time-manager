@@ -42,9 +42,11 @@ button:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.03
 .dashboard-top-cards { display:grid; grid-template-columns:1.1fr 1.08fr 1.08fr; gap:18px; margin:0 0 20px; }
 .person-card, .current-status-card, .time-card { min-height:138px; display:flex; align-items:center; gap:16px; padding:22px; background:#fff; border:1px solid rgba(205,220,235,.8); border-radius:12px; box-shadow:0 6px 16px rgba(49,90,131,.08); }
 .person-avatar { width:62px; height:62px; flex:0 0 62px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(145deg,#1f7fc6,#143a76); color:#fff; font-size:31px; box-shadow:inset 0 0 0 7px #dceafa; }
+.person-avatar svg { display:block; width:30px; height:30px; }
 .person-card strong, .current-status-card strong, .time-card strong { display:block; color:#132d54; font-size:20px; line-height:1.15; }
 .person-card span, .current-status-card span, .time-card span { display:block; color:#18345e; font-size:13px; margin-bottom:8px; }
 .person-card small { display:block; margin-top:9px; color:#13a64f; font-size:12px; }
+.person-card small .advisor-online-dot { display:inline-block; margin:0 4px 0 0; color:#13a64f; animation:online-indicator-glow 1.8s ease-in-out infinite; }
 .person-card b { margin-left:auto; color:#718198; font-size:28px; font-weight:400; }
 .current-status-card { background:linear-gradient(135deg,#11aa69,#34c867); color:#fff; }
 .current-status-card span, .current-status-card strong { color:#fff; }
@@ -1215,7 +1217,7 @@ html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:las
     display:inline-block;
     margin-right:5px;
     color:#69f0ae;
-    animation:daily-message-signal-pulse 1.8s ease-in-out infinite;
+    animation:online-indicator-glow 1.8s ease-in-out infinite;
 }
 .daily-message-card__team-message {
     margin:0 0 13px;
@@ -1369,7 +1371,7 @@ html[data-theme="dark"] #root .advisor-status-card__punctuality.is-late span:las
     from { opacity:0; transform:translateY(-5px); }
     to { opacity:1; transform:translateY(0); }
 }
-@keyframes daily-message-signal-pulse {
+@keyframes online-indicator-glow {
     0%,100% { opacity:.3; filter:brightness(.65); text-shadow:0 0 1px rgba(105,240,174,.2); }
     50% { opacity:1; filter:brightness(1.7); text-shadow:0 0 12px rgba(105,240,174,1); }
 }
@@ -1443,6 +1445,7 @@ html[data-theme="dark"] #root .daily-message-card__reflection-toggle:hover {
     .daily-message-card__orbit,
     .daily-message-card__heart-icon,
     .daily-message-card__signal-dot,
+    .advisor-online-dot,
     .daily-message-card__reflection { animation:none !important; }
     .daily-message-card__reflection-toggle { transition:none; }
 }

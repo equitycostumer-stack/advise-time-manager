@@ -516,12 +516,16 @@ function App() {
 
             <section className="dashboard-top-cards" aria-label="Estado de jornada">
               <article className="person-card">
-                <div className="person-avatar">●</div>
+                <div className="person-avatar" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path fill="currentColor" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" />
+                  </svg>
+                </div>
                 <div className="person-card-content">
                   <div className="person-card-label">Asesores</div>
                   <AdvisorSelect asesores={asesores} asesor={asesor} setAsesor={setAsesor} />
                   {asesorSeleccionado?.nombre && <div className="advisor-current-name">{asesorSeleccionado.nombre}</div>}
-                  <small>● En línea</small>
+                  <small><span className="advisor-online-dot" aria-hidden="true">●</span>En línea</small>
                 </div>
               </article>
               <article className={`current-status-card current-status-card--${claseEstado(estado)}`} aria-live="polite">
